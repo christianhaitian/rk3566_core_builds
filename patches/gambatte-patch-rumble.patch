@@ -1,0 +1,44 @@
+diff --git a/libgambatte/libretro/libretro.cpp b/libgambatte/libretro/libretro.cpp
+index 5a12edd..aae959a 100644
+--- a/libgambatte/libretro/libretro.cpp
++++ b/libgambatte/libretro/libretro.cpp
+@@ -1107,6 +1107,7 @@ static uint16_t rumble_strength_up          = 0;
+ static uint16_t rumble_strength_down        = 0;
+ static uint16_t rumble_level                = 0;
+ static bool rumble_active                   = false;
++FILE *file;
+ 
+ void cartridge_set_rumble(unsigned active)
+ {
+@@ -1114,10 +1115,20 @@ void cartridge_set_rumble(unsigned active)
+        !rumble_level)
+       return;
+ 
+-   if (active)
++   if (active){
++      if ((file = fopen("/sys/class/pwm/pwmchip1/pwm0/enable", "r+"))) {
++          fputs("0", file);
++          fclose(file);
++      }
+       rumble_strength_up++;
+-   else
++    }
++   else {
++      if ((file = fopen("/sys/class/pwm/pwmchip1/pwm0/enable", "r+"))) {
++          fputs("1", file);
++          fclose(file);
++      }
+       rumble_strength_down++;
++    }
+ 
+    rumble_active = true;
+ }
+@@ -1125,7 +1136,7 @@ void cartridge_set_rumble(unsigned active)
+ static void apply_rumble(void)
+ {
+    uint16_t strength;
+-
++   
+    if (!rumble.set_rumble_state ||
+        !rumble_level)
+       return;
