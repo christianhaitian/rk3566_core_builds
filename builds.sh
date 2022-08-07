@@ -3,7 +3,7 @@
 ##################################################################
 # Created by Christian Haitian for use to easily update          #
 # various standalone emulators, libretro cores, and other        #
-# various programs for the RK3326 platform for various Linux     #
+# various programs for the RK3566 platform for various Linux     #
 # based distributions.                                           #
 # See the LICENSE.md file at the top-level directory of this     #
 # repository.                                                    #
@@ -16,6 +16,7 @@ es_git="https://github.com/christianhaitian/EmulationStation-fcamod.git"
 nxengevo_git="https://github.com/nxengine/nxengine-evo.git"
 ra_cores_git="https://github.com/christianhaitian/retroarch-cores.git"
 bitness="$(getconf LONG_BIT)"
+g31only=( ppsspp yabasanshirosa es_build es_add_scrape hypseus hypseus-singe )
 
 for var in $@
 do
@@ -27,6 +28,55 @@ do
         echo "$var cannot be built in this current ${bitness}bit environment."
         exit 1
       fi
+      if [[ ${bitness} == "32" ]] && [[ ! " ${g31only[*]} " =~ " ${var} " ]]; then
+        cp mali/armhf/libmali-bifrost-g52-g2p0-gbm.so /usr/lib/arm-linux-gnueabihf/.
+        cd /usr/lib/arm-linux-gnueabihf/
+        whichmali="libmali-bifrost-g52-g2p0-gbm.so"
+      elif [[ ! " ${g31only[*]} " =~ " ${var} " ]]; then
+        cp mali/aarch64/libmali-bifrost-g52-g2p0-gbm.so /usr/lib/aarch64-linux-gnu/.
+        cd /usr/lib/aarch64-linux-gnu/
+        whichmali="libmali-bifrost-g52-g2p0-gbm.so"
+      elif [[ ${bitness} == "32" ]]; then
+        cp mali/armhf/libmali-bifrost-g31-rxp0-gbm.so /usr/lib/arm-linux-gnueabihf/.
+        cd /usr/lib/arm-linux-gnueabihf/
+        whichmali="libmali-bifrost-g31-rxp0-gbm.so"
+      else
+        cp mali/aarch64/libmali-bifrost-g31-rxp0-gbm.so /usr/lib/aarch64-linux-gnu/.
+        cd /usr/lib/aarch64-linux-gnu/
+        whichmali="libmali-bifrost-g31-rxp0-gbm.so"
+      fi
+      rm libMali.so
+      rm libEGL.so*
+      rm libGLES*
+      rm libgbm.so*
+      rm libmali.so*
+      rm libMali*
+      rm libOpenCL*
+      rm libwayland-egl*
+      ln -sf ${whichmali} libMali.so
+      ln -sf libMali.so libEGL.so
+      ln -sf libMali.so libGLES_CM.so
+      ln -sf libMali.so libGLES_CM.so.1
+      ln -sf libMali.so libGLESv1_CM.so
+      ln -sf libMali.so libGLESv1_CM.so.1
+      ln -sf libMali.so libGLESv1_CM.so.1.1.0
+      ln -sf libMali.so libGLESv2.so
+      ln -sf libMali.so libGLESv2.so.2
+      ln -sf libMali.so libGLESv2.so.2.0.0
+      ln -sf libMali.so libGLESv2.so.2.1.0
+      ln -sf libMali.so libGLESv3.so
+      ln -sf libMali.so libGLESv3.so.3
+      ln -sf libMali.so libgbm.so
+      ln -sf libMali.so libgbm.so.1
+      ln -sf libMali.so libgbm.so.1.0.0
+      ln -sf libMali.so libmali.so
+      ln -sf libMali.so libmali.so.1
+      ln -sf libMali.so libMaliOpenCL.so
+      ln -sf libMali.so libOpenCL.so
+      ln -sf libMali.so libwayland-egl.so
+      ln -sf libMali.so libwayland-egl.so.1
+      ln -sf libMali.so libwayland-egl.so.1.0.0
+      cd "${cur_wd}"
       source scripts/"$var".sh
   else
        cur_var="$var"
