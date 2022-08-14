@@ -80,11 +80,14 @@ bitness="$(getconf LONG_BIT)"
              mkdir build
              cd build
              if [[ "$bitness" == "64" ]]; then
+               CMAKE_C_FLAGS="-O2 -march=armv8-a+crc -mtune=cortex-a55 -ftree-vectorize -funsafe-math-optimizations"
+               CMAKE_CXX_FLAGS="${CMAKE_C_FLAGS}"
                cmake ../yabause \
                      -DYAB_PORTS=retro_arena \
                      -DYAB_WANT_DYNAREC_DEVMIYAX=ON \
                      -DYAB_WANT_ARM7=ON \
                      -DYAB_WANT_VULKAN=OFF \
+                     -DUSE_EGL=ON \
                      -DCMAKE_TOOLCHAIN_FILE=../yabause/src/retro_arena/n2.cmake \
                      -DCMAKE_BUILD_TYPE=Release
                if [[ $? != "0" ]]; then
@@ -93,11 +96,14 @@ bitness="$(getconf LONG_BIT)"
                  exit 1
                fi
             else
+               CMAKE_C_FLAGS="-O2 -march=armv8-a+crc -mtune=cortex-a55 -ftree-vectorize -funsafe-math-optimizations"
+               CMAKE_CXX_FLAGS="${CMAKE_C_FLAGS}"
                cmake ../yabause \
                      -DYAB_PORTS=retro_arena \
                      -DYAB_WANT_DYNAREC_DEVMIYAX=ON \
                      -DYAB_WANT_ARM7=ON \
                      -DYAB_WANT_VULKAN=OFF \
+                     -DUSE_EGL=ON \
                      -DCMAKE_TOOLCHAIN_FILE=../yabause/src/retro_arena/pi4.cmake \
                      -DCMAKE_BUILD_TYPE=Release
                if [[ $? != "0" ]]; then
