@@ -42,7 +42,7 @@ bitness="$(getconf LONG_BIT)"
 	  done
 	 fi
 	  make clean
-	  sed -i '/a53/s//a35/' backends/platform/libretro/build/Makefile
+	  sed -i '/a53/s//a55/' backends/platform/libretro/build/Makefile
 	  sed -i '/rpi3_64/s//rk3566/' backends/platform/libretro/build/Makefile
 	  make -C backends/platform/libretro/build platform=rk3566 CXXFLAGS="$CXXFLAGS -DHAVE_POSIX_MEMALIGN=1" -j$(nproc)
 

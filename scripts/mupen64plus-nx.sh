@@ -49,7 +49,7 @@ bitness="$(getconf LONG_BIT)"
 	  done
 	 fi
 
-	  sed -i '/a53/s//a35/g' Makefile
+	  sed -i '/a53/s//a55/g' Makefile
 	  sed -i '/rpi3/s//rk3566/' Makefile
 	  sed -i '/rpi3_64/s//rk3566_64/' Makefile
 

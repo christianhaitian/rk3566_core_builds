@@ -52,7 +52,7 @@ bitness="$(getconf LONG_BIT)"
      do
        make clean
        if [[ "$bitness" == "32" ]]; then
-         make EMUTYPE=${EMUTYPE} platform=classic_armv8_a35 -j$(nproc)       
+         make EMUTYPE=${EMUTYPE} platform=classic_armv8_a55 -j$(nproc)       
        else
          make EMUTYPE=${EMUTYPE} -j$(nproc)
        fi
