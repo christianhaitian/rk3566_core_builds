@@ -3,7 +3,7 @@
 ##################################################################
 # Created by Christian Haitian for use to easily update          #
 # various standalone emulators, libretro cores, and other        #
-# various programs for the RK3326 platform for various Linux     #
+# various programs for the RK3566 platform for various Linux     #
 # based distributions.                                           #
 # See the LICENSE.md file at the top-level directory of this     #
 # repository.                                                    #
@@ -42,7 +42,7 @@ bitness="$(getconf LONG_BIT)"
 	  done
 	 fi
 	  make clean
-	  make -C libretro platform=rk3326 -j$(nproc)
+	  make -C libretro platform=rk3566 -j$(nproc)
 
 	  if [[ $? != "0" ]]; then
 		echo " "
@@ -62,5 +62,5 @@ bitness="$(getconf LONG_BIT)"
 	  echo $gitcommit > ../cores$(getconf LONG_BIT)/$(basename $PWD)_libretro.so.commit
 
 	  echo " "
-	  echo "sameboy_libretro.so has been created and has been placed in the rk3326_core_builds/cores64 subfolder"
+	  echo "sameboy_libretro.so has been created and has been placed in the rk3566_core_builds/cores64 subfolder"
 	fi

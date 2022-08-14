@@ -3,7 +3,7 @@
 ##################################################################
 # Created by Christian Haitian for use to easily update          #
 # various standalone emulators, libretro cores, and other        #
-# various programs for the RK3326 platform for various Linux     #
+# various programs for the RK3566 platform for various Linux     #
 # based distributions.                                           #
 # See the LICENSE.md file at the top-level directory of this     #
 # repository.                                                    #
@@ -125,7 +125,7 @@ bitness="$(getconf LONG_BIT)"
 
 			cp emulationstation ../es-fcamod/emulationstation.$branch
 			echo " "
-			echo "The $branch branch version of emulationstation-fcamod has been created and has been placed in the rk3326_core_builds/es-fcamod subfolder."
+			echo "The $branch branch version of emulationstation-fcamod has been created and has been placed in the rk3566_core_builds/es-fcamod subfolder."
 			exit 0
 		 ;;
 		 "2")
@@ -169,7 +169,7 @@ bitness="$(getconf LONG_BIT)"
 
 			cp emulationstation ../es-fcamod/emulationstation.$branch
 			echo " "
-			echo "The $branch branch version of emulationstation-fcamod has been created and has been placed in the rk3326_core_builds/es-fcamod subfolder."
+			echo "The $branch branch version of emulationstation-fcamod has been created and has been placed in the rk3566_core_builds/es-fcamod subfolder."
 			exit 0
 			;;
 		 "3")
@@ -213,7 +213,7 @@ bitness="$(getconf LONG_BIT)"
 
 			cp emulationstation ../es-fcamod/emulationstation.$branch
 			echo " "
-			echo "The $branch branch version of emulationstation-fcamod has been created and has been placed in the rk3326_core_builds/es-fcamod subfolder."
+			echo "The $branch branch version of emulationstation-fcamod has been created and has been placed in the rk3566_core_builds/es-fcamod subfolder."
 			exit 0
 			;;
 		 "4")
@@ -268,7 +268,7 @@ bitness="$(getconf LONG_BIT)"
 
 			cp emulationstation ../es-fcamod/emulationstation.$branch
 			echo " "
-			echo "The $branch branch version of emulationstation-fcamod has been created and has been placed in the rk3326_core_builds/es-fcamod subfolder."
+			echo "The $branch branch version of emulationstation-fcamod has been created and has been placed in the rk3566_core_builds/es-fcamod subfolder."
 			exit 0
 		 ;;
 		 "5")
@@ -312,7 +312,7 @@ bitness="$(getconf LONG_BIT)"
 
 			cp emulationstation ../es-fcamod/emulationstation.$branch
 			echo " "
-			echo "The $branch branch version of emulationstation-fcamod has been created and has been placed in the rk3326_core_builds/es-fcamod subfolder."
+			echo "The $branch branch version of emulationstation-fcamod has been created and has been placed in the rk3566_core_builds/es-fcamod subfolder."
 
 			cd $cur_wd
 			branch="fullscreen"
@@ -349,7 +349,7 @@ bitness="$(getconf LONG_BIT)"
 
 			cp emulationstation ../es-fcamod/emulationstation.$branch
 			echo " "
-			echo "The $branch branch version of emulationstation-fcamod has been created and has been placed in the rk3326_core_builds/es-fcamod subfolder."
+			echo "The $branch branch version of emulationstation-fcamod has been created and has been placed in the rk3566_core_builds/es-fcamod subfolder."
 
 			cd $cur_wd
 			branch="503noTTS"
@@ -386,7 +386,7 @@ bitness="$(getconf LONG_BIT)"
 
 			cp emulationstation ../es-fcamod/emulationstation.$branch
 			echo " "
-			echo "The $branch branch version of emulationstation-fcamod has been created and has been placed in the rk3326_core_builds/es-fcamod subfolder."
+			echo "The $branch branch version of emulationstation-fcamod has been created and has been placed in the rk3566_core_builds/es-fcamod subfolder."
 
 			cd $cur_wd
 			branch="351v"
@@ -430,7 +430,7 @@ bitness="$(getconf LONG_BIT)"
 
 			cp emulationstation ../es-fcamod/emulationstation.$branch
 			echo " "
-			echo "The $branch branch version of emulationstation-fcamod has been created and has been placed in the rk3326_core_builds/es-fcamod subfolder."
+			echo "The $branch branch version of emulationstation-fcamod has been created and has been placed in the rk3566_core_builds/es-fcamod subfolder."
 			exit 0
 			;;
 		 *)

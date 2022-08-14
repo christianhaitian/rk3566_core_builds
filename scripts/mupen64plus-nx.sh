@@ -3,7 +3,7 @@
 ##################################################################
 # Created by Christian Haitian for use to easily update          #
 # various standalone emulators, libretro cores, and other        #
-# various programs for the RK3326 platform for various Linux     #
+# various programs for the RK3566 platform for various Linux     #
 # based distributions.                                           #
 # See the LICENSE.md file at the top-level directory of this     #
 # repository.                                                    #
@@ -50,8 +50,8 @@ bitness="$(getconf LONG_BIT)"
 	 fi
 
 	  sed -i '/a53/s//a35/g' Makefile
-	  sed -i '/rpi3/s//rk3326/' Makefile
-	  sed -i '/rpi3_64/s//rk3326_64/' Makefile
+	  sed -i '/rpi3/s//rk3566/' Makefile
+	  sed -i '/rpi3_64/s//rk3566_64/' Makefile
 
 	  if [[ "$bitness" == "64" ]]; then
 	    make FORCE_GLES3=1 -j$(nproc)
@@ -77,6 +77,6 @@ bitness="$(getconf LONG_BIT)"
 	  echo $gitcommit > ../cores$bitness/mupen64plus_next_libretro.so.commit
 	  
 	  echo " "
-	  echo "mupen64plus_next_libretro.so executable has been created and has been placed in the rk3326_core_builds/cores$bitness subfolder"
+	  echo "mupen64plus_next_libretro.so executable has been created and has been placed in the rk3566_core_builds/cores$bitness subfolder"
 
 	fi
