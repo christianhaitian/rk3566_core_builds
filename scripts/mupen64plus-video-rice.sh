@@ -3,7 +3,7 @@
 ##################################################################
 # Created by Christian Haitian for use to easily update          #
 # various standalone emulators, libretro cores, and other        #
-# various programs for the RK3326 platform for various Linux     #
+# various programs for the rk3566 platform for various Linux     #
 # based distributions.                                           #
 # See the LICENSE.md file at the top-level directory of this     #
 # repository.                                                    #
@@ -48,7 +48,7 @@
         _opts='USE_GLES=1 NEW_DYNAREC=1 OPTFLAGS="-O3" V=1 PIE=1'
       fi
       
-      export CFLAGS="-mtune=cortex-a35 -fuse-linker-plugin"
+      export CFLAGS="-mtune=cortex-a55 -fuse-linker-plugin"
       export CXXFLAGS="$CFLAGS"
       export LDFLAGS="$CFLAGS"
       
@@ -70,5 +70,5 @@
 	  cp projects/unix/mupen64plus-video-rice.so ../mupen64plussa-$bitness/.
 	  
 	  echo " "
-	  echo "mupen64plus-video-rice executable has been placed in the rk3326_core_builds/mupen64plussa-$bitness subfolder"
+	  echo "mupen64plus-video-rice executable has been placed in the rk3566_core_builds/mupen64plussa-$bitness subfolder"
 
