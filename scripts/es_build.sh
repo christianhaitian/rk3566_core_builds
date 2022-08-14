@@ -18,7 +18,7 @@ bitness="$(getconf LONG_BIT)"
 	if [[ "$var" == "es_build" ]] && [[ "$bitness" == "64" ]]; then
 
 	 echo "What branch of emulationstation-fcamod are you wanting to build?"
-	 echo "1 for master, 2 for fullscreen, 3 for 351v, 4 for rgb10max, 5 for all"
+	 echo "1 for master, 2 for fullscreen, 3 for 351v, 4 for 503, 5 for all"
 	 read branch_build
 	 if [ "$branch_build" -lt 1 ] || [ "$branch_build" -gt 5 ]; then
 	   echo "$branch_build is not a valid option.  Exiting."
@@ -71,25 +71,6 @@ bitness="$(getconf LONG_BIT)"
            fi
           fi
      done
-
-     if [ ! -d "/usr/share/doc/libmali-rk-dev" ] && [[ $es_git == *"christianhaitian"* ]]; then
-       wget $(echo $es_git | sed 's/\.git//')/raw/master/libmali-rk-dev_1.7-1%2Bdeb10_arm64.deb
-       if [[ $? != "0" ]]; then
-         echo " "
-         echo "Could not download needed library libmali-rk-dev_1.7-1+deb10_arm64.deb.  Stopping here so this can be reviewed."
-         exit 1
-       fi
-       wget $(echo $es_git | sed 's/\.git//')/raw/master/libmali-rk-bifrost-g31-rxp0-wayland-gbm_1.7-2%2Bdeb10_arm64.deb
-       if [[ $? != "0" ]]; then
-         echo " "
-         echo "Could not download needed library libmali-rk-bifrost-g31-rxp0-wayland-gbm_1.7-2+deb10_arm64.deb.  Stopping here so this can be reviewed."
-         exit 1
-       fi
-       dpkg -i --force-all libmali-rk-bifrost-g31-rxp0-wayland-gbm_1.7-2+deb10_arm64.deb
-       dpkg -i libmali-rk-dev_1.7-1+deb10_arm64.deb
-       rm libmali-rk-dev_1.7-1+deb10_arm64.deb
-       rm libmali-rk-bifrost-g31-rxp0-wayland-gbm_1.7-2+deb10_arm64.deb
-     fi
 
 	 case "$branch_build" in
 		 "1")
@@ -237,7 +218,7 @@ bitness="$(getconf LONG_BIT)"
 			;;
 		 "4")
 			cd $cur_wd
-			branch="rgb10max"
+			branch="503noTTS"
 			if [ ! -d "emulationstation-fcamod-$branch/" ]; then
 			  git clone --recursive $es_git -b $branch emulationstation-fcamod-$branch
 			  if [[ $? != "0" ]]; then
@@ -371,7 +352,7 @@ bitness="$(getconf LONG_BIT)"
 			echo "The $branch branch version of emulationstation-fcamod has been created and has been placed in the rk3326_core_builds/es-fcamod subfolder."
 
 			cd $cur_wd
-			branch="rgb10max"
+			branch="503noTTS"
 			if [ ! -d "emulationstation-fcamod-$branch/" ]; then
 			  git clone --recursive $es_git -b $branch emulationstation-fcamod-$branch
 			  if [[ $? != "0" ]]; then
