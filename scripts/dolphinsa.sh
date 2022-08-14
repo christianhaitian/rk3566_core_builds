@@ -3,7 +3,7 @@
 ##################################################################
 # Created by Christian Haitian for use to easily update          #
 # various standalone emulators, libretro cores, and other        #
-# various programs for the RK3326 platform for various Linux     #
+# various programs for the RK3566 platform for various Linux     #
 # based distributions.                                           #
 # See the LICENSE.md file at the top-level directory of this     #
 # repository.                                                    #
@@ -89,6 +89,6 @@ bitness="$(getconf LONG_BIT)"
 	       cp Binaries/dolphin-emu-nogui ../../dolphinsa$bitness/dolphin-emu-nogui
 
 	       echo " "
-	       echo "The dolphin standalone executable has been created and has been placed in the rk3326_core_builds/dolphinsa$bitness subfolder"
+	       echo "The dolphin standalone executable has been created and has been placed in the rk3566_core_builds/dolphinsa$bitness subfolder"
 
 	fi

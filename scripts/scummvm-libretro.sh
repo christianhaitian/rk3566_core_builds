@@ -3,7 +3,7 @@
 ##################################################################
 # Created by Christian Haitian for use to easily update          #
 # various standalone emulators, libretro cores, and other        #
-# various programs for the RK3326 platform for various Linux     #
+# various programs for the RK3566 platform for various Linux     #
 # based distributions.                                           #
 # See the LICENSE.md file at the top-level directory of this     #
 # repository.                                                    #
@@ -43,8 +43,8 @@ bitness="$(getconf LONG_BIT)"
 	 fi
 	  make clean
 	  sed -i '/a53/s//a35/' backends/platform/libretro/build/Makefile
-	  sed -i '/rpi3_64/s//rk3326/' backends/platform/libretro/build/Makefile
-	  make -C backends/platform/libretro/build platform=rk3326 CXXFLAGS="$CXXFLAGS -DHAVE_POSIX_MEMALIGN=1" -j$(nproc)
+	  sed -i '/rpi3_64/s//rk3566/' backends/platform/libretro/build/Makefile
+	  make -C backends/platform/libretro/build platform=rk3566 CXXFLAGS="$CXXFLAGS -DHAVE_POSIX_MEMALIGN=1" -j$(nproc)
 
 	  if [[ $? != "0" ]]; then
 		echo " "
@@ -64,5 +64,5 @@ bitness="$(getconf LONG_BIT)"
 	  echo $gitcommit > ../cores$(getconf LONG_BIT)/$(basename $PWD)_libretro.so.commit
 
 	  echo " "
-	  echo "scummvm_libretro.so has been created and has been placed in the rk3326_core_builds/cores64 subfolder"
+	  echo "scummvm_libretro.so has been created and has been placed in the rk3566_core_builds/cores64 subfolder"
 	fi
