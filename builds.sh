@@ -16,7 +16,7 @@ es_git="https://github.com/christianhaitian/EmulationStation-fcamod.git"
 nxengevo_git="https://github.com/nxengine/nxengine-evo.git"
 ra_cores_git="https://github.com/christianhaitian/retroarch-cores.git"
 bitness="$(getconf LONG_BIT)"
-g31only=( ppsspp yabasanshirosa es_build es_add_scrape hypseus hypseus-singe )
+g31only=( )
 
 for var in $@
 do
@@ -30,20 +30,28 @@ do
       fi
       if [[ ${bitness} == "32" ]] && [[ ! " ${g31only[*]} " =~ " ${var} " ]]; then
         cp mali/armhf/libmali-bifrost-g52-g2p0-gbm.so /usr/lib/arm-linux-gnueabihf/.
+        cp mali/armhf/libmali-bifrost-g52-g2p0-gbm.so /usr/local/lib/arm-linux-gnueabihf/.
         cd /usr/lib/arm-linux-gnueabihf/
         whichmali="libmali-bifrost-g52-g2p0-gbm.so"
+        arch="arm-linux-gnueabihf"
       elif [[ ! " ${g31only[*]} " =~ " ${var} " ]]; then
         cp mali/aarch64/libmali-bifrost-g52-g2p0-gbm.so /usr/lib/aarch64-linux-gnu/.
+        cp mali/aarch64/libmali-bifrost-g52-g2p0-gbm.so /usr/local/lib/aarch64-linux-gnu/.
         cd /usr/lib/aarch64-linux-gnu/
         whichmali="libmali-bifrost-g52-g2p0-gbm.so"
+        arch="aarch64-linux-gnu"
       elif [[ ${bitness} == "32" ]]; then
         cp mali/armhf/libmali-bifrost-g31-rxp0-gbm.so /usr/lib/arm-linux-gnueabihf/.
+        cp mali/armhf/libmali-bifrost-g31-rxp0-gbm.so /usr/local/lib/arm-linux-gnueabihf/.
         cd /usr/lib/arm-linux-gnueabihf/
         whichmali="libmali-bifrost-g31-rxp0-gbm.so"
+        arch="arm-linux-gnueabihf"
       else
         cp mali/aarch64/libmali-bifrost-g31-rxp0-gbm.so /usr/lib/aarch64-linux-gnu/.
+        cp mali/aarch64/libmali-bifrost-g31-rxp0-gbm.so /usr/local/lib/aarch64-linux-gnu/.
         cd /usr/lib/aarch64-linux-gnu/
         whichmali="libmali-bifrost-g31-rxp0-gbm.so"
+        arch="aarch64-linux-gnu"
       fi
       rm libMali.so
       rm libEGL.so*
@@ -55,6 +63,40 @@ do
       rm libwayland-egl*
       ln -sf ${whichmali} libMali.so
       ln -sf libMali.so libEGL.so
+      ln -sf libMali.so libEGL.so.1
+      ln -sf libMali.so libGLES_CM.so
+      ln -sf libMali.so libGLES_CM.so.1
+      ln -sf libMali.so libGLESv1_CM.so
+      ln -sf libMali.so libGLESv1_CM.so.1
+      ln -sf libMali.so libGLESv1_CM.so.1.1.0
+      ln -sf libMali.so libGLESv2.so
+      ln -sf libMali.so libGLESv2.so.2
+      ln -sf libMali.so libGLESv2.so.2.0.0
+      ln -sf libMali.so libGLESv2.so.2.1.0
+      ln -sf libMali.so libGLESv3.so
+      ln -sf libMali.so libGLESv3.so.3
+      ln -sf libMali.so libgbm.so
+      ln -sf libMali.so libgbm.so.1
+      ln -sf libMali.so libgbm.so.1.0.0
+      ln -sf libMali.so libmali.so
+      ln -sf libMali.so libmali.so.1
+      ln -sf libMali.so libMaliOpenCL.so
+      ln -sf libMali.so libOpenCL.so
+      ln -sf libMali.so libwayland-egl.so
+      ln -sf libMali.so libwayland-egl.so.1
+      ln -sf libMali.so libwayland-egl.so.1.0.0
+      cd /usr/local/lib/${arch}/
+      rm libMali.so
+      rm libEGL.so*
+      rm libGLES*
+      rm libgbm.so*
+      rm libmali.so*
+      rm libMali*
+      rm libOpenCL*
+      rm libwayland-egl*
+      ln -sf ${whichmali} libMali.so
+      ln -sf libMali.so libEGL.so
+      ln -sf libMali.so libEGL.so.1
       ln -sf libMali.so libGLES_CM.so
       ln -sf libMali.so libGLES_CM.so.1
       ln -sf libMali.so libGLESv1_CM.so
