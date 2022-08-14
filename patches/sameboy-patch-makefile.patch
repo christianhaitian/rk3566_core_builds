@@ -8,8 +8,8 @@ index f6e4c4c..8373d94 100644
  libretro:
 -	CFLAGS="$(WARNINGS)" $(MAKE) -C libretro
 -
-+	CFLAGS="$(WARNINGS) -Ofast -march=armv8-a+crc+fp+simd -mcpu=cortex-a35 -flto" $(MAKE) -C libretro
-+    LDFLAGS="-Ofast -fno-ident -march=armv8-a+crc+fp+simd -mcpu=cortex-a35 -flto -lpthread -Wl,--gc-sections -shared"
++	CFLAGS="$(WARNINGS) -Ofast -march=armv8-a+crc+fp+simd -mcpu=cortex-a55 -flto" $(MAKE) -C libretro
++    LDFLAGS="-Ofast -fno-ident -march=armv8-a+crc+fp+simd -mcpu=cortex-a55 -flto -lpthread -Wl,--gc-sections -shared"
  # install for Linux/FreeDesktop/etc.
  # Does not install mimetype icons because FreeDesktop is cursed abomination with no right to exist.
  # If you somehow find a reasonable way to make associate an icon with an extension in this dumpster
@@ -24,7 +24,7 @@ index 50e3466..b542510 100644
 +
 +# RK3326 
 +else ifeq ($(platform), rk3326)
-+   CPUFLAGS := -Ofast -march=armv8-a+crc+fp+simd -mcpu=cortex-a35 -flto -DUSE_RENDER_THREAD -DNO_ASM -DARM_ASM -frename-registers -ftree-vectorize
++   CPUFLAGS := -Ofast -march=armv8-a+crc+fp+simd -mcpu=cortex-a55 -flto -DUSE_RENDER_THREAD -DNO_ASM -DARM_ASM -frename-registers -ftree-vectorize
 +   CFLAGS   := -DNDEBUG -Ofast -fno-ident
 +   LDFLAGS  += -Ofast -fno-ident
 +   CFLAGS  += $(CPUFLAGS) -fpic -fomit-frame-pointer -fno-exceptions -fno-non-call-exceptions -Wno-psabi -Wno-format
