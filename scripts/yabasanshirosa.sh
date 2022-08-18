@@ -79,9 +79,10 @@ bitness="$(getconf LONG_BIT)"
 
              mkdir build
              cd build
+             export CFLAGS="-O2 -march=armv8-a+crc -mtune=cortex-a55 -ftree-vectorize -funsafe-math-optimizations"
+             export CXXFLAGS="$CXXFLAGS $CFLAGS"
+             export LDFLAGS="$CFLAGS"
              if [[ "$bitness" == "64" ]]; then
-               CMAKE_C_FLAGS="-O2 -march=armv8-a+crc -mtune=cortex-a55 -ftree-vectorize -funsafe-math-optimizations"
-               CMAKE_CXX_FLAGS="${CMAKE_C_FLAGS}"
                cmake ../yabause \
                      -DYAB_PORTS=retro_arena \
                      -DYAB_WANT_DYNAREC_DEVMIYAX=ON \
@@ -96,8 +97,6 @@ bitness="$(getconf LONG_BIT)"
                  exit 1
                fi
             else
-               CMAKE_C_FLAGS="-O2 -march=armv8-a+crc -mtune=cortex-a55 -ftree-vectorize -funsafe-math-optimizations"
-               CMAKE_CXX_FLAGS="${CMAKE_C_FLAGS}"
                cmake ../yabause \
                      -DYAB_PORTS=retro_arena \
                      -DYAB_WANT_DYNAREC_DEVMIYAX=ON \
@@ -112,7 +111,7 @@ bitness="$(getconf LONG_BIT)"
                  exit 1
                fi
             fi
-           make -j$(nproc)
+           make VERBOSE=1 -j$(nproc)
            if [[ $? != "0" ]]; then
 		     echo " "
 		     echo "There was an error that occured while making the yabasanshiro standalone.  Stopping here."
