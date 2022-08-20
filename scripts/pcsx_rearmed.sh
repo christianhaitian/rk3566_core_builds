@@ -52,9 +52,9 @@ bitness="$(getconf LONG_BIT)"
 	  make -f Makefile.libretro clean
 
 	  if [[ "$bitness" == "64" ]]; then
-	    make -f Makefile.libretro ARCH=arm64 BUILTIN_GPU=unai DYNAREC=ari64 platform=rk3566_64 -j$(nproc)
+	    make -f Makefile.libretro platform=RK3566_64 -j$(nproc)
 	  else
-	    make -f Makefile.libretro HAVE_NEON=1 ARCH=arm BUILTIN_GPU=neon DYNAREC=ari64 platform=rk3566 -j$(nproc)
+	    make -f Makefile.libretro platform=RK3566 -j$(nproc)
 	  fi
 
 	  if [[ $? != "0" ]]; then
@@ -73,7 +73,7 @@ bitness="$(getconf LONG_BIT)"
 
           if [[ "$bitness" == "32" ]]; then
             make -f Makefile.libretro clean
-            make -f Makefile.libretro HAVE_NEON=1 ARCH=arm BUILTIN_GPU=peops THREAD_RENDERING=1 DYNAREC=ari64 platform=rk3566
+            make -f Makefile.libretro HAVE_NEON=1 ARCH=arm BUILTIN_GPU=peops THREAD_RENDERING=1 DYNAREC=ari64 platform=RK3566
             if [[ $? != "0" ]]; then
                   echo " "
                   echo "There was an error while building the newest lr-pcsx_rearmed_peops core.  Stopping here."
@@ -97,9 +97,9 @@ bitness="$(getconf LONG_BIT)"
 
 		  make -f Makefile.libretro clean
 		  if [[ "$bitness" == "64" ]]; then
-		    make -f Makefile.libretro ARCH=arm64 BUILTIN_GPU=unai DYNAREC=ari64 platform=rk3566_64 -j$(nproc)
+		    make -f Makefile.libretro platform=RK3566_64 -j$(nproc)
 		  else
-		    make -f Makefile.libretro HAVE_NEON=1 ARCH=arm BUILTIN_GPU=neon DYNAREC=ari64 platform=rk3566 -j$(nproc)
+		    make -f Makefile.libretro platform=RK3566 -j$(nproc)
 		  fi
 
 		  if [[ $? != "0" ]]; then
@@ -120,7 +120,7 @@ bitness="$(getconf LONG_BIT)"
 
 	  make -f Makefile.libretro clean
           if [[ "$bitness" == "32" ]]; then
-            make -f Makefile.libretro HAVE_NEON=1 ARCH=arm BUILTIN_GPU=peops THREAD_RENDERING=1 DYNAREC=ari64 platform=rk3566
+            make -f Makefile.libretro HAVE_NEON=1 ARCH=arm BUILTIN_GPU=peops THREAD_RENDERING=1 DYNAREC=ari64 platform=RK3566
             if [[ $? != "0" ]]; then
                   echo " "
                   echo "There was an error while building the newest lr-pcsx_rearmed_rumble_peops core.  Stopping here."
@@ -138,5 +138,5 @@ bitness="$(getconf LONG_BIT)"
 	  echo $gitcommit > ../cores$bitness/$(basename $PWD)_rumble_peops_libretro.so.commit
 
 	  echo " "
-	  echo "pcsx_rearmed_libretro.so has been created and has been placed in the rk3566_core_builds/cores32 subfolder"
+	  echo "pcsx_rearmed_libretro.so has been created and has been placed in the rk3566_core_builds/cores$bitness subfolder"
 	fi
