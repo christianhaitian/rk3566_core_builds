@@ -118,6 +118,7 @@ do
       ln -sf libMali.so libwayland-egl.so
       ln -sf libMali.so libwayland-egl.so.1
       ln -sf libMali.so libwayland-egl.so.1.0.0
+      ldconfig > /dev/null 2>&1
       cd "${cur_wd}"
       source scripts/"$var".sh
   else
