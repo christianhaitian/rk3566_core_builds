@@ -84,7 +84,7 @@ bitness="$(getconf LONG_BIT)"
 	               -DUSE_SDL2=ON \
 	               -DENABLE_CHEEVOS=ON \
                    -DUSE_FBDEV=OFF \
-                   -DUSE_EVDEV=OFF \
+                   -DUSE_EVDEV=ON \
                    -DUSE_EGL=ON \
                    -DUSE_DRMKMS=ON \
                    -DUSE_MALI=OFF \
@@ -109,6 +109,7 @@ bitness="$(getconf LONG_BIT)"
 	       fi
 
 	       cp bin/duckstation-nogui ../../duckstationsa-$bitness/duckstation-nogui
+           tar -zchvf ../../duckstationsa-$bitness/duckstationsa_pkg_$(git rev-parse HEAD | cut -c -7).tar.gz bin/duckstation-nogui ../data/database/ ../data/resources/ ../data/shaders/ 
 
 	       echo " "
 	       echo "The duckstation standalone executable has been created and has been placed in the rk3566_core_builds/duckstationsa-$bitness subfolder"
