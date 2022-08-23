@@ -1,8 +1,26 @@
 #!/bin/bash
 
-event_num="3"
-event_type="EV_KEY"
-event_btn="BTN_EAST"
+if [[ -e "/dev/input/by-path/platform-ff300000.usb-usb-0:1.2:1.0-event-joystick" ]]; then
+  event_num="3"
+  event_type="EV_KEY"
+  event_btn="BTN_SOUTH"
+elif [[ -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
+  event_num="2"
+  event_type="EV_KEY"
+  event_btn="BTN_EAST"
+elif [[ -e "/dev/input/by-path/platform-odroidgo3-joypad-event-joystick" ]]; then
+  event_num="2"
+  event_type="EV_KEY"
+  event_btn="BTN_EAST"
+elif [[ -e "/dev/input/by-path/platform-gameforce-gamepad-event-joystick" ]]; then
+  event_num="2"
+  event_type="EV_KEY"
+  event_btn="BTN_EAST"
+elif [[ -e "/dev/input/by-path/platform-singleadc-joypad-event-joystick" ]]; then
+  event_num="3"
+  event_type="EV_KEY"
+  event_btn="BTN_EAST"
+fi
 
 filename=$(basename "$3")
 filename="${filename%.*}"
