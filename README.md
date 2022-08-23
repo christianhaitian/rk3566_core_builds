@@ -50,6 +50,9 @@ cd rk3566_core_builds
 ### To download and unpack duckstation (64bit only):
 `./builds.sh duckstation`
 
+### To build just duckstation standalone emulator (64bit only):
+`./builds.sh duckstationsa`
+
 ### To build just easyrpg (64bit only):
 `./builds.sh easyrpg`
 
@@ -67,6 +70,9 @@ cd rk3566_core_builds
 
 ### To build just genesis-plus-gx (64bit only):
 `./builds.sh genesis-plus-gx`
+
+### To build just genesis-plus-gx-wide (64bit only):
+`./builds.sh genesis-plus-gx-wide`
 
 ### To build just gpsp:
 `./builds.sh gpsp`
