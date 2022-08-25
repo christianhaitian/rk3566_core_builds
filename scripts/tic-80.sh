@@ -16,7 +16,7 @@ bitness="$(getconf LONG_BIT)"
 	if [[ "$var" == "tic-80" || "$var" == "all" ]] && [[ "$bitness" == "64" ]]; then
 	 cd $cur_wd
 	  if [ ! -d "tic-80/" ]; then
-		git clone --recursive https://github.com/libretro/tic-80.git
+		git clone --recursive https://github.com/nesbox/tic-80.git
 		if [[ $? != "0" ]]; then
 		  echo " "
 		  echo "There was an error while cloning the libretro git.  Is Internet active or did the git location change?  Stopping here."
