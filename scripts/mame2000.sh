@@ -43,7 +43,7 @@ bitness="$(getconf LONG_BIT)"
 	 fi
 
 	  make clean
-      make -j3
+      make WANT_LIBCO=0 -j3
 
 	  if [[ $? != "0" ]]; then
 		echo " "
