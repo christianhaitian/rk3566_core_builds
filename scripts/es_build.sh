@@ -12,11 +12,13 @@
 cur_wd="$PWD"
 valid_id='^[0-9]+$'
 es_git="https://github.com/christianhaitian/EmulationStation-fcamod.git"
+alt_es_git="https://github.com/JuanMiguelBG/EmulationStation-fcamod-ogs.git"
 bitness="$(getconf LONG_BIT)"
 
 	# Build Emulationstation-FCAMOD
 	if [[ "$var" == "es_build" ]] && [[ "$bitness" == "64" ]]; then
 
+     echo ""
 	 echo "What branch of emulationstation-fcamod are you wanting to build?"
 	 echo "1 for master, 2 for fullscreen, 3 for 351v, 4 for 503, 5 for all"
 	 read branch_build
@@ -28,30 +30,47 @@ bitness="$(getconf LONG_BIT)"
 	   echo "$branch_build is not a number.  Exiting."
 	   exit 1
 	 fi
+     echo ""
+     if [[ "$branch_build" == "4" ]]; then
+       echo "Which emulationstation-fcamod are you wanting to build for the 503?"
+       echo "1 for Christianhaitian, 2 for JuanMiguel (Baco)"
+       read which503git
+       if [[ "$which503git" == "2" ]]; then
+         es_git="${alt_es_git}"
+         echo "Switched emulationstation-fcamod git to JuanMiguel's (Baco) for building."
+       else
+         echo "Continuing with ChristianHaitian's emulationstation-fcamod git for building."
+         echo ""
+       fi
+     fi
 	 echo "What is the Dev ID for screenscraper to use?"
 	 read devid
 	 if [[ -z "$devid" ]]; then
 	   devid=$(printenv DEV_ID)
 	   [ ! -z $devid ] && echo "We're going to use $devid since you entered nothing above."
 	 fi
+     echo ""
 	 echo "What is the Dev password for screenscraper to use?"
 	 read devpass
 	 if [[ -z "$devpass" ]]; then
 	   devpass=$(printenv DEV_PASS)
 	   [ ! -z $devpass ] && echo "We're going to use $devpass since you entered nothing above."
 	 fi
+     echo ""
 	 echo "What is the apikey for TheGamesDB to use?"
 	 read apikey
 	 if [[ -z "$apikey" ]]; then
 	   apikey=$(printenv TGDB_APIKEY)
 	   [ ! -z $apikey ] && echo "We're going to use $apikey since you entered nothing above."
 	 fi
+     echo ""
 	 echo "What is the screenscraper software name to use?"
 	 read softname
 	 if [[ -z "$softname" ]]; then
 	   [ ! -z $SOFTNAME ] && [ ! -z $VSOFTNAME ] && echo "We'll use either $SOFTNAME or $VSOFTNAME if this is a 351v build since you entered nothing above."
 	 fi
-
+     echo ""
+     
 	 # Ensure dependencies are installed and available
      neededlibs=( libboost-system-dev libboost-filesystem-dev libboost-locale-dev libfreeimage-dev libfreetype6-dev libeigen3-dev libcurl4-openssl-dev libboost-date-time-dev libasound2-dev cmake libsdl2-dev rapidjson-dev libvlc-dev libvlccore-dev vlc-bin libsdl2-mixer-dev )
      updateapt="N"
@@ -218,7 +237,11 @@ bitness="$(getconf LONG_BIT)"
 			;;
 		 "4")
 			cd $cur_wd
-			branch="503noTTS"
+            if [[ "$es_git" == "https://github.com/JuanMiguelBG/EmulationStation-fcamod-ogs.git" ]]; then
+              branch="rg503"
+            else
+              branch="503noTTS"
+            fi
 			if [ ! -d "emulationstation-fcamod-$branch/" ]; then
 			  git clone --recursive $es_git -b $branch emulationstation-fcamod-$branch
 			  if [[ $? != "0" ]]; then
@@ -352,7 +375,11 @@ bitness="$(getconf LONG_BIT)"
 			echo "The $branch branch version of emulationstation-fcamod has been created and has been placed in the rk3566_core_builds/es-fcamod subfolder."
 
 			cd $cur_wd
-			branch="503noTTS"
+            if [[ "$es_git" == "https://github.com/JuanMiguelBG/EmulationStation-fcamod-ogs.git" ]]; then
+              branch="rg503"
+            else
+              branch="503noTTS"
+            fi
 			if [ ! -d "emulationstation-fcamod-$branch/" ]; then
 			  git clone --recursive $es_git -b $branch emulationstation-fcamod-$branch
 			  if [[ $? != "0" ]]; then
@@ -363,7 +390,16 @@ bitness="$(getconf LONG_BIT)"
 			fi 
 
 			cd emulationstation-fcamod-$branch 
-
+			if [[ "$es_git" == "https://github.com/JuanMiguelBG/EmulationStation-fcamod-ogs.git" ]]; then
+			  cp ../patches/es-fcamod-patch-build.patch .
+			  patch -Np1 < es-fcamod-patch-build.patch
+			  if [[ $? != "0" ]]; then
+				echo " "
+				echo "There was an error while applying es-fcamod-patch-build.patch.  Stopping here."
+				exit 1
+			  fi
+			  rm es-fcamod-patch-build.patch
+			fi
 			cmake -DSCREENSCRAPER_DEV_LOGIN="devid=$devid&devpassword=$devpass" -DGAMESDB_APIKEY="$apikey" -DSCREENSCRAPER_SOFTNAME="$softname" .
 			if [[ $? != "0" ]]; then
 			  echo " "
