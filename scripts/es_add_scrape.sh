@@ -18,7 +18,7 @@ bitness="$(getconf LONG_BIT)"
 	if [[ "$var" == "es_add_scrape" ]] && [[ "$bitness" == "64" ]]; then
 
 	 echo "What branch of emulationstation-fcamod are we working with?"
-	 echo "1 for master, 2 for fullscreen, 3 for 351v, 4 for all"
+	 echo "1 for master, 2 for 503, 3 for 351v, 4 for all"
 	 read branchnum
 	 if [ "$branchnum" -lt 1 ] || [ "$branchnum" -gt 4 ]; then
 	   echo "$branchnum is not a valid option.  Exiting."
@@ -59,7 +59,7 @@ bitness="$(getconf LONG_BIT)"
 			;;
 		 "2")
 			cd $cur_wd
-			branch="fullscreen"
+			branch="503noTTS"
 			if [ ! -d "emulationstation-fcamod-$branch/" ]; then
 			  git clone --recursive $es_git -b $branch emulationstation-fcamod-$branch
 			  if [[ $? != "0" ]]; then
@@ -123,7 +123,7 @@ bitness="$(getconf LONG_BIT)"
 			sed -i '/{ TI_99, 205 },/c\\t{ TI_99, 205 },\n\t{ '$platform_id', '$ss_id' },' es-app/src/scrapers/ScreenScraper.cpp
 
 			cd $cur_wd
-			branch="fullscreen"
+			branch="503noTTS"
 			if [ ! -d "emulationstation-fcamod-$branch/" ]; then
 			  git clone --recursive $es_git -b $branch emulationstation-fcamod-$branch
 			  if [[ $? != "0" ]]; then
