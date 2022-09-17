@@ -98,6 +98,12 @@ cd rk3566_core_builds
 ### To build just fmsx (64bit only):
 `./builds.sh fmsx`
 
+### To build just freeintv core (64bit only):
+`./builds.sh freeintv`
+
+### To build just freechaf core (64bit only):
+`./builds.sh freechaf`
+
 ### To build just hypseus (64bit only):
 `./builds.sh hypseus`
 
@@ -194,6 +200,9 @@ cd rk3566_core_builds
 ### To build just libretro-ppsspp (64bit only):
 `./builds.sh ppsspp-libretro`
 
+### To build just race (64bit only):
+`./builds.sh race`
+
 ### To build just same_cdi (64bit only):
 `./builds.sh samecdi`
 
@@ -235,6 +244,9 @@ cd rk3566_core_builds
 
 ### To build just uzem:
 `./builds.sh uzem`
+
+### To build just virtualboy (64bit only):
+`./builds.sh vb`
 
 ### To build just vemulator:
 `./builds.sh vemulator`
