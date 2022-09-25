@@ -245,14 +245,17 @@ cd rk3566_core_builds
 ### To build just uzem:
 `./builds.sh uzem`
 
-### To build just virtualboy (64bit only):
-`./builds.sh vb`
+### To build just vectrex (64bit only):
+`./builds.sh vectrex`
 
 ### To build just vemulator:
 `./builds.sh vemulator`
 
 ### To build just vice cores:
 `./builds.sh vice`
+
+### To build just virtualboy (64bit only):
+`./builds.sh vb`
 
 ### To build just virtualjaguar:
 `./builds.sh virtualjaguar`
