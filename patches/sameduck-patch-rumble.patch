@@ -12,8 +12,8 @@ index cb45ba53..4aacf2eb 100644
              double ch1_rumble = 0;
              if (gb->apu.sweep_enabled && ((gb->io_registers[GB_IO_NR10] >> 4) & 7)) {
 +                FILE *file;
-+                if ((file = fopen("/sys/class/pwm/pwmchip0/pwm0/duty_cycle", "r"))) {
-+                  system("echo 10 > /sys/class/pwm/pwmchip0/pwm0/duty_cycle && sleep 0.12 && echo 1000000 > /sys/class/pwm/pwmchip0/pwm0/duty_cycle &");
++                if ((file = fopen("/sys/class/pwm/pwmchip1/pwm0/enable", "r"))) {
++                  system("echo 0 | sudo tee /sys/class/pwm/pwmchip1/pwm0/enable && sleep 0.05 && echo 1 | sudo tee /sys/class/pwm/pwmchip1/pwm0/enable &");
 +                  fclose(file);
 +                }
                  double sweep_speed = (gb->io_registers[GB_IO_NR10] & 7) / (double)((gb->io_registers[GB_IO_NR10] >> 4) & 7);
