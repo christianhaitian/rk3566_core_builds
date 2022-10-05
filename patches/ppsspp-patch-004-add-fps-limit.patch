@@ -1,8 +1,8 @@
 diff --git a/Core/Config.cpp b/Core/Config.cpp
-index d4753cf3e..45c857b95 100644
+index 4eeca428a..5e5b004e2 100644
 --- a/Core/Config.cpp
 +++ b/Core/Config.cpp
-@@ -886,6 +886,7 @@ static ConfigSetting graphicsSettings[] = {
+@@ -896,6 +896,7 @@ static ConfigSetting graphicsSettings[] = {
  #if defined(USING_WIN_UI)
  	ConfigSetting("RestartRequired", &g_Config.bRestartRequired, false, false),
  #endif
@@ -11,10 +11,10 @@ index d4753cf3e..45c857b95 100644
  	// Most low-performance (and many high performance) mobile GPUs do not support aniso anyway so defaulting to 4 is fine.
  	ConfigSetting("AnisotropyLevel", &g_Config.iAnisotropyLevel, 4, true, true),
 diff --git a/Core/Config.h b/Core/Config.h
-index e682234ba..34961ff4f 100644
+index 65eaf7409..02b18d39d 100644
 --- a/Core/Config.h
 +++ b/Core/Config.h
-@@ -214,6 +214,7 @@ struct Config {
+@@ -217,6 +217,7 @@ struct Config {
  	bool bTexHardwareScaling;
  	int iFpsLimit1;
  	int iFpsLimit2;
@@ -23,38 +23,36 @@ index e682234ba..34961ff4f 100644
  	int iAnalogFpsMode; // 0 = auto, 1 = single direction, 2 = mapped to opposite
  	int iMaxRecent;
 diff --git a/Core/HLE/sceDisplay.cpp b/Core/HLE/sceDisplay.cpp
-index 114573e49..69bfd168b 100644
+index d0577d46f..fd4969ba4 100644
 --- a/Core/HLE/sceDisplay.cpp
 +++ b/Core/HLE/sceDisplay.cpp
-@@ -820,8 +820,13 @@ u32 sceDisplaySetFramebuf(u32 topaddr, int linesize, int pixelformat, int sync)
+@@ -822,6 +822,12 @@ u32 sceDisplaySetFramebuf(u32 topaddr, int linesize, int pixelformat, int sync)
  	hleEatCycles(290);
  
  	s64 delayCycles = 0;
 +
 +	int MaxFPS = g_Config.iForceMaxEmulatedFPS;
-+	if (MaxFPS == 0 && PSP_CoreParameter().compat.flags().ForceMax60FPS) {
++		if (topaddr != 0 && topaddr != framebuf.topaddr && framebuf.topaddr != 0 && MaxFPS > 0) {
 +		MaxFPS = 60;
 +	}
++
  	// Don't count transitions between display off and display on.
--	if (topaddr != 0 && topaddr != framebuf.topaddr && framebuf.topaddr != 0 && PSP_CoreParameter().compat.flags().ForceMax60FPS) {
-+	if (topaddr != 0 && topaddr != framebuf.topaddr && framebuf.topaddr != 0 && MaxFPS > 0) {
- 		// sceDisplaySetFramebuf() isn't supposed to delay threads at all.  This is a hack.
- 		// So let's only delay when it's more than 1ms.
- 		const s64 FLIP_DELAY_CYCLES_MIN = usToCycles(1000);
-@@ -845,7 +850,7 @@ u32 sceDisplaySetFramebuf(u32 topaddr, int linesize, int pixelformat, int sync)
+ 	if (topaddr != 0 &&
+ 		(topaddr != framebuf.topaddr || PSP_CoreParameter().compat.flags().SplitFramebufferMargin) &&
+@@ -850,7 +856,7 @@ u32 sceDisplaySetFramebuf(u32 topaddr, int linesize, int pixelformat, int sync)
  		}
  
  		// 1001 to account for NTSC timing (59.94 fps.)
--		u64 expected = msToCycles(1001) / 60 - LEEWAY_CYCLES_PER_FLIP;
+-		u64 expected = msToCycles(1001) / framerate - LEEWAY_CYCLES_PER_FLIP;
 +		u64 expected = msToCycles(1001) / MaxFPS - LEEWAY_CYCLES_PER_FLIP;
  		lastFlipCycles = now;
  		nextFlipCycles = std::max(lastFlipCycles, nextFlipCycles) + expected;
  	}
 diff --git a/UI/GameSettingsScreen.cpp b/UI/GameSettingsScreen.cpp
-index e1e76ff83..b433b4fb4 100644
+index 4d1d6c679..4da8601d3 100644
 --- a/UI/GameSettingsScreen.cpp
 +++ b/UI/GameSettingsScreen.cpp
-@@ -200,6 +200,8 @@ void GameSettingsScreen::CreateViews() {
+@@ -201,6 +201,8 @@ void GameSettingsScreen::CreateViews() {
  		g_Config.loadGameConfig(gameID_, info->GetTitle());
  	}
  
@@ -63,7 +61,7 @@ index e1e76ff83..b433b4fb4 100644
  	iAlternateSpeedPercent1_ = g_Config.iFpsLimit1 < 0 ? -1 : (g_Config.iFpsLimit1 * 100) / 60;
  	iAlternateSpeedPercent2_ = g_Config.iFpsLimit2 < 0 ? -1 : (g_Config.iFpsLimit2 * 100) / 60;
  	iAlternateSpeedPercentAnalog_ = (g_Config.iAnalogFpsLimit * 100) / 60;
-@@ -326,7 +328,10 @@ void GameSettingsScreen::CreateViews() {
+@@ -332,7 +334,10 @@ void GameSettingsScreen::CreateViews() {
  	graphicsSettings->Add(new PopupMultiChoice(&g_Config.iFrameSkipType, gr->T("Frame Skipping Type"), frameSkipType, 0, ARRAY_SIZE(frameSkipType), gr->GetName(), screenManager()));
  	frameSkipAuto_ = graphicsSettings->Add(new CheckBox(&g_Config.bAutoFrameSkip, gr->T("Auto FrameSkip")));
  	frameSkipAuto_->OnClick.Handle(this, &GameSettingsScreen::OnAutoFrameskip);
@@ -75,7 +73,7 @@ index e1e76ff83..b433b4fb4 100644
  	PopupSliderChoice *altSpeed1 = graphicsSettings->Add(new PopupSliderChoice(&iAlternateSpeedPercent1_, 0, 1000, gr->T("Alternative Speed", "Alternative speed"), 5, screenManager(), gr->T("%, 0:unlimited")));
  	altSpeed1->SetFormat("%i%%");
  	altSpeed1->SetZeroLabel(gr->T("Unlimited"));
-@@ -1298,6 +1303,16 @@ UI::EventReturn GameSettingsScreen::OnDisplayLayoutEditor(UI::EventParams &e) {
+@@ -1331,6 +1336,16 @@ UI::EventReturn GameSettingsScreen::OnDisplayLayoutEditor(UI::EventParams &e) {
  	return UI::EVENT_DONE;
  };
  
@@ -93,7 +91,7 @@ index e1e76ff83..b433b4fb4 100644
  	if (g_Config.iAndroidHwScale == 1) {
  		RecreateActivity();
 diff --git a/UI/GameSettingsScreen.h b/UI/GameSettingsScreen.h
-index 087b05740..10e4a0d6b 100644
+index 82b4cd859..b85c069ca 100644
 --- a/UI/GameSettingsScreen.h
 +++ b/UI/GameSettingsScreen.h
 @@ -59,6 +59,7 @@ class GameSettingsScreen : public UIDialogScreenWithGameBackground {
@@ -121,7 +119,7 @@ index 087b05740..10e4a0d6b 100644
  	int iAlternateSpeedPercent2_;
  	int iAlternateSpeedPercentAnalog_;
 diff --git a/libretro/libretro.cpp b/libretro/libretro.cpp
-index eacbca25e..ecbec192a 100644
+index 9b4a20bd9..6d2dabc0e 100644
 --- a/libretro/libretro.cpp
 +++ b/libretro/libretro.cpp
 @@ -538,6 +538,7 @@ static RetroOption<int> ppsspp_rendering_mode("ppsspp_rendering_mode", "Renderin
@@ -132,7 +130,7 @@ index eacbca25e..ecbec192a 100644
  static RetroOption<int> ppsspp_internal_resolution("ppsspp_internal_resolution", "Internal Resolution (Restart)", 1, { "480x272", "960x544", "1440x816", "1920x1088", "2400x1360", "2880x1632", "3360x1904", "3840x2176", "4320x2448", "4800x2720" });
  static RetroOption<int> ppsspp_button_preference("ppsspp_button_preference", "Confirmation Button", { { "Cross", PSP_SYSTEMPARAM_BUTTON_CROSS }, { "Circle", PSP_SYSTEMPARAM_BUTTON_CIRCLE } });
  static RetroOption<bool> ppsspp_fast_memory("ppsspp_fast_memory", "Fast Memory (Speedhack)", true);
-@@ -689,6 +690,7 @@ void retro_set_environment(retro_environment_t cb)
+@@ -688,6 +689,7 @@ void retro_set_environment(retro_environment_t cb)
     vars.push_back(ppsspp_auto_frameskip.GetOptions());
     vars.push_back(ppsspp_frameskip.GetOptions());
     vars.push_back(ppsspp_frameskiptype.GetOptions());
@@ -140,7 +138,7 @@ index eacbca25e..ecbec192a 100644
     vars.push_back(ppsspp_frame_duplication.GetOptions());
     vars.push_back(ppsspp_detect_vsync_swap_interval.GetOptions());
     vars.push_back(ppsspp_vertex_cache.GetOptions());
-@@ -820,6 +822,7 @@ static void check_variables(CoreParameter &coreParam)
+@@ -818,6 +820,7 @@ static void check_variables(CoreParameter &coreParam)
     ppsspp_cheats.Update(&g_Config.bEnableCheats);
     ppsspp_locked_cpu_speed.Update(&g_Config.iLockedCPUSpeed);
     ppsspp_rendering_mode.Update(&g_Config.iRenderingMode);
