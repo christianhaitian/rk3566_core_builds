@@ -53,10 +53,10 @@ bitness="$(getconf LONG_BIT)"
           fi
      done
 
-	 cd ppsspp/ffmpeg
-	 ./linux_arm64.sh
-	 cd ..
-	 
+	cd ppsspp/ffmpeg
+	./linux_arm64.sh
+	cd ..
+         
 	 ppsspp_patches=$(find *.patch)
 	 
 	 if [[ ! -z "$ppsspp_patches" ]]; then
@@ -74,7 +74,8 @@ bitness="$(getconf LONG_BIT)"
 
 	  mkdir build
 	  cd build
-	  cmake -DUSING_EGL=OFF -DUSING_GLES2=ON -DUSE_FFMPEG=YES -DUSE_SYSTEM_FFMPEG=NO -DUSING_X11_VULKAN=OFF -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ ../.
+	  cmake -DUSING_EGL=OFF -DCMAKE_BUILD_TYPE=Release -DUSING_GLES2=ON -DUSE_FFMPEG=YES -DUSE_SYSTEM_FFMPEG=NO -DUSING_X11_VULKAN=OFF \
+          -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ ../.
 	  make -j$(nproc)
 
 	  if [[ $? != "0" ]]; then
