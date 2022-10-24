@@ -1,0 +1,25 @@
+diff --git a/network/drivers_wifi/nmcli.c b/network/drivers_wifi/nmcli.c
+index a093bdbf62..94a0762904 100644
+--- a/network/drivers_wifi/nmcli.c
++++ b/network/drivers_wifi/nmcli.c
+@@ -63,12 +63,18 @@ static bool nmcli_enable(void* data, bool enabled)
+    /* semantics here are broken: nmcli_enable(..., false) is called
+     * on startup which is probably not what we want. */
+ 
+-#if 0
+    if (enabled)
++   {
++      pclose(popen("sudo systemctl stop networkwatchdaemon", "r"));
++      pclose(popen("sudo systemctl start NetworkManager", "r"));
+       pclose(popen("nmcli radio wifi on", "r"));
++   }
+    else
++   {
++      pclose(popen("sudo systemctl stop NetworkManager", "r"));
++      pclose(popen("sudo systemctl start networkwatchdaemon", "r"));
+       pclose(popen("nmcli radio wifi off", "r"));
+-#endif
++   }
+ 
+    return true;
+ }
