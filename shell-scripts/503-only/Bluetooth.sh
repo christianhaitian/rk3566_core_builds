@@ -61,7 +61,7 @@ Activate() {
     read -a strarr <<< "$alist"
 
     MACADD=`printf '%-5s' "${strarr[1]}"`
-    NAME1="${strarr[2]} ${strarr[3]} ${strarr[4]}"
+    NAME1="${strarr[2]} ${strarr[3]} ${strarr[4]} ${strarr[5]} ${strarr[6]}"
 
     aoptions+=("$MACADD" "$NAME1")
   done <<< "$alist"
@@ -117,7 +117,7 @@ Deactivate() {
     read -a strarr <<< "$dalist"
 
     MACADD=`printf '%-5s' "${strarr[1]}"`
-    NAME1="${strarr[2]} ${strarr[3]} ${strarr[4]}"
+    NAME1="${strarr[2]} ${strarr[3]} ${strarr[4]} ${strarr[5]} ${strarr[6]}"
 
     daoptions+=("$MACADD" "$NAME1")
   done <<< "$dalist"
@@ -215,7 +215,7 @@ Connect() {
 
     NEWDEVICE="${strarr[0]}"
     MACADD=`printf '%-5s' "${strarr[2]}"`
-    NAME1="${strarr[3]} ${strarr[4]} ${strarr[5]}"
+    NAME1="${strarr[3]} ${strarr[4]} ${strarr[5]} ${strarr[6]} ${strarr[7]}"
 	
     if [[ "$NEWDEVICE" == *"NEW"* ]]; then
       coptions+=("$MACADD" "$NAME1")
@@ -273,7 +273,7 @@ Delete() {
     read -a strarr <<< "$dellist"
 
     MACADD=`printf '%-5s' "${strarr[1]}"`
-    NAME1="${strarr[2]} ${strarr[3]} ${strarr[4]}"
+    NAME1="${strarr[2]} ${strarr[3]} ${strarr[4]} ${strarr[5]} ${strarr[6]}"
 
     deloptions+=("$MACADD" "$NAME1")
   done <<< "$dellist"
@@ -309,7 +309,7 @@ PairedDevices() {
     read -a strarr <<< "$pairedlist"
 
     MACADD=`printf '%-5s' "${strarr[1]}"`
-    NAME1="${strarr[2]} ${strarr[3]} ${strarr[4]}"
+    NAME1="${strarr[2]} ${strarr[3]} ${strarr[4]} ${strarr[5]} ${strarr[6]}"
 
 
     list+=("    $MACADD     $NAME1")
@@ -348,4 +348,3 @@ MainMenu() {
 }
 
 MainMenu
-
