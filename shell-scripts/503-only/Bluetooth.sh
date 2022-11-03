@@ -61,9 +61,7 @@ Activate() {
     read -a strarr <<< "$alist"
 
     MACADD=`printf '%-5s' "${strarr[1]}"`
-    NAME1="${strarr[2]}"
-    NAME2="${strarr[3]}"
-    NAME3="${strarr[4]}"
+    NAME1="${strarr[2]} ${strarr[3]} ${strarr[4]} ${strarr[5]} ${strarr[6]}"
 
     aoptions+=("$MACADD" "$NAME1")
   done <<< "$alist"
@@ -119,9 +117,7 @@ Deactivate() {
     read -a strarr <<< "$dalist"
 
     MACADD=`printf '%-5s' "${strarr[1]}"`
-    NAME1="${strarr[2]}"
-    NAME2="${strarr[3]}"
-    NAME3="${strarr[4]}"
+    NAME1="${strarr[2]} ${strarr[3]} ${strarr[4]} ${strarr[5]} ${strarr[6]}"
 
     daoptions+=("$MACADD" "$NAME1")
   done <<< "$dalist"
@@ -173,11 +169,9 @@ Select() {
   alreadypaired=`bluetoothctl paired-devices | grep "$1"`
   if [ ! -z "$alreadypaired" ]; then
     bluetoothctl remove "$1"
-    output=`bluetoothctl pair "$1"`
-  else
-    output=`bluetoothctl pair "$1"`
   fi
-  
+    output=`bluetoothctl pair "$1"`
+ 
   success=`echo "$output" | grep "Paired: yes"`
 
   if [ -z "$success" ]; then
@@ -221,8 +215,8 @@ Connect() {
 
     NEWDEVICE="${strarr[0]}"
     MACADD=`printf '%-5s' "${strarr[2]}"`
-    NAME1="${strarr[3]}"
-
+    NAME1="${strarr[3]} ${strarr[4]} ${strarr[5]} ${strarr[6]} ${strarr[7]}"
+	
     if [[ "$NEWDEVICE" == *"NEW"* ]]; then
       coptions+=("$MACADD" "$NAME1")
 	fi
@@ -279,9 +273,7 @@ Delete() {
     read -a strarr <<< "$dellist"
 
     MACADD=`printf '%-5s' "${strarr[1]}"`
-    NAME1="${strarr[2]}"
-    NAME2="${strarr[3]}"
-    NAME3="${strarr[4]}"
+    NAME1="${strarr[2]} ${strarr[3]} ${strarr[4]} ${strarr[5]} ${strarr[6]}"
 
     deloptions+=("$MACADD" "$NAME1")
   done <<< "$dellist"
@@ -317,11 +309,10 @@ PairedDevices() {
     read -a strarr <<< "$pairedlist"
 
     MACADD=`printf '%-5s' "${strarr[1]}"`
-    NAME1="${strarr[2]}"
-    NAME2="${strarr[3]}"
-    NAME3="${strarr[4]}"
+    NAME1="${strarr[2]} ${strarr[3]} ${strarr[4]} ${strarr[5]} ${strarr[6]}"
 
-    list+=("    $MACADD     $NAME1 $NAME2 $NAME3")
+
+    list+=("    $MACADD     $NAME1")
   done <<< "$pairedlist"
 
   dialog --clear --backtitle "Your Paired devices" --title "" --clear \
@@ -357,4 +348,3 @@ MainMenu() {
 }
 
 MainMenu
-
