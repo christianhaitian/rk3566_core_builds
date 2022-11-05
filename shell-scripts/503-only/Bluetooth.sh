@@ -27,6 +27,16 @@ printf "\033c" > /dev/tty1
 
 # hide cursor
 printf "\e[?25l" > /dev/tty1
+dialog --clear
+
+height="15"
+width="55"
+
+if test -z "$(cat /home/ark/.config/.DEVICE | grep RG353V | tr -d '\0')"
+then
+  height="20"
+  width="60"
+fi
 
 export TERM=linux
 export XDG_RUNTIME_DIR=/run/user/$UID/
@@ -44,9 +54,17 @@ sleep 2
 
 old_ifs="$IFS"
 
+ToggleBT() {
+  dialog --infobox "\nTurning Bluetooth $1, please wait..." 5 $width > /dev/tty1
+  bttoggle.sh
+  #sleep 5
+  MainMenu
+}
+
 ExitMenu() {
   printf "\033c" > /dev/tty1
   pgrep -f oga_controls | sudo xargs kill -9
+  sudo pkill ogage
   exit 0
 }
 
@@ -74,7 +92,7 @@ Activate() {
    	--no-collapse \
    	--clear \
 	--cancel-label "Back" \
-    --menu "" 15 55 15)
+    --menu "" $height $width 15)
 
     achoices=$("${aselection[@]}" "${aoptions[@]}" 2>&1 > /dev/tty1) || MainMenu
 
@@ -89,7 +107,7 @@ Activate() {
 
 DisconnectExisting() {
 
-  dialog --infobox "\nDisconnecting $1 from Bluetooth ..." 5 55 > /dev/tty1
+  dialog --infobox "\nDisconnecting $1 from Bluetooth ..." 5 $width > /dev/tty1
   bluetoothctl --timeout 5 scan on >> /dev/null
   
   output=`bluetoothctl disconnect "$1"`
@@ -101,7 +119,7 @@ DisconnectExisting() {
     output="Device $1 successfully disconnected from Bluetooth ..."
   fi
   
-  dialog --infobox "\n$output" 6 55 > /dev/tty1
+  dialog --infobox "\n$output" 6 $width > /dev/tty1
   sleep 3
   Deactivate
 }
@@ -130,7 +148,7 @@ Deactivate() {
    	--no-collapse \
    	--clear \
 	--cancel-label "Back" \
-    --menu "" 15 55 15)
+    --menu "" $height $width 15)
 
     dachoices=$("${daselection[@]}" "${daoptions[@]}" 2>&1 > /dev/tty1) || MainMenu
 
@@ -145,7 +163,7 @@ Deactivate() {
 
 ConnectExisting() {
 
-  dialog --infobox "\nConnecting to $1 via Bluetooth ..." 5 55 > /dev/tty1
+  dialog --infobox "\nConnecting to $1 via Bluetooth ..." 5 $width > /dev/tty1
   bluetoothctl --timeout 5 scan on >> /dev/null
   
   output=`timeout 5s bluetoothctl connect "$1"`
@@ -157,13 +175,13 @@ ConnectExisting() {
     output="Device $1 successfully connected via Bluetooth ..."
   fi
   
-  dialog --infobox "\n$output" 6 55 > /dev/tty1
+  dialog --infobox "\n$output" 6 $width > /dev/tty1
   sleep 3
   Activate
 }
 
 Select() {
-  dialog --infobox "\nPairing and Connecting to Bluetooth device $1 ..." 5 55 > /dev/tty1
+  dialog --infobox "\nPairing and Connecting to Bluetooth device $1 ..." 5 $width > /dev/tty1
   # try to connect
 
   alreadypaired=`bluetoothctl paired-devices | grep "$1"`
@@ -186,13 +204,13 @@ Select() {
 	fi
   fi
   
-  dialog --infobox "\n$output" 6 55 > /dev/tty1
+  dialog --infobox "\n$output" 6 $width > /dev/tty1
   sleep 3
   MainMenu
 }
 
 Connect() {
-  dialog --infobox "\nScanning for available bluetooth devices ..." 5 55 > /dev/tty1
+  dialog --infobox "\nScanning for available bluetooth devices ..." 5 $width > /dev/tty1
 
   sudo systemctl stop bluetooth
   sleep 1
@@ -229,7 +247,7 @@ Connect() {
    	--no-collapse \
    	--clear \
 	--cancel-label "Back" \
-    --menu "" 15 55 15)
+    --menu "" $height $width 15)
 
     cchoices=$("${cselection[@]}" "${coptions[@]}" 2>&1 > /dev/tty1) || MainMenu
 
@@ -244,10 +262,10 @@ Connect() {
 DeleteConnect() {
 
   dialog --clear --backtitle "Delete Connection" --title "Removing $1" --clear \
-  --yesno "\nWould you like to continue to remove this connection?" 15 55 2>&1 > /dev/tty1
+  --yesno "\nWould you like to continue to remove this connection?" $height $width 2>&1 > /dev/tty1
 
   case $? in
-     0) dialog --infobox "\nUnpairing Bluetooth device $1 ..." 5 55 > /dev/tty1 
+     0) dialog --infobox "\nUnpairing Bluetooth device $1 ..." 5 $width > /dev/tty1 
 	    bluetoothctl untrust "$1" >> /dev/null
 	    bluetoothctl remove "$1" >> /dev/null
 	    if [ $? != 0 ]; then
@@ -255,7 +273,7 @@ DeleteConnect() {
 	    else
 	      output="$1 successfully unpaired from this device via Bluetooth ..."
 	    fi
-	    dialog --infobox "\n$output" 6 55 > /dev/tty1
+	    dialog --infobox "\n$output" 6 $width > /dev/tty1
 	    sleep 3
 		;;
   esac
@@ -285,7 +303,7 @@ Delete() {
    	--no-collapse \
    	--clear \
 	--cancel-label "Back" \
-    --menu "" 15 55 15)
+    --menu "" $height $width 15)
 
     delchoices=$("${delselection[@]}" "${deloptions[@]}" 2>&1 > /dev/tty1) || MainMenu
 
@@ -317,31 +335,41 @@ PairedDevices() {
 
   dialog --clear --backtitle "Your Paired devices" --title "" --clear \
    	     --title "MAC Address    Device Name" \
-         --msgbox "\n\n$list" 15 55 2>&1 > /dev/tty1
+         --msgbox "\n\n$list" $height $width 2>&1 > /dev/tty1
 }
 
 MainMenu() {
-  mainoptions=( 1 "Connect to new Bluetooth device" 2 "Activate existing Bluetooth device" 3 "Deactivate existing Bluetooth device" 4 "Delete exiting Bluetooth device" 5 "Currently paired Bluetooth devicess" 6 "Exit" )
+
+  if [[ ! -z $(sudo systemctl status bluetooth | grep "disabled") ]]; then
+    local BT_Stat="On"
+	local BT_MStat="Off"
+  else
+    local BT_Stat="Off"
+	local BT_MStat="On"
+  fi
+
+  mainoptions=( 1 "Turn Bluetooth $BT_Stat" 2 "Connect to new Bluetooth device" 3 "Activate existing Bluetooth device" 4 "Deactivate existing Bluetooth device" 5 "Delete exiting Bluetooth device" 6 "Currently paired Bluetooth devicess" 7 "Exit" )
   IFS="$old_ifs"
   while true; do
     mainselection=(dialog \
-   	--backtitle "Bluetooth Manager" \
+   	--backtitle "Bluetooth Manager                  Bluetooth is currently $BT_MStat" \
    	--title "Main Menu" \
    	--no-collapse \
    	--clear \
 	--cancel-label "Select + Start to Exit" \
-    --menu "Please make your selection" 15 55 15)
+    --menu "Please make your selection" $height $width 15)
 	
 	mainchoices=$("${mainselection[@]}" "${mainoptions[@]}" 2>&1 > /dev/tty1)
 
     for mchoice in $mainchoices; do
       case $mchoice in
-        1) Connect ;;
-		2) Activate ;;
-		3) Deactivate ;;
-		4) Delete ;;
-		5) PairedDevices ;;
-		6) ExitMenu ;;
+		1) ToggleBT $BT_Stat ;;
+        2) Connect ;;
+		3) Activate ;;
+		4) Deactivate ;;
+		5) Delete ;;
+		6) PairedDevices ;;
+		7) ExitMenu ;;
       esac
     done
   done
