@@ -21,9 +21,9 @@ fi
 printf "\033c" >> /dev/tty1
 
 if [[ -f "${ra_config_paths[0]}/autoconfig/udev/${controller}.cfg" ]]; then
-  if [[ "$(cat "${ra_config_paths[0]}/autoconfig/udev/${controller}.cfg" | grep vendor_id | grep -o -P -w '= "\K[^"]+')" != "0" ]]; then
-  #echo "\"${controller}\" controller configuration already exists for retroarch!" >> /dev/tty1
-  exit 0
+  if test ! -z "$(cat "${ra_config_paths[0]}/autoconfig/udev/${controller}.cfg" | grep "# ArkOS" | tr -d '\0')"
+  then
+    exit 0
   fi
 fi
 
@@ -86,7 +86,8 @@ product="$((0x${product}))"
 let i=0
 for raconfigcreate in "${ra_config_paths[@]}"
 do
-    echo "input_driver = \"udev\"" > "${raconfigcreate}/autoconfig/udev/${controller}".cfg
+    echo "# ArkOS" > "${raconfigcreate}/autoconfig/udev/${controller}".cfg
+    echo "input_driver = \"udev\"" >> "${raconfigcreate}/autoconfig/udev/${controller}".cfg
     echo "input_device = \"${controller}\"" >> "${raconfigcreate}/autoconfig/udev/${controller}".cfg
     echo "input_vendor_id = \"${vendor}\"" >> "${raconfigcreate}/autoconfig/udev/${controller}".cfg
     echo "input_product_id = \"${product}\"" >> "${raconfigcreate}/autoconfig/udev/${controller}".cfg
