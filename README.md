@@ -57,6 +57,9 @@ cd rk3566_core_builds
 `./builds.sh easyrpg`
 
 ### To build just fake08 standalone emulator (64bit only):
+`./builds.sh fake08sa`
+
+## To build just fake08 (64bit only):
 `./builds.sh fake08`
 
 ### To build just fbneo (64bit only):
