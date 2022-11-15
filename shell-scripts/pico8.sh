@@ -20,7 +20,9 @@ elif [[ -e "/dev/input/by-path/platform-odroidgo3-joypad-event-joystick" ]]; the
   fi
 elif [[ -e "/dev/input/by-path/platform-singleadc-joypad-event-joystick" ]]; then
   param_device="rg503"
-  res="960,544"
+  xres="$(cat /sys/class/graphics/fb0/modes | grep -o -P '(?<=:).*(?=p-)' | cut -dx -f1)"
+  yres="$(cat /sys/class/graphics/fb0/modes | grep -o -P '(?<=:).*(?=p-)' | cut -dx -f2)"
+  res="${xres},${yres}"
 else
   param_device="chi"
   res="640,480"
