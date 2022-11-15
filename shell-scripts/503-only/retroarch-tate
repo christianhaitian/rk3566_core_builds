@@ -10,11 +10,18 @@ elif [[ "$@" == *"mame2003_plus_libretro"* ]]; then
   core="mame2003_plus"
 fi
 
-/opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg --appendconfig=/home/ark/.config/retroarch/retroarch.cfg.vert -L /home/ark/.config/retroarch/cores/"$core"_libretro.so "$3"
+/usr/local/bin/controller_setup.sh
 
-if [[ "$@" == *"fbneo_libretro"* ]]; then
-  sed -i '/fbneo-vertical-mode \=/c\fbneo-vertical-mode \= "$vertmode"' /home/ark/.config/retroarch/retroarch-core-options.cfg
-elif [[ "$@" == *"mame2003_plus_libretro"* ]]; then
-  sed -i '/mame2003-plus_tate_mode \=/c\mame2003-plus_tate_mode \= "$vertmode"' /home/ark/.config/retroarch/retroarch-core-options.cfg
+if [ "$(ls /dev/input/ | wc -l)" -gt "7" ]; then
+   echo "It's greater than 7"
+  /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg --appendconfig=/home/ark/.config/retroarch/retroarch.cfg.ext -L /home/ark/.config/retroarch/cores/"$core"_libretro.so "$3"
+else
+  /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg --appendconfig=/home/ark/.config/retroarch/retroarch.cfg.vert -L /home/ark/.config/retroarch/cores/"$core"_libretro.so "$3"
+fi
+
+if [[ "$core" == *"fbneo"* ]]; then
+  sed -i "/fbneo-vertical-mode \=/c\fbneo-vertical-mode \= \"${vertmode}\"" /home/ark/.config/retroarch/retroarch-core-options.cfg
+elif [[ "$core" == *"mame2003_plus"* ]]; then
+  sed -i "/mame2003-plus_tate_mode \=/c\mame2003-plus_tate_mode \= \"${vertmode}\"" /home/ark/.config/retroarch/retroarch-core-options.cfg
 fi
 
