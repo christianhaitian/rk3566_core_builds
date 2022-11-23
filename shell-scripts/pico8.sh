@@ -20,7 +20,9 @@ elif [[ -e "/dev/input/by-path/platform-odroidgo3-joypad-event-joystick" ]]; the
   fi
 elif [[ -e "/dev/input/by-path/platform-singleadc-joypad-event-joystick" ]]; then
   param_device="rg503"
-  res="960,544"
+  xres="$(cat /sys/class/graphics/fb0/modes | grep -o -P '(?<=:).*(?=p-)' | cut -dx -f1)"
+  yres="$(cat /sys/class/graphics/fb0/modes | grep -o -P '(?<=:).*(?=p-)' | cut -dx -f2)"
+  res="${xres},${yres}"
 else
   param_device="chi"
   res="640,480"
@@ -78,12 +80,17 @@ LaunchFake08() {
   sudo kill -9 $(pidof gptokeyb)
   sudo systemctl restart oga_events &
   printf "\033c" >> /dev/tty1
-  exit 1
+  exit 0
 }
+
+if [[ $1 == "retroarch" ]]; then
+  /usr/local/bin/"$1" -L /home/ark/.config/"$1"/cores/fake08_libretro.so "$2"
+  exit 0
+fi
 
 if [[ $1 == "fake08" ]]; then
       LaunchFake08 "$2"
-elif [[ ! -f "/$directory/pico-8/$pico8executable" ]]; then
+elif [[ ! -f "/$directory/pico-8/$pico8executable" ]] && [[ "$1" != *"retroarch"* ]]; then
       printf "\033c" >> /dev/tty1
       printf "\033[1;33m" >> /dev/tty1
       printf "\n I don't detect a pico8_dyn or pico8_64 file in the" >> /dev/tty1
@@ -94,7 +101,7 @@ elif [[ ! -f "/$directory/pico-8/$pico8executable" ]]; then
       sleep 10
       printf "\033[0m" >> /dev/tty1
       LaunchFake08 "$2"
-elif [[ ! -f "/$directory/pico-8/pico8.dat" ]]; then
+elif [[ ! -f "/$directory/pico-8/pico8.dat" ]] &&  [[ "$1" != *"retroarch"* ]]; then
       printf "\033c" >> /dev/tty1
       printf "\033[1;33m" >> /dev/tty1
       printf "\n I don't detect a pico8.dat file in the" >> /dev/tty1
@@ -121,7 +128,7 @@ elif [[ $1 == "pixel-perfect" ]]; then
 	else
 		/$directory/pico-8/$pico8executable -home /$directory/pico-8/ -root_path /$directory/pico-8/carts/ -joystick 0 -pixel_perfect 1 -run "$2"
 	fi
-else
+elif [[ $1 == "full-screen" ]]; then
 	if [[ ${basefilenoext,,} == "zzzsplore" ]]; then
 		/$directory/pico-8/$pico8executable -splore -home /$directory/pico-8/ -root_path /$directory/pico-8/carts/ -joystick 0 -draw_rect 0,0,$res
 	else
