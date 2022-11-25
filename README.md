@@ -269,6 +269,9 @@ cd rk3566_core_builds
 ### To build just yabasanshiro standalone:
 `./builds.sh yabasanshirosa`
 
+### To build just yabause:
+`./builds.sh yabause`
+
 ### To build just retroarch:
 `./builds.sh retroarch`
 
