@@ -84,7 +84,32 @@ LaunchFake08() {
 }
 
 if [[ $1 == "retroarch" ]]; then
-  /usr/local/bin/"$1" -L /home/ark/.config/"$1"/cores/fake08_libretro.so "$2"
+  if [[ ${basefilenoext,,} == "zzzsplore" ]]; then
+    printf "\033c" >> /dev/tty1
+    printf "\033[1;33m" >> /dev/tty1
+    printf "\n Sorry, splore is not available with the Fake08 retroarch emulator." >> /dev/tty1
+    sleep 5
+    printf "\033[0m" >> /dev/tty1
+    printf "\033c" >> /dev/tty1
+    exit 1
+  fi
+  filename="$2"
+  ext="${filename##*.}"
+  if [[ "$ext" == "png" ]] || [[ "$ext" == "PNG" ]]; then
+   # .png extension doesn't work with the fake08 retroarch emulator
+   # so let's temporarily convert them to .p8 files to launch with retroarch
+    if [[ "$basefilenoext" == *".p8"* ]] || [[ "$basefilenoext" == *".P8"* ]]; then
+      cp -f "$2" "/$directory/pico-8/carts/$basefilenoext"
+      file="/$directory/pico-8/carts/$basefilenoext"
+    else
+      cp -f "$2" "/$directory/pico-8/carts/${basefilenoext}.p8"
+      file="/$directory/pico-8/carts/${basefilenoext}.p8"
+    fi
+    /usr/local/bin/"$1" -L /home/ark/.config/"$1"/cores/fake08_libretro.so "$file"
+    rm -f "$file"
+  else
+    /usr/local/bin/"$1" -L /home/ark/.config/"$1"/cores/fake08_libretro.so "$2"
+  fi
   exit 0
 fi
 
