@@ -32,7 +32,7 @@ dialog --clear
 height="15"
 width="55"
 
-if test -z "$(cat /home/ark/.config/.DEVICE | grep RG353V | tr -d '\0')"
+if test ! -z "$(cat /home/ark/.config/.DEVICE | grep RG503 | tr -d '\0')"
 then
   height="20"
   width="60"
@@ -348,7 +348,7 @@ MainMenu() {
 	local BT_MStat="On"
   fi
 
-  mainoptions=( 1 "Turn Bluetooth $BT_Stat" 2 "Connect to new Bluetooth device" 3 "Activate existing Bluetooth device" 4 "Deactivate existing Bluetooth device" 5 "Delete exiting Bluetooth device" 6 "Currently paired Bluetooth devicess" 7 "Exit" )
+  mainoptions=( 1 "Turn Bluetooth $BT_Stat" 2 "Connect to new Bluetooth device" 3 "Activate existing Bluetooth device" 4 "Deactivate existing Bluetooth device" 5 "Delete exiting Bluetooth device" 6 "Currently paired Bluetooth devices" 7 "Exit" )
   IFS="$old_ifs"
   while true; do
     mainselection=(dialog \
