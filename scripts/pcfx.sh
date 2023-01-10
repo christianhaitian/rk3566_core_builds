@@ -43,7 +43,7 @@ bitness="$(getconf LONG_BIT)"
 	 fi
 
 	  make clean
-	  make -j$(nproc)
+	  make platform=SM1 -j$(nproc)
 
 	  if [[ $? != "0" ]]; then
 		echo " "
