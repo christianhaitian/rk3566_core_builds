@@ -41,10 +41,10 @@ echo "19000000030000000300000002030000,gameforce_gamepad,leftstick:b14,rightx:a3
 190000004b4800000111000000010000,retrogame_joypad,a:b1,b:b0,x:b2,y:b3,back:b8,start:b9,rightstick:b12,leftstick:b11,dpleft:b15,dpdown:b14,dpright:b16,dpup:b13,leftshoulder:b4,lefttrigger:b6,rightshoulder:b5,righttrigger:b7,leftx:a0,lefty:a1,rightx:a2,righty:a3,platform:Linux," > /$directory/pico-8/sdl_controllers.txt
 fi
 
-if [[ -f "/$directory/pico-8/pico8_dyn" ]]; then
-  pico8executable=pico8_dyn
-elif [[ -f "/$directory/pico-8/pico8_64" ]]; then
+if [[ -f "/$directory/pico-8/pico8_64" ]]; then
   pico8executable=pico8_64
+elif [[ -f "/$directory/pico-8/pico8_dyn" ]]; then
+  pico8executable=pico8_dyn
 fi
 
 LaunchFake08() {
