@@ -11,23 +11,30 @@ if [ -f "/boot/rk3326-rg351v-linux.dtb" ] || [ -f "/boot/rk3326-rg351mp-linux.dt
   width="60"
 fi
 
+if [ ! -f "/boot/doneit" ]; then 
+  sudo touch "/boot/doneit"
+  dialog --infobox "EASYROMS partition expansion and conversion to exfat in process.  The device will now reboot to continue the process..." $height $width 2>&1 > /dev/tty1 
+  sleep 10
+  reboot
+fi
+
+#[ ! -f /boot/doneit ] && { sudo echo ", +" | sudo sfdisk -N 5 --force /dev/mmcblk1; sudo touch "/boot/doneit"; dialog --infobox "EASYROMS partition expansion and conversion to exfat in process.  Please press the reset button now to reboot the device so this process can continue." $height $width 2>&1 > /dev/tty1 | sleep 10; }
+
 maxSize=$(lsblk -b --output SIZE -n -d /dev/mmcblk1)
 
-newExtSize=$(printf %.2f "$((10**4 * 8589934592/$maxSize))e-4")
-newExtSize=$(echo print 1-$newExtSize | perl)
-PercentToRemain=$(echo print 100*$newExtSize | perl)
+newExtSizePct=$(printf %.2f "$((10**4 * 9589934592/$maxSize))e-4")
+newExtSizePct=$(echo print 1-$newExtSizePct | perl)
+ExfatPctToRemain=$(echo print 100*$newExtSizePct | perl)
+
+#echo "$ExfatPctToRemain" > /home/ark/growpercentage.log
 
 # Expand the ext4 partition if possible to make room for future update needs
-if [ $PercentToRemain -lt "100" ]; then
+if [ $ExfatPctToRemain -lt "100" ]; then
   printf "d\n5\nw\nq\n" | sudo fdisk /dev/mmcblk1
-  sudo growpart --free-percent=$PercentToRemain -v /dev/mmcblk1 4
+  sudo growpart --free-percent=$ExfatPctToRemain -v /dev/mmcblk1 4
   sudo resize2fs /dev/mmcblk1p4
   printf "n\n5\n\n\ny\nw\n" | sudo fdisk /dev/mmcblk1
 fi
-
-[ ! -f /boot/doneit ] && { sudo growpart /dev/mmcblk1 5; sudo touch "/boot/doneit"; dialog --infobox "EASYROMS partition expansion and conversion to exfat in process.  The device will now reboot to continue the process..." $height $width 2>&1 > /dev/tty1 | sleep 10; reboot; }
-
-#[ ! -f /boot/doneit ] && { sudo echo ", +" | sudo sfdisk -N 5 --force /dev/mmcblk1; sudo touch "/boot/doneit"; dialog --infobox "EASYROMS partition expansion and conversion to exfat in process.  Please press the reset button now to reboot the device so this process can continue." $height $width 2>&1 > /dev/tty1 | sleep 10; }
 
 sudo mkfs.exfat -s 16K -n EASYROMS /dev/hda3
 exitcode=$?
