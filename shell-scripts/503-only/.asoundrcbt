@@ -1,0 +1,12 @@
+pcm.!default {
+	type asym
+	capture.pcm cards.pcm.default
+	playback.pcm bluealsa
+	hint.description "Capture: sysdefault, Playback: BlueALSA Bluetooth
+Default Audio Device"
+}
+
+ctl.!default {
+	type bluealsa
+	hint.description "Default control device (BlueALSA Bluetooth)"
+}
