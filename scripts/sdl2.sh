@@ -12,7 +12,8 @@
 cur_wd="$PWD"
 bitness="$(getconf LONG_BIT)"
 #commit="25f9ed87ff6947d9576fc9d79dee0784e638ac58" # SDL 2.0.16
-commit="f9b918ff403782986f2a6712e6e2a462767a0457" # SDL 2.0.20 although it builds as 2.0.18.2 ¯\_(ツ)_/¯
+#commit="f9b918ff403782986f2a6712e6e2a462767a0457" # SDL 2.0.20 although it builds as 2.0.18.2 ¯\_(ツ)_/¯
+commit="f070c83a6059c604cbd098680ddaee391b0a7341" # SDL 2.0.26.2
 
 	# sdl2 Standalone Build
 	if [[ "$var" == "sdl2" ]]; then
@@ -86,12 +87,12 @@ commit="f9b918ff403782986f2a6712e6e2a462767a0457" # SDL 2.0.20 although it build
                -DNAS=OFF \
                -DNAS_SHARED=OFF \
                -DLIBSAMPLERATE=ON \
-               -DLIBSAMPLERATE_SHARED=ON \
+               -DLIBSAMPLERATE_SHARED=OFF \
                -DSNDIO=OFF \
                -DDISKAUDIO=OFF \
                -DDUMMYAUDIO=OFF \
                -DVIDEO_WAYLAND=OFF \
-               -DVIDEO_WAYLAND_QT_TOUCH=ON \
+               -DVIDEO_WAYLAND_QT_TOUCH=OFF \
                -DWAYLAND_SHARED=OFF \
                -DVIDEO_MIR=OFF \
                -DMIR_SHARED=OFF \
@@ -131,9 +132,9 @@ commit="f9b918ff403782986f2a6712e6e2a462767a0457" # SDL 2.0.20 although it build
 	  fi
 
       if [[ $bitness == "32" ]]; then
-	     strip build/.libs/libSDL2-2.0.so.0.18.2
+	     strip build/.libs/libSDL2-2.0.so.0.*
 	  else
-	     strip libSDL2-2.0.so.0.18.2
+	     strip libSDL2-2.0.so.0.*
 	  fi
 
 	  if [ ! -d "$cur_wd/sdl2-$bitness/" ]; then
@@ -141,52 +142,11 @@ commit="f9b918ff403782986f2a6712e6e2a462767a0457" # SDL 2.0.20 although it build
 	  fi
 
       if [[ $bitness == "32" ]]; then
-	     cp build/.libs/libSDL2-2.0.so.0.18.2 $cur_wd/sdl2-$bitness/.
+	     cp build/.libs/libSDL2-2.0.so.0.* $cur_wd/sdl2-$bitness/.
 	  else
-	     cp libSDL2-2.0.so.0.18.2 $cur_wd/sdl2-$bitness/.
+	     cp libSDL2-2.0.so.0.* $cur_wd/sdl2-$bitness/.
 	  fi
 
 	  echo " "
 	  echo "sdl $(git describe --tags | cut -c 9-) has been created and has been placed in the rk3566_core_builds/sdl2-$bitness subfolder"
 	fi
-
-    if [[ $bitness == "64" ]]; then
-       cd ..
-    fi
-
-    if [[ $sdl2_rotationpatch == "yes" ]]; then
-	  for patching in sdl2-patch*
-	  do
-	    patch -Np1 < "$patching"
-		if [[ $? != "0" ]]; then
-		  echo " "
-		  echo "There was an error while applying $patching.  Stopping here."
-		  exit 1
-		fi
-		rm "$patching"
-	  done
-	fi
-
-    if [[ $bitness == "64" ]]; then
-       cd build
-    fi
-
-	  make -j$(nproc)
-
-	  if [[ $? != "0" ]]; then
-		echo " "
-		echo "There was an error while building sdl2 at commit $commit with the rotation patch applied.  Stopping here."
-		exit 1
-	  fi
-
-      if [[ $bitness == "32" ]]; then
-	     strip build/.libs/libSDL2-2.0.so.0.18.2
-	     cp build/.libs/libSDL2-2.0.so.0.18.2 $cur_wd/sdl2-$bitness/libSDL2-2.0.so.0.18.2.rotated
-	  else
-	     strip libSDL2-2.0.so.0.18.2
-	     cp libSDL2-2.0.so.0.18.2 $cur_wd/sdl2-$bitness/libSDL2-2.0.so.0.18.2.rotated
-      fi
-
-	  echo " "
-	  echo "sdl $(git describe --tags | cut -c 9-) with rotation has been created and has been placed in the rk3566_core_builds/sdl2-$bitness subfolder"
-
