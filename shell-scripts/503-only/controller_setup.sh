@@ -38,7 +38,7 @@ printf "\nController name: $controller\n"
 
 for button in "${button_list[@]}"
 do
-    isitahatoranalog="$(cat ${es_input_file_location} | sed -n "/${controller}/, /inputConfig/p" | grep "name=\"${button}\"" | grep -o -P -w "type=.{0,5}" | cut -c5- | cut -d '"' -f2)"
+    isitahatoranalog="$(cat ${es_input_file_location} | sed -n "/\"${controller}\"/, /inputConfig/p" | grep "name=\"${button}\"" | grep -o -P -w "type=.{0,5}" | cut -c5- | cut -d '"' -f2)"
 
     unset value
     unset axis
@@ -46,7 +46,7 @@ do
     if [[ "$isitahatoranalog" == "hat" ]]; then
       value="hat found"
     elif [[ "$isitahatoranalog" == "axis" ]]; then
-	  axis="$(cat ${es_input_file_location} | sed -n "/${controller}/, /inputConfig/p" | grep "name=\"${button}\"" | grep -o -P -w "value=.{0,5}" | cut -c5- | cut -d '"' -f2)"
+	  axis="$(cat ${es_input_file_location} | sed -n "/\"${controller}\"/, /inputConfig/p" | grep "name=\"${button}\"" | grep -o -P -w "value=.{0,5}" | cut -c5- | cut -d '"' -f2)"
       if [[ "${axis}" == *"-"* ]]; then
 	    axis="-"
 	  else
@@ -54,7 +54,7 @@ do
       fi
     fi
 
-    get_button="$(cat ${es_input_file_location} | sed -n "/${controller}/, /inputConfig/p" | grep "name=\"${button}\"" | grep -o -P -w 'id="\K[^"]+')"
+    get_button="$(cat ${es_input_file_location} | sed -n "/\"${controller}\"/, /inputConfig/p" | grep "name=\"${button}\"" | grep -o -P -w 'id="\K[^"]+')"
     
     #let a="${#button} + 3"
     #test_button="$(timeout 0.1s sdljoytest | grep 'retrogame_joypad,')"
