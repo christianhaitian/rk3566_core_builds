@@ -60,6 +60,8 @@ commit="f070c83a6059c604cbd098680ddaee391b0a7341" # SDL 2.0.26.2
 	  done
 	 fi
 
+     #sed -i "s| -lrga||g" CMakeLists.txt
+
         if [[ $bitness == "32" ]]; then
          ./autogen.sh
          ./configure --host=arm-linux-gnueabihf \
@@ -72,51 +74,46 @@ commit="f070c83a6059c604cbd098680ddaee391b0a7341" # SDL 2.0.26.2
          mkdir build
          cd build
          cmake -DSDL_STATIC=OFF \
-               -DLIBC=ON \
-               -DGCC_ATOMICS=ON \
-               -DALTIVEC=OFF \
-               -DOSS=OFF \
-               -DALSA=ON \
-               -DALSA_SHARED=ON \
-               -DJACK=OFF \
-               -DJACK_SHARED=OFF \
-               -DESD=OFF \
-               -DESD_SHARED=OFF \
-               -DARTS=OFF \
-               -DARTS_SHARED=OFF \
-               -DNAS=OFF \
-               -DNAS_SHARED=OFF \
-               -DLIBSAMPLERATE=ON \
-               -DLIBSAMPLERATE_SHARED=OFF \
-               -DSNDIO=OFF \
-               -DDISKAUDIO=OFF \
-               -DDUMMYAUDIO=OFF \
-               -DVIDEO_WAYLAND=OFF \
-               -DVIDEO_WAYLAND_QT_TOUCH=OFF \
-               -DWAYLAND_SHARED=OFF \
-               -DVIDEO_MIR=OFF \
-               -DMIR_SHARED=OFF \
-               -DVIDEO_COCOA=OFF \
-               -DVIDEO_DIRECTFB=OFF \
-               -DVIDEO_VIVANTE=OFF \
-               -DDIRECTFB_SHARED=OFF \
-               -DFUSIONSOUND=OFF \
-               -DFUSIONSOUND_SHARED=OFF \
-               -DVIDEO_DUMMY=OFF \
-               -DINPUT_TSLIB=OFF \
-               -DPTHREADS=ON \
-               -DPTHREADS_SEM=ON \
-               -DDIRECTX=OFF \
-               -DSDL_DLOPEN=ON \
-               -DCLOCK_GETTIME=OFF \
-               -DRPATH=OFF \
-               -DRENDER_D3D=OFF \
-               -DVIDEO_X11=OFF \
-               -DVIDEO_OPENGL=OFF \
-               -DVIDEO_OPENGLES=ON \
-               -DVIDEO_VULKAN=OFF \
-               -DVIDEO_KMSDRM=ON \
-               -DPULSEAUDIO=ON ..
+               -DSDL_LIBC=ON \
+               -DSDL_GCC_ATOMICS=ON \
+               -DSDL_ALTIVEC=OFF \
+               -DSDL_OSS=OFF \
+               -DSDL_ALSA=ON \
+               -DSDL_ALSA_SHARED=ON \
+               -DSDL_JACK=OFF \
+               -DSDL_JACK_SHARED=OFF \
+               -DSDL_ESD=OFF \
+               -DSDL_ESD_SHARED=OFF \
+               -DSDL_ARTS=OFF \
+               -DSDL_ARTS_SHARED=OFF \
+               -DSDL_NAS=OFF \
+               -DSDL_NAS_SHARED=OFF \
+               -DSDL_LIBSAMPLERATE=ON \
+               -DSDL_LIBSAMPLERATE_SHARED=OFF \
+               -DSDL_SNDIO=OFF \
+               -DSDL_DISKAUDIO=OFF \
+               -DSDL_DUMMYAUDIO=OFF \
+               -DSDL_WAYLAND=OFF \
+               -DSDL_WAYLAND_QT_TOUCH=OFF \
+               -DSDL_WAYLAND_SHARED=OFF \
+               -DSDL_COCOA=OFF \
+               -DSDL_DIRECTFB=OFF \
+               -DSDL_VIVANTE=OFF \
+               -DSDL_DIRECTFB_SHARED=OFF \
+               -DSDL_FUSIONSOUND=OFF \
+               -DSDL_FUSIONSOUND_SHARED=OFF \
+               -DSDL_DUMMYVIDEO=OFF \
+               -DSDL_PTHREADS=ON \
+               -DSDL_PTHREADS_SEM=ON \
+               -DSDL_DIRECTX=OFF \
+               -DSDL_CLOCK_GETTIME=OFF \
+               -DSDL_RPATH=OFF \
+               -DSDL_RENDER_D3D=OFF \
+               -DSDL_X11=OFF \
+               -DSDL_OPENGLES=ON \
+               -DSDL_VULKAN=OFF \
+               -DSDL_KMSDRM=ON \
+               -DSDL_PULSEAUDIO=ON ..
           export LDFLAGS="${LDFLAGS} -lrga"
        fi
 
