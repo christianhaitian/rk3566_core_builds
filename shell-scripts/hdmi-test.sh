@@ -22,4 +22,5 @@ elif [ $xres -eq "1920" ]; then
   echo $mode2 | sudo tee /var/run/drmMode
 else
   echo 0 | sudo tee /var/run/drmMode
+  echo 1 | sudo tee /var/run/drmConn
 fi
