@@ -27,7 +27,7 @@ function set_contrast() {
 
 function set_hue() {
    sudo panel_drm_tool set /dev/dri/card0 133 hue ${1}
-   settings[0]="hue: $1"
+   settings[3]="hue: $1"
    SaveSettings
 }
 
