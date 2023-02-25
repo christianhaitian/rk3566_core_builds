@@ -9,22 +9,18 @@
 
 function set_brightness() {
    sudo panel_drm_tool set /dev/dri/card0 133 brightness "$1"
-   settings[0]="brightness: $1"
 }
 
 function set_contrast() {
    sudo panel_drm_tool set /dev/dri/card0 133 contrast "$1"
-   settings[1]="contrast: $1"
 }
 
 function set_saturation() {
    sudo panel_drm_tool set /dev/dri/card0 133 saturation "$1"
-   settings[2]="saturation: $1"
 }
 
 function set_hue() {
    sudo panel_drm_tool set /dev/dri/card0 133 hue "$1"
-   settings[3]="hue: $1"
 }
 
 function get_brightness() {
@@ -43,7 +39,13 @@ function get_hue() {
    panel_drm_tool list | grep -A 9 133 | grep hue | awk -F 'hue = ' '{print $2}'
 }
 
-function SaveSettings() {
+function SaveSettingsOnShutdown() {
+  mapfile settings < /home/ark/.config/panel_settings.txt
+  settings[0]="brightness: $(get_brightness)"
+  settings[1]="contrast: $(get_contrast)"
+  settings[2]="saturation: $(get_saturation)"
+  settings[3]="hue: $(get_hue)"
+
   for j in "${settings[@]}"
   do
     echo $j
@@ -51,6 +53,7 @@ function SaveSettings() {
 }
 
 function RestoreSettings() {
+   mapfile settings < /home/ark/.config/panel_settings.txt
    set_brightness "$(echo ${settings[0]} | awk '{print $2}')"
    set_contrast "$(echo ${settings[1]} | awk '{print $2}')"
    set_saturation "$(echo ${settings[2]} | awk '{print $2}')"
@@ -65,12 +68,8 @@ if [ ! -f "/home/ark/.config/panel_settings.txt" ]; then
   echo "hue: 50" >> /home/ark/.config/panel_settings.txt
 fi
 
-mapfile settings < /home/ark/.config/panel_settings.txt
-
 cmd=${1}
 shift
 $cmd "$1"
-
-SaveSettings
 
 exit 0
