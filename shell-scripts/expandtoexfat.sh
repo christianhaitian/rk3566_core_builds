@@ -33,7 +33,7 @@ if [ $ExfatPctToRemain -lt "100" ]; then
   printf "d\n5\nw\nq\n" | sudo fdisk /dev/mmcblk1
   sudo growpart --free-percent=$ExfatPctToRemain -v /dev/mmcblk1 4
   sudo resize2fs /dev/mmcblk1p4
-  printf "n\n5\n\n\ny\nw\n" | sudo fdisk /dev/mmcblk1
+  printf "n\n5\n\n\ny\nt\n5\n11\nw\n" | sudo fdisk /dev/mmcblk1
 fi
 
 sudo mkfs.exfat -s 16K -n EASYROMS /dev/hda3
