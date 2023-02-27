@@ -40,24 +40,38 @@ function get_hue() {
 }
 
 function SaveSettingsOnShutdown() {
-  mapfile settings < /home/ark/.config/panel_settings.txt
-  settings[0]="brightness: $(get_brightness)"
-  settings[1]="contrast: $(get_contrast)"
-  settings[2]="saturation: $(get_saturation)"
-  settings[3]="hue: $(get_hue)"
+  let xres=$(cat /sys/class/graphics/fb0/modes | grep -o -P '(?<=:).*(?=p-)' | cut -dx -f1)
+  if [ $xres -lt "1280" ]; then
+    mapfile settings < /home/ark/.config/panel_settings.txt
+    settings[0]="brightness: $(get_brightness)"
+    settings[1]="contrast: $(get_contrast)"
+    settings[2]="saturation: $(get_saturation)"
+    settings[3]="hue: $(get_hue)"
 
-  for j in "${settings[@]}"
-  do
-    echo $j
-  done > /home/ark/.config/panel_settings.txt
+    for j in "${settings[@]}"
+    do
+      echo $j
+    done > /home/ark/.config/panel_settings.txt
+  else
+    echo " Device may be connected to hdmi.  Not saving any settings this time."
+  fi
+
 }
 
 function RestoreSettings() {
-   mapfile settings < /home/ark/.config/panel_settings.txt
-   set_brightness "$(echo ${settings[0]} | awk '{print $2}')"
-   set_contrast "$(echo ${settings[1]} | awk '{print $2}')"
-   set_saturation "$(echo ${settings[2]} | awk '{print $2}')"
-   set_hue "$(echo ${settings[3]} | awk '{print $2}')"
+  let xres=$(cat /sys/class/graphics/fb0/modes | grep -o -P '(?<=:).*(?=p-)' | cut -dx -f1)
+  if [ $xres -lt "1280" ]; then
+     mapfile settings < /home/ark/.config/panel_settings.txt
+     if [ "$(echo ${settings[1]} | awk '{print $2}')" -lt "1" ];then
+       settings[1]="$(echo ${settings[1]} | awk '{print $1}') 50"
+     fi
+     set_brightness "$(echo ${settings[0]} | awk '{print $2}')"
+     set_contrast "$(echo ${settings[1]} | awk '{print $2}')"
+     set_saturation "$(echo ${settings[2]} | awk '{print $2}')"
+     set_hue "$(echo ${settings[3]} | awk '{print $2}')"
+  else
+    echo " Device may be connected to hdmi.  Not restoring any settings this time."
+  fi
 }
 
 if [ ! -f "/home/ark/.config/panel_settings.txt" ]; then
