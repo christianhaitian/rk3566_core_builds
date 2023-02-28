@@ -62,7 +62,7 @@ function RestoreSettings() {
   let xres=$(cat /sys/class/graphics/fb0/modes | grep -o -P '(?<=:).*(?=p-)' | cut -dx -f1)
   if [ $xres -lt "1280" ]; then
      mapfile settings < /home/ark/.config/panel_settings.txt
-     if [ "$(echo ${settings[1]} | awk '{print $2}')" -lt "1" ];then
+     if [ "$(echo ${settings[1]} | awk '{print $2}')" -lt "10" ] || [ -z "$(echo ${settings[1]} | awk '{print $2}')" ];then
        settings[1]="$(echo ${settings[1]} | awk '{print $1}') 50"
      fi
      set_brightness "$(echo ${settings[0]} | awk '{print $2}')"
