@@ -101,7 +101,7 @@ minfluidsynthverneeded="3"
 	  mkdir extra
 	  mkdir themes
 	  cp backends/vkeybd/packs/*.zip extra/.
-	  cp dists/pred.dic extra.
+	  cp dists/pred.dic extra/.
 	  cp dists/engine-data/*.dat extra/.
 	  cp dists/engine-data/grim-patch.lab extra/.
 	  cp dists/engine-data/monkey4-patch.lab extra/.
