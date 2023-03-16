@@ -242,6 +242,9 @@ cd rk3566_core_builds
 ### To build just supergrafx (64bit Only):
 `./builds.sh supergrafx`
 
+### To build just swanstation (64bit Only):
+`./build.sh swanstation`
+
 ### To build just tic-80 (64bit only):
 `./builds.sh tic-80`
 
