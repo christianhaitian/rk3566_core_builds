@@ -149,6 +149,9 @@ cd rk3566_core_builds
 ### To build just mgba (64bit only):
 `./builds.sh mgba`
 
+### To build just microvision Standalone emulator:
+`./builds.sh microvisionsa`
+
 ### To build just mupen64plus-next:
 `./builds.sh mupen64plus-nx`
 
