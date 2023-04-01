@@ -67,7 +67,7 @@ bitness="$(getconf LONG_BIT)"
 	 echo "What is the screenscraper software name to use?"
 	 read softname
 	 if [[ -z "$softname" ]]; then
-	   [ ! -z $SOFTNAME ] && [ ! -z $VSOFTNAME ] && echo "We'll use either $SOFTNAME or $VSOFTNAME if this is a 351v build since you entered nothing above."
+	   [ ! -z $SOFTNAME ] && [ ! -z $VSOFTNAME ] && [ ! -z $SOFTNAME503 ] && echo "We'll use either $SOFTNAME or $VSOFTNAME if this is a 351v build or $SOFTNAME503 if this is a 503 build since you entered nothing above."
 	 fi
      echo ""
      
@@ -265,7 +265,7 @@ bitness="$(getconf LONG_BIT)"
 			fi
 
 			 if [[ -z "$softname" ]]; then
-			   softname=$(printenv SOFTNAME)
+			   softname=$(printenv SOFTNAME503)
 			   echo "The software name has been set to $softname since one was not provided at start."
 			 fi
 			cmake -DSCREENSCRAPER_DEV_LOGIN="devid=$devid&devpassword=$devpass" -DGAMESDB_APIKEY="$apikey" -DSCREENSCRAPER_SOFTNAME="$softname" .
