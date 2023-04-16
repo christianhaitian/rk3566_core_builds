@@ -49,7 +49,8 @@ bitness="$(getconf LONG_BIT)"
 	  done
 	 fi
 	  if [[ "$bitness" == "64" ]]; then
-	    CFLAGS="-O2 -march=armv8-a+crc -mtune=cortex-a55 -ftree-vectorize -funsafe-math-optimizations" ./configure --disable-caca \
+	    #CFLAGS="-O2 -march=armv8-a+crc -mtune=cortex-a55 -ftree-vectorize -funsafe-math-optimizations" 
+	    ./configure --disable-caca \
 	    --disable-mali_fbdev \
 	    --disable-opengl \
 	    --disable-opengl1 \
@@ -68,13 +69,13 @@ bitness="$(getconf LONG_BIT)"
 	    --enable-odroidgo2 \
 	    --enable-opengles \
 	    --enable-opengles3 \
-	    --enable-opengles3_1 \
 	    --enable-opengles3_2 \
 	    --enable-ozone \
 	    --enable-udev \
 	    --enable-wifi
       else
-	    CFLAGS="-O2 -march=armv8-a+crc -mtune=cortex-a55 -mfpu=neon-fp-armv8 -mfloat-abi=hard -ftree-vectorize -funsafe-math-optimizations" ./configure --disable-caca \
+	    #CFLAGS="-O2 -march=armv8-a+crc -mtune=cortex-a55 -mfpu=neon-fp-armv8 -mfloat-abi=hard -ftree-vectorize -funsafe-math-optimizations" 
+	    ./configure --disable-caca \
 	    --disable-mali_fbdev \
 	    --disable-opengl \
 	    --disable-opengl1 \
@@ -89,12 +90,11 @@ bitness="$(getconf LONG_BIT)"
 	    --enable-egl \
 	    --enable-freetype \
 	    --enable-kms \
-        --enable-neon \
+	    --enable-neon \
 	    --enable-networking \
 	    --enable-odroidgo2 \
 	    --enable-opengles \
 	    --enable-opengles3 \
-	    --enable-opengles3_1 \
 	    --enable-opengles3_2 \
 	    --enable-ozone \
 	    --enable-udev \
@@ -181,4 +181,18 @@ bitness="$(getconf LONG_BIT)"
 	  cp *.filt ../../../retroarch$bitness/filters/video
 	  echo " "
 	  echo "Video filters have been built and copied to the rk3566_core_builds/retroarch$bitness/filters/video subfolder"
+
+          cd ../../libretro-common/audio/dsp_filters
+          ./configure
+          make -j$(nproc)
+          if [[ $? != "0" ]]; then
+                echo " "
+                echo "There was an error while building the audio dsp filters for retroarch.  Stopping here."
+                exit 1
+          fi
+          mkdir -p ../../../../retroarch$bitness/filters/audio
+          cp *.so ../../../../retroarch$bitness/filters/audio
+          cp *.dsp ../../../../retroarch$bitness/filters/audio
+          echo " "
+          echo "Audio dsp filters have been built and copied to the rk3566_core_builds/retroarch$bitness/filters/audio subfolder"
 	fi
