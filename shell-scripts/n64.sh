@@ -9,7 +9,7 @@ else
 fi
 
 if [ -f "/boot/rk3326-odroidgo2-linux.dtb" ] || [ -f "/boot/rk3326-odroidgo2-linux-v11.dtb" ] || [ -f "/boot/rk3566.dtb" ] || [ -f "/boot/rk3566-OC.dtb" ] || [ -f "/boot/rk3326-odroidgo3-linux.dtb" ]; then
-  if [ "$(cat ~/.config/.DEVICE)" == "RG353V" ] || [ "$(cat ~/.config/.DEVICE)" == "RG353M" ]; then
+  if [ "$(cat ~/.config/.DEVICE)" == "RG353V" ] || [ "$(cat ~/.config/.DEVICE)" == "RG353M" ] || [ "$(cat ~/.config/.DEVICE)" == "RK2023" ]; then
     game="${2}"
   else
     game="${3}"
