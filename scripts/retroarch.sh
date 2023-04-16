@@ -49,7 +49,7 @@ bitness="$(getconf LONG_BIT)"
 	  done
 	 fi
 	  if [[ "$bitness" == "64" ]]; then
-	    CFLAGS="-Ofast -march=armv8-a -mtune=cortex-a55" \
+	    CFLAGS="-Ofast -march=armv8-a -mtune=cortex-a55 -fomit-frame-pointer -DNDEBUG" \
 	    ./configure \
 	    --disable-caca \
 	    --disable-mali_fbdev \
@@ -75,7 +75,7 @@ bitness="$(getconf LONG_BIT)"
 	    --enable-udev \
 	    --enable-wifi
       else
-	    CFLAGS="-Ofast -march=armv8-a -mtune=cortex-a55 -mfpu=neon-fp-armv8 -mfloat-abi=hard" \ 
+	    CFLAGS="-Ofast -march=armv8-a -mtune=cortex-a55 -mfpu=neon-fp-armv8 -mfloat-abi=hard -fomit-frame-pointer -DNDEBUG" \ 
 	    ./configure \
 	    --disable-caca \
 	    --disable-mali_fbdev \
