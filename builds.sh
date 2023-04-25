@@ -28,7 +28,12 @@ do
         echo "$var cannot be built in this current ${bitness}bit environment."
         exit 1
       fi
-    if test -z "$(ls -l /usr/lib/aarch64-linux-gnu/libMali.so | grep g52-g2p0-gbm | tr -d '\0')"
+    if [[ ${bitness} == "32" ]]; then
+      archtest="arm-linux-gnueabihf"
+    else
+      archtest="aarch64-linux-gnu"
+    fi
+    if test -z "$(ls -l /usr/lib/${archtest}/libMali.so | grep g52-g2p0-gbm | tr -d '\0')"
     then
       printf "\nUpdating libMali to properly link to ibmali-bifrost-g52-g2p0-gbm.so in the dev environment, please wait...\n"
       if [[ ${bitness} == "32" ]] && [[ ! " ${g31only[*]} " =~ " ${var} " ]]; then
@@ -88,6 +93,9 @@ do
       ln -sf libMali.so libwayland-egl.so
       ln -sf libMali.so libwayland-egl.so.1
       ln -sf libMali.so libwayland-egl.so.1.0.0
+      if [ ! -d "/usr/local/lib/${arch}/" ]; then
+        mkdir /usr/local/lib/${arch}/
+      fi
       cd /usr/local/lib/${arch}/
       rm libMali.so
       rm libEGL.so*
