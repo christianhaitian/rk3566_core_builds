@@ -13,7 +13,8 @@ cur_wd="$PWD"
 bitness="$(getconf LONG_BIT)"
 #commit="25f9ed87ff6947d9576fc9d79dee0784e638ac58" # SDL 2.0.16
 #commit="f9b918ff403782986f2a6712e6e2a462767a0457" # SDL 2.0.20 although it builds as 2.0.18.2 ¯\_(ツ)_/¯
-commit="f070c83a6059c604cbd098680ddaee391b0a7341" # SDL 2.0.26.2
+#commit="f070c83a6059c604cbd098680ddaee391b0a7341" # SDL 2.0.26.2
+commit="ac13ca9ab691e13e8eebe9684740ddcb0d716203" # SDL 2.0.26.5
 
 	# sdl2 Standalone Build
 	if [[ "$var" == "sdl2" ]]; then
@@ -62,15 +63,15 @@ commit="f070c83a6059c604cbd098680ddaee391b0a7341" # SDL 2.0.26.2
 
      #sed -i "s| -lrga||g" CMakeLists.txt
 
-        if [[ $bitness == "32" ]]; then
-         ./autogen.sh
-         ./configure --host=arm-linux-gnueabihf \
-         --enable-video-kmsdrm \
-         --disable-video-x11 \
-         --disable-video-rpi \
-         --disable-video-wayland \
-         --disable-video-vulkan
-       else
+        #if [[ $bitness == "32" ]]; then
+        # ./autogen.sh
+        # ./configure --host=arm-linux-gnueabihf \
+        # --enable-video-kmsdrm \
+        # --disable-video-x11 \
+        # --disable-video-rpi \
+        # --disable-video-wayland \
+        # --disable-video-vulkan
+       #else
          mkdir build
          cd build
          cmake -DSDL_STATIC=OFF \
@@ -115,7 +116,7 @@ commit="f070c83a6059c604cbd098680ddaee391b0a7341" # SDL 2.0.26.2
                -DSDL_KMSDRM=ON \
                -DSDL_PULSEAUDIO=ON ..
           export LDFLAGS="${LDFLAGS} -lrga"
-       fi
+       #fi
 
       #../configure --prefix=$PWD/bin$bitness
 	  #make clean
@@ -128,21 +129,21 @@ commit="f070c83a6059c604cbd098680ddaee391b0a7341" # SDL 2.0.26.2
 		exit 1
 	  fi
 
-      if [[ $bitness == "32" ]]; then
-	     strip build/.libs/libSDL2-2.0.so.0.*
-	  else
+      #if [[ $bitness == "32" ]]; then
+	  #   strip build/.libs/libSDL2-2.0.so.0.*
+	  #else
 	     strip libSDL2-2.0.so.0.*
-	  fi
+	  #fi
 
 	  if [ ! -d "$cur_wd/sdl2-$bitness/" ]; then
 		mkdir -v $cur_wd/sdl2-$bitness
 	  fi
 
-      if [[ $bitness == "32" ]]; then
-	     cp build/.libs/libSDL2-2.0.so.0.* $cur_wd/sdl2-$bitness/.
-	  else
+      #if [[ $bitness == "32" ]]; then
+	  #   cp build/.libs/libSDL2-2.0.so.0.* $cur_wd/sdl2-$bitness/.
+	  #else
 	     cp libSDL2-2.0.so.0.* $cur_wd/sdl2-$bitness/.
-	  fi
+	  #fi
 
 	  echo " "
 	  echo "sdl $(git describe --tags | cut -c 9-) has been created and has been placed in the rk3566_core_builds/sdl2-$bitness subfolder"
