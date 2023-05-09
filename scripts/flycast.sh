@@ -52,7 +52,7 @@ bitness="$(getconf LONG_BIT)"
 	  make clean
 
 	  if [[ "$bitness" == "64" ]]; then
-		make WITH_DYNAREC=arm64 FORCE_GLES=1 platform=goadvance -j$(nproc)
+		make FORCE_GLES=1 platform=RK3566 HAVE_OPENMP=1 HAVE_LTCG=0 -j$(nproc)
 	  else 
 		make FORCE_GLES=1 platform=classic_armv8_a55 -j$(nproc)
 	  fi
