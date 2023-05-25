@@ -1,8 +1,8 @@
 diff --git a/gfx/drivers_context/drm_ctx.c b/gfx/drivers_context/drm_ctx.c
-index 5b59e4c..6ecaa72 100644
+index c11c5e90c8..79ccf37cfa 100644
 --- a/gfx/drivers_context/drm_ctx.c
 +++ b/gfx/drivers_context/drm_ctx.c
-@@ -807,6 +807,8 @@ static bool gfx_ctx_drm_set_video_mode(void *data,
+@@ -822,6 +822,8 @@ static bool gfx_ctx_drm_set_video_mode(void *data,
     settings_t *settings            = config_get_ptr();
     unsigned black_frame_insertion  = settings->uints.video_black_frame_insertion;
     float video_refresh_rate        = settings->floats.video_refresh_rate;
@@ -11,7 +11,7 @@ index 5b59e4c..6ecaa72 100644
  
     if (!drm)
        return false;
-@@ -820,58 +822,16 @@ static bool gfx_ctx_drm_set_video_mode(void *data,
+@@ -835,61 +837,16 @@ static bool gfx_ctx_drm_set_video_mode(void *data,
     /* Find desired video mode, and use that.
      * If not fullscreen, we get desired windowed size,
      * which is not appropriate. */
@@ -26,7 +26,10 @@ index 5b59e4c..6ecaa72 100644
 -      return true;
 -   }
 -   if ((width == 0 && height == 0) || !fullscreen)
+-   {
 -      g_drm_mode                   = &g_drm_connector->modes[0];
+-      RARCH_WARN("[KMS]: Falling back to mode 0 (default)\n");
+-   }
 -   else
 -   {
 -      /* check if custom HDMI timings were asked */
