@@ -75,7 +75,7 @@ bitness="$(getconf LONG_BIT)"
 	    --enable-udev \
 	    --enable-wifi
       else
-	    CFLAGS="-Ofastast -march=armv8-a -mtune=cortex-a55 -mfpu=neon-fp-armv8 -mfloat-abi=hard -fomit-frame-pointer -DNDEBUG -DUDEV_TOUCH_SUPPORT" \
+	    CFLAGS="-Ofast -march=armv8-a -mtune=cortex-a55 -mfpu=neon-fp-armv8 -mfloat-abi=hard -fomit-frame-pointer -DNDEBUG -DUDEV_TOUCH_SUPPORT" \
 	    ./configure \
 	    --disable-caca \
 	    --disable-mali_fbdev \
