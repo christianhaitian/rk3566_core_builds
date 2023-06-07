@@ -20,6 +20,7 @@ if [[ $1 == "standalone" ]]; then
         directory=$(dirname "$2" | cut -d "/" -f2)
         sudo /opt/quitter/oga_controls lzdoom $param_device &
 	if [ ".$(echo "$2"| cut -d. -f2)" == ".sh" ] || [ ".$(echo "$2"| cut -d. -f2)" == ".SH" ]; then
+	dos2unix "${2}"
 	"$2"
 	elif [ ".$(echo "$2"| cut -d. -f2)" == ".doom" ] || [ ".$(echo "$2"| cut -d. -f2)" == ".DOOM" ]; then
 	  IWAD=""; MODS=""; DEH=""; SAVE=""; CONF=""; PARAMS=""; DOOM_BASE_DIR="/$directory/doom/"
@@ -49,6 +50,7 @@ elif [[ $1 == "standalone-gzdoom" ]]; then
         directory=$(dirname "$2" | cut -d "/" -f2)
         sudo /opt/quitter/oga_controls gzdoom $param_device &
         if [ ".$(echo "$2"| cut -d. -f2)" == ".sh" ] || [ ".$(echo "$2"| cut -d. -f2)" == ".SH" ]; then
+	dos2unix "${2}"
         "$2"
         elif [ ".$(echo "$2"| cut -d. -f2)" == ".doom" ] || [ ".$(echo "$2"| cut -d. -f2)" == ".DOOM" ]; then
           IWAD=""; MODS=""; DEH=""; SAVE=""; CONF=""; PARAMS=""; DOOM_BASE_DIR="/$directory/doom/"
