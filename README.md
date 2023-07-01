@@ -191,6 +191,12 @@ cd rk3566_core_builds
 ### To build just o2em (64bit only):
 `./builds.sh o2em`
 
+### To build just onscripter (64bit only):
+`./builds.sh onscripter`
+
+### To build just openbor (64bit only):
+`./builds.sh openbor`
+
 ### To build just openmsx standalone emulator (64bit only):
 `./builds.sh openmsx`
 
