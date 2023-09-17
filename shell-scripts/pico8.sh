@@ -32,6 +32,8 @@ directory="$(dirname "$2" | cut -d "/" -f2)"
 basefile="$(basename -- "$2")"
 basefilenoext="${basefile%.*}"
 
+. /usr/local/bin/buttonmon.sh
+
 if [[ ! -f "/$directory/pico-8/sdl_controllers.txt" ]]; then
 echo "19000000030000000300000002030000,gameforce_gamepad,leftstick:b14,rightx:a3,leftshoulder:b4,start:b9,lefty:a0,dpup:b10,righty:a2,a:b1,b:b0,guide:b16,dpdown:b11,rightshoulder:b5,righttrigger:b7,rightstick:b15,dpright:b13,x:b2,back:b8,leftx:a1,y:b3,dpleft:b12,lefttrigger:b6,platform:Linux,
 190000004b4800000010000000010000,GO-Advance Gamepad,a:b1,b:b0,x:b2,y:b3,leftshoulder:b4,rightshoulder:b5,dpdown:b7,dpleft:b8,dpright:b9,dpup:b6,leftx:a0,lefty:a1,guide:b10,leftstick:b12,lefttrigger:b11,rightstick:b13,righttrigger:b14,start:b15,platform:Linux,
@@ -98,15 +100,17 @@ if [[ $1 == "retroarch" ]]; then
   if [[ "$ext" == "png" ]] || [[ "$ext" == "PNG" ]]; then
    # .png extension doesn't work with the fake08 retroarch emulator
    # so let's temporarily convert them to .p8 files to launch with retroarch
-    if [[ "$basefilenoext" == *".p8"* ]] || [[ "$basefilenoext" == *".P8"* ]]; then
-      cp -f "$2" "/$directory/pico-8/carts/$basefilenoext"
-      file="/$directory/pico-8/carts/$basefilenoext"
-    else
-      cp -f "$2" "/$directory/pico-8/carts/${basefilenoext}.p8"
-      file="/$directory/pico-8/carts/${basefilenoext}.p8"
-    fi
-    /usr/local/bin/"$1" -L /home/ark/.config/"$1"/cores/fake08_libretro.so "$file"
-    rm -f "$file"
+   # if [[ "$basefilenoext" == *".p8"* ]] || [[ "$basefilenoext" == *".P8"* ]]; then
+   #   cp -f "$2" "/$directory/pico-8/carts/$basefilenoext"
+   #   file="/$directory/pico-8/carts/$basefilenoext"
+   # else
+   #   cp -f "$2" "/$directory/pico-8/carts/${basefilenoext}.p8"
+   #   file="/$directory/pico-8/carts/${basefilenoext}.p8"
+   # fi
+   # /usr/local/bin/"$1" -L /home/ark/.config/"$1"/cores/fake08_libretro.so "$file"
+   # rm -f "$file"
+   sed -i '/builtin_imageviewer_enable \= "true"/c\builtin_imageviewer_enable \= "false"' /home/ark/.config/retroarch/retroarch.cfg
+   /usr/local/bin/"$1" -L /home/ark/.config/"$1"/cores/fake08_libretro.so "$2"
   else
     /usr/local/bin/"$1" -L /home/ark/.config/"$1"/cores/fake08_libretro.so "$2"
   fi
@@ -140,6 +144,30 @@ elif [[ ! -f "/$directory/pico-8/pico8.dat" ]] &&  [[ "$1" != *"retroarch"* ]]; 
 fi
 
 sudo /opt/quitter/oga_controls $pico8executable $param_device &
+
+Test_Button_B
+if [ "$?" -eq "10" ]; then
+  printf "\n Starting splore.  Please wait..." >> /dev/tty1
+  if [[ $1 == "float-scaled" ]]; then
+    /$directory/pico-8/$pico8executable -splore -home /$directory/pico-8/ -root_path /$directory/pico-8/carts/ -joystick 0
+  elif [[ $1 == "pixel-perfect" ]]; then
+    /$directory/pico-8/$pico8executable -splore -home /$directory/pico-8/ -root_path /$directory/pico-8/carts/ -joystick 0 -pixel_perfect 1
+  elif [[ $1 == "full-screen" ]]; then
+    /$directory/pico-8/$pico8executable -splore -home /$directory/pico-8/ -root_path /$directory/pico-8/carts/ -joystick 0 -draw_rect 0,0,$res
+  fi
+
+  printf "\033[0m" >> /dev/tty1
+  mv -f /$directory/pico-8/bbs/carts/*.png /$directory/pico-8/carts/
+  mv -f /$directory/pico-8/bbs/carts/*.PNG /$directory/pico-8/carts/
+  mv -f /$directory/pico-8/bbs/carts/*.p8 /$directory/pico-8/carts/
+  mv -f /$directory/pico-8/bbs/carts/*.P8 /$directory/pico-8/carts/
+
+  if [[ ! -z $(pidof oga_controls) ]]; then
+    sudo kill -9 $(pidof oga_controls)
+  fi
+  sudo systemctl restart oga_events &
+  exit 0
+fi
 
 if [[ $1 == "float-scaled" ]]; then
 	if [[ ${basefilenoext,,} == "zzzsplore" ]]; then
