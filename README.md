@@ -287,6 +287,9 @@ cd rk3566_core_builds
 ### To build just swanstation (64bit Only):
 `./build.sh swanstation`
 
+### To build just theodore (64bit only):
+`./builds.sh theodore`
+
 ### To build just tic-80 (64bit only):
 `./builds.sh tic-80`
 
