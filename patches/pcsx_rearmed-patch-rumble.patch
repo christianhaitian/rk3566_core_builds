@@ -1,8 +1,8 @@
 diff --git a/frontend/libretro.c b/frontend/libretro.c
-index 3e74b23..2bfe7c4 100644
+index a26d466..f69ffcf 100644
 --- a/frontend/libretro.c
 +++ b/frontend/libretro.c
-@@ -40,6 +40,9 @@
+@@ -39,6 +39,9 @@
  
  #include <libretro.h>
  #include "libretro_core_options.h"
@@ -12,26 +12,29 @@ index 3e74b23..2bfe7c4 100644
  
  #ifdef USE_LIBRETRO_VFS
  #include <streams/file_stream_transforms.h>
-@@ -516,6 +519,33 @@ void plat_trigger_vibrate(int pad, int low, int high)
+@@ -511,6 +514,36 @@ void plat_trigger_vibrate(int pad, int low, int high)
  
     if (in_enable_vibration)
     {
 +    FILE *file;
++    int total_strength;
 +
 +    if (high > 0){
 +       if ((file = fopen("/sys/class/pwm/pwmchip0/pwm0/duty_cycle", "r+"))) {
-+          fputs("10", file);
++          total_strength = 1000000 - (((double)high * 1000000) / 255.0);
++          fputs(total_strength, file);
 +          fclose(file);
 +       } else if ((file = fopen("/sys/class/pwm/pwmchip1/pwm0/duty_cycle", "r+"))) {
-+          fputs("10", file);
++          total_strength = 1000000 - (((double)high * 1000000) / 255.0);
++          fputs(total_strength, file);
 +          fclose(file);
 +       }
 +    } else if (low > 0){
 +       if ((file = fopen("/sys/class/pwm/pwmchip0/pwm0/duty_cycle", "r+"))) {
-+          fputs("500000", file);
++          fputs("600000", file);
 +          fclose(file);
 +       } else if ((file = fopen("/sys/class/pwm/pwmchip1/pwm0/duty_cycle", "r+"))) {
-+          fputs("500000", file);
++          fputs("600000", file);
 +          fclose(file);
 +       }
 +    } else {
@@ -46,7 +49,7 @@ index 3e74b23..2bfe7c4 100644
        rumble_cb(pad, RETRO_RUMBLE_STRONG, high << 8);
        rumble_cb(pad, RETRO_RUMBLE_WEAK, low ? 0xffff : 0x0);
     }
-@@ -1850,8 +1880,18 @@ static void update_variables(bool in_flight)
+@@ -1854,8 +1887,18 @@ static void update_variables(bool in_flight)
     {
        if (strcmp(var.value, "disabled") == 0)
           in_enable_vibration = 0;
