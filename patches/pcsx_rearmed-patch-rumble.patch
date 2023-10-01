@@ -22,11 +22,11 @@ index a26d466..f69ffcf 100644
 +    if (high > 0){
 +       if ((file = fopen("/sys/class/pwm/pwmchip0/pwm0/duty_cycle", "r+"))) {
 +          total_strength = 1000000 - (((double)high * 1000000) / 255.0);
-+          fputs(total_strength, file);
++          fprintf(file, "%u", total_strength);
 +          fclose(file);
 +       } else if ((file = fopen("/sys/class/pwm/pwmchip1/pwm0/duty_cycle", "r+"))) {
 +          total_strength = 1000000 - (((double)high * 1000000) / 255.0);
-+          fputs(total_strength, file);
++          fprintf(file, "%u", total_strength);
 +          fclose(file);
 +       }
 +    } else if (low > 0){
