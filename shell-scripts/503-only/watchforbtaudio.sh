@@ -27,7 +27,7 @@ until false; do
 		syncdevice=$(bluealsa-cli --quiet list-pcms | grep -o -E '([[:xdigit:]]{2}_){5}[[:xdigit:]]{2}' | sed '/_/s//:/g')
 		alsaloop -C hw:Loopback,1,0 -P bluealsa:DEV=${syncdevice},PROFILE=a2dp --sync=none -c 2 -r 48000 -f s16_le -t 100000 &
 		cp -f ~/.asoundrcbt ~/.asoundrc
-		if [[ -z $(pgrep -x finish.sh) ]] && [[ -z $(pgrep -x pause.sh) ]]; then; then
+		if [[ -z $(pgrep -x finish.sh) ]] && [[ -z $(pgrep -x pause.sh) ]]; then
 		  sudo systemctl restart oga_events
 		fi
 		if test -z "$(cat /home/ark/.kodi/userdata/advancedsettings.xml | grep "<audiooutput>" | tr -d '\0')"
@@ -42,7 +42,7 @@ until false; do
 	else
 		pkill alsaloop
 		cp -f ~/.asoundrcbak ~/.asoundrc
-		if [[ -z $(pgrep -x finish.sh) ]] && [[ -z $(pgrep -x pause.sh) ]]; then; then
+		if [[ -z $(pgrep -x finish.sh) ]] && [[ -z $(pgrep -x pause.sh) ]]; then
 		  sudo systemctl restart oga_events
 		fi
 		sed -i '/<audiodevice>/c\                <audiodevice><\/audiodevice>' /home/ark/.kodi/userdata/advancedsettings.xml
