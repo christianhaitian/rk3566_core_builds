@@ -42,19 +42,27 @@ fi
 export TERM=linux
 export XDG_RUNTIME_DIR=/run/user/$UID/
 
+sudo setfont /usr/share/consolefonts/Lat7-TerminusBold20x10.psf.gz
+
+pgrep -f gptokeyb | sudo xargs kill -9
+pgrep -f osk.py | sudo xargs kill -9
 printf "\033c" > /dev/tty1
 printf "Starting Wifi Manager.  Please wait..." > /dev/tty1
-sudo systemctl stop networkwatchdaemon
-sudo systemctl start NetworkManager
+#sudo systemctl stop networkwatchdaemon
+#sudo systemctl start NetworkManager
 
 #cur_ap=`iw dev wlan0 info | grep ssid | cut -c 7-30`
 old_ifs="$IFS"
 
 ExitMenu() {
   printf "\033c" > /dev/tty1
-  pgrep -f oga_controls | sudo xargs kill -9
-  sudo systemctl stop NetworkManager
-  sudo systemctl start networkwatchdaemon
+  if [[ ! -z $(pgrep -f gptokeyb) ]]; then
+    pgrep -f gptokeyb | sudo xargs kill -9
+  fi
+  if [[ ! -z $(pgrep -f gptokeyb) ]]; then
+    pgrep -f gptokeyb | sudo xargs kill -9
+  fi
+#  unset SDL_GAMECONTROLLERCONFIG_FILE
   exit 0
 }
 
@@ -99,45 +107,42 @@ Activate() {
 Select() {
   KEYBOARD="osk"
 
+  pgrep -f gptokeyb | sudo xargs kill -9
   # get password from input
-  PASS=`$KEYBOARD "Enter Wi-Fi password" | tail -n 1`
+  PASS=`$KEYBOARD "Enter Wi-Fi password for $1" | tail -n 1`
+  /opt/inttools/gptokeyb -1 "Wifi.sh" -c "/opt/inttools/keys.gptk" & > /dev/null
 
   dialog --infobox "\nConnecting to Wi-Fi $1 ..." 5 $width > /dev/tty1
   clist2=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
-  WPA3=`echo "$clist2" | grep "$1" | grep " WPA3"`
+  WPA3=`echo "$clist2" | grep "$1" | grep "WPA3"`
 
   # try to connect
   output=`nmcli con delete "$1"`
-  if [[ "$WPA3" != *" WPA3"* ]]; then
+  if [[ "$WPA3" != *"WPA3"* ]]; then
     output=`nmcli device wifi connect "$1" password "$PASS"`
   else
     #workaround for wpa2/wpa3 connectivity
     output=`nmcli device wifi connect "$1" password "$PASS"`
+    #sudo sed -i '/psk=/a sae-password='"$PASS"'\nieee80211w=1' /etc/NetworkManager/system-connections/"$1".nmconnection
     sudo sed -i '/key-mgmt\=sae/s//key-mgmt\=wpa-psk/' /etc/NetworkManager/system-connections/"$1".nmconnection
     sudo systemctl restart NetworkManager
+    sleep 5
     output=`nmcli con up "$1"`
   fi
   success=`echo "$output" | grep successfully`
 
   if [ -z "$success" ]; then
     output="Activation failed: Secrets were required, but not provided ..."
+    sudo rm -f /etc/NetworkManager/system-connections/"$1".nmconnection
   else
     output="Device successfully activated and connected to Wi-Fi ..."
-	cur_ap=`iw dev wlan0 info | grep ssid | cut -c 7-30`
+    cur_ap=`iw dev wlan0 info | grep ssid | cut -c 7-30`
   fi
   
   dialog --infobox "\n$output" 6 $width > /dev/tty1
   sleep 3
   Connect
 }
-
-#
-# Joystick controls
-#
-# only one instance
-  CONTROLS="/opt/wifi/oga_controls"
-
-  sudo $CONTROLS Wifi.sh rg552 &
 
 ConnectExisting() {
   cur_ap=`iw dev wlan0 info | grep ssid | cut -c 7-30`
@@ -167,6 +172,9 @@ Connect() {
   dialog --infobox "\nScanning available Wi-Fi access points ..." 5 $width > /dev/tty1
   sleep 1
   clist=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+  if [ -z "$clist" ]; then
+    clist=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+  fi
   cur_ap=`iw dev wlan0 info | grep ssid | cut -c 7-30`
 
   # Set colon as the delimiter
@@ -205,9 +213,10 @@ Connect() {
 }
 
 Delete() {
+  #deloptions=( $(ls -1 /etc/NetworkManager/system-connections/ | rev | cut -c 14- | rev | sed 's/^/"/;s/$/"/' | sed -e 's/$/ ./') )
   deloptions=( $(ls -1 /etc/NetworkManager/system-connections/ | rev | cut -c 14- | rev | sed -e 's/$/ ./') )
   cur_ap=`iw dev wlan0 info | grep ssid | cut -c 7-30`
-  
+
   while true; do
     delselection=(dialog \
    	--backtitle "Existing Connections: Currently connected to $cur_ap" \
@@ -266,5 +275,18 @@ MainMenu() {
   done
 }
 
-MainMenu
+#
+# Joystick controls
+#
+# only one instance
 
+sudo chmod 666 /dev/uinput
+export SDL_GAMECONTROLLERCONFIG_FILE="/opt/inttools/gamecontrollerdb.txt"
+if [[ ! -z $(pgrep -f gptokeyb) ]]; then
+  pgrep -f gptokeyb | sudo xargs kill -9
+fi
+/opt/inttools/gptokeyb -1 "Wifi.sh" -c "/opt/inttools/keys.gptk" &
+printf "\033c" > /dev/tty1
+dialog --clear
+
+MainMenu
