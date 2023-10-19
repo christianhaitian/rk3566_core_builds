@@ -5,9 +5,7 @@
 # based keyboard to the user.                                    #
 ##################################################################
 
-if [[ -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
-  sudo setfont /usr/share/consolefonts/FullGreek-TerminusBold16.psf.gz
-else
+if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
   sudo setfont /usr/share/consolefonts/Lat7-TerminusBold28x14.psf.gz
 fi
 
@@ -41,7 +39,10 @@ if [[ ! -z "$set_gptokeyb" ]]; then
   pgrep -f gptokeyb | sudo xargs kill -9
   unset SDL_GAMECONTROLLERCONFIG_FILE
 fi
-#sudo setfont
-sudo setfont /usr/share/consolefonts/Lat7-TerminusBold20x10.psf.gz
+
+if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
+  sudo setfont /usr/share/consolefonts/Lat7-TerminusBold20x10.psf.gz
+fi
+
 echo "$RESULTS"
 printf "\033c" > /dev/tty1
