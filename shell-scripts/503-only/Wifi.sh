@@ -19,6 +19,7 @@
 # Boston, MA 02110-1301 USA
 #
 # Authored by: Kris Henriksen <krishenriksen.work@gmail.com>
+# Thanks to Quack for modifications to account for SSIDs with spaces
 #
 # Wi-Fi-dialog
 #
@@ -42,7 +43,9 @@ fi
 export TERM=linux
 export XDG_RUNTIME_DIR=/run/user/$UID/
 
-sudo setfont /usr/share/consolefonts/Lat7-TerminusBold20x10.psf.gz
+if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
+  sudo setfont /usr/share/consolefonts/Lat7-TerminusBold20x10.psf.gz
+fi
 
 pgrep -f gptokeyb | sudo xargs kill -9
 pgrep -f osk.py | sudo xargs kill -9
@@ -67,13 +70,12 @@ ExitMenu() {
 }
 
 DeleteConnect() {
-
   cur_ap=`iw dev wlan0 info | grep ssid | cut -c 7-30`
   dialog --clear --backtitle "Delete Connection: Currently connected to $cur_ap" --title "Removing $1" --clear \
   --yesno "\nWould you like to continue to remove this connection?" $height $width 2>&1 > /dev/tty1
 
   case $? in
-     0) sudo rm -f /etc/NetworkManager/system-connections/$1.nmconnection ;;
+     0) sudo rm -f "/etc/NetworkManager/system-connections/$1.nmconnection" ;;
   esac
 
   Delete
@@ -82,7 +84,11 @@ DeleteConnect() {
 Activate() {
 
   cur_ap=`iw dev wlan0 info | grep ssid | cut -c 7-30`
-  aoptions=( $(ls -1 /etc/NetworkManager/system-connections/ | rev | cut -c 14- | rev | sed -e 's/$/ ./') )
+
+  declare aoptions=()
+  while IFS= read -r -d $'\n' ssid; do
+    aoptions+=("$ssid" ".")
+  done < <(ls -1 /etc/NetworkManager/system-connections/ | rev | cut -c 14- | rev | sed -e 's/$//')
 
   while true; do
     aselection=(dialog \
@@ -93,13 +99,10 @@ Activate() {
 	--cancel-label "Back" \
     --menu "" $height $width 15)
 
-    achoices=$("${aselection[@]}" "${aoptions[@]}" 2>&1 > /dev/tty1) || MainMenu
+    achoice=$("${aselection[@]}" "${aoptions[@]}" 2>&1 > /dev/tty1) || MainMenu
 
-    for achoice in $achoices; do
-      case $achoice in
-        *) ConnectExisting $achoice ;;
-      esac
-    done
+    # There is only one choice possible
+    ConnectExisting "$achoice"
   done  
 
 }
@@ -214,7 +217,11 @@ Connect() {
 
 Delete() {
   #deloptions=( $(ls -1 /etc/NetworkManager/system-connections/ | rev | cut -c 14- | rev | sed 's/^/"/;s/$/"/' | sed -e 's/$/ ./') )
-  deloptions=( $(ls -1 /etc/NetworkManager/system-connections/ | rev | cut -c 14- | rev | sed -e 's/$/ ./') )
+  declare deloptions=()
+  while IFS= read -r -d $'\n' ssid; do
+    deloptions+=("$ssid" ".")
+  done < <(ls -1 /etc/NetworkManager/system-connections/ | rev | cut -c 14- | rev | sed -e 's/$//')
+
   cur_ap=`iw dev wlan0 info | grep ssid | cut -c 7-30`
 
   while true; do
@@ -226,15 +233,10 @@ Delete() {
 	--cancel-label "Back" \
     --menu "" $height $width 15)
 
-    delchoices=$("${delselection[@]}" "${deloptions[@]}" 2>&1 > /dev/tty1) || MainMenu
-
-    for delchoice in $delchoices; do
-      case $delchoice in
-        *) DeleteConnect $delchoice ;;
-      esac
-    done
+    # There is only a single choice possible
+    delchoice=$("${delselection[@]}" "${deloptions[@]}" 2>&1 > /dev/tty1) || MainMenu
+    DeleteConnect "$delchoice"
   done  
-
 }
 
 NetworkInfo() {
