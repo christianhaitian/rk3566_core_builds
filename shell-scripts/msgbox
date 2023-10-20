@@ -17,6 +17,7 @@ if [[ -z $(pgrep -f gptokeyb) ]] && [[ -z $(pgrep -f oga_controls) ]]; then
   sudo chmod 666 /dev/uinput
   export SDL_GAMECONTROLLERCONFIG_FILE="/opt/inttools/gamecontrollerdb.txt"
   /opt/inttools/gptokeyb -1 "dialog" -c "/opt/inttools/keys.gptk" &
+  disown
   set_gptokeyb="Y"
 fi
 
