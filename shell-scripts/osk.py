@@ -283,7 +283,7 @@ class OSK:
                 Divider(),
                 # 2nd keyboard row
                 WrappableColumns([
-                    (2, Text(" ")),
+                    #(2, Text(" ")),
                     (3, Key('q')),
                     (3, Key('w')),
                     (3, Key('e')),
