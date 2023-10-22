@@ -1,12 +1,13 @@
 #!/bin/bash
 
 # Script used to quickly modify and build various branches of the ogage keydaemon
-# rust program used in ArkOS.
+# rust program used in ArkOS located at  https://github.com/christianhaitian/ogage
 # Usage:
-# To modify builds - Update the cur_string and new_string variables with current string that should be matched and new string respectively.
-# Then do ogage.sh build.  New builds will be placed in ogage-temp/ogage-batch directory.
-# To commit changes and push them to the repo - Do ogage.sh commit "Commit message".  "Commit message" is options and if
-# not included, commit message will default to "Update"
+# To modify builds - Update the cur_string and new_string variables with current string 
+# that should be matched and new string respectively.  Then do ogage.sh build.  
+# New builds will be placed in ogage-temp/ogage-batch directory.
+# To commit changes and push them to the repo - Do ogage.sh commit "Commit message".
+# "Commit message" is optional and if not included, commit message will default to "Update"
 
 cur_wd="$PWD"
 # Branches of ogage to be pulled and worked with
