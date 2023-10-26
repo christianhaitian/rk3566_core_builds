@@ -5,7 +5,7 @@
 
 spktoggle=$(amixer | grep "Item0: 'SPK'")
 
-if [ "$(cat ~/.config/.DEVICE)" == "RGB30" ] || [ "$(cat ~/.config/.DEVICE)" == "RK2023" ]; then
+if [ "$(cat /home/ark/.config/.DEVICE)" == "RGB30" ] || [ "$(cat /home/ark/.config/.DEVICE)" == "RK2023" ]; then
   presses="spktogglepress1 spktogglepress2 spktogglepress3 spktogglepress4 spktogglepress5"
 
   if [ -z "$spktoggle" ]
