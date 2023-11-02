@@ -62,6 +62,14 @@ bitness="$(getconf LONG_BIT)"
 	    --disable-vulkan_display \
 	    --disable-wayland \
 	    --disable-x11 \
+	    --disable-xrandr \
+	    --disable-winrawinput \
+	    --disable-gdi \
+	    --disable-d3d10 \
+	    --disable-d3d11 \
+	    --disable-d3d12 \
+	    --disable-opengl1 \
+	    --disable-microphone \
 	    --enable-alsa \
 	    --enable-egl \
 	    --enable-freetype \
@@ -70,6 +78,7 @@ bitness="$(getconf LONG_BIT)"
 	    --enable-odroidgo2 \
 	    --enable-opengles \
 	    --enable-opengles3 \
+	    --enable-opengles3_1 \
 	    --enable-opengles3_2 \
 	    --enable-ozone \
 	    --enable-udev \
@@ -88,6 +97,14 @@ bitness="$(getconf LONG_BIT)"
 	    --disable-vulkan_display \
 	    --disable-wayland \
 	    --disable-x11 \
+        --disable-xrandr \
+        --disable-winrawinput \
+        --disable-gdi \
+        --disable-d3d10 \
+        --disable-d3d11 \
+        --disable-d3d12 \
+        --disable-opengl1 \
+        --disable-microphone \
 	    --enable-alsa \
 	    --enable-egl \
 	    --enable-freetype \
@@ -97,6 +114,7 @@ bitness="$(getconf LONG_BIT)"
 	    --enable-odroidgo2 \
 	    --enable-opengles \
 	    --enable-opengles3 \
+	    --enable-opengles3_1 \
 	    --enable-opengles3_2 \
 	    --enable-ozone \
 	    --enable-udev \
