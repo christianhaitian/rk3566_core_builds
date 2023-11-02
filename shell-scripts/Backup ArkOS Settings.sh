@@ -3,7 +3,7 @@ clear
 
 . /usr/local/bin/buttonmon.sh
 
-printf "\nAre you sure you want to restore a backup of your ArkOS settings?\n"
+printf "\nAre you sure you want to create a backup of your ArkOS settings?\n"
 printf "\nPress A to continue.  Press B to exit.\n"
 while true
 do
