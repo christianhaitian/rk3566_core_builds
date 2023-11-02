@@ -272,6 +272,7 @@ DeleteConnect() {
 	      output="Unpairing failed"
 	    else
 	      output="$1 successfully unpaired from this device via Bluetooth ..."
+	      sudo find /var/lib/bluetooth/ -name "$1" -exec rm {} -rf \;
 	    fi
 	    dialog --infobox "\n$output" 6 $width > /dev/tty1
 	    sleep 3
