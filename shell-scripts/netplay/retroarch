@@ -11,11 +11,11 @@ if [ "$?" -eq "10" ]; then
   netplay.sh ${core}
   results="$(echo $?)"
   if [ "$results" -eq "250" ]; then
-    #core="$(echo "$@" | grep -o -P '(?<=cores\/).*(?=_libretro.so)')"
     /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg -H --nick=ArkOS_Host_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" "$@"
   elif [ "$results" -eq "138" ]; then
-    #core="$(echo "$@" | grep -o -P '(?<=cores\/).*(?=_libretro.so)')"
     /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg --connect=192.168.1.1 --nick=ArkOS_Client_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" "$@"
+  elif [ "$results" -eq "230" ]; then
+    continue
   fi
   
   printf "\033c" > /dev/tty1
@@ -24,7 +24,9 @@ if [ "$?" -eq "10" ]; then
   if [[ "$(iw dev wlan0 info | grep ssid | cut -c 7-30)" == *"ArkOS_"* ]] || [ -z "$(iw dev wlan0 info | grep ssid | cut -c 7-30)" ]; then
     arkos_ap_mode.sh Disable
   fi
-  exit 0
+  if [ "$results" -ne "230" ]; then
+    exit 0
+  fi
 fi
 
 /usr/local/bin/controller_setup.sh
