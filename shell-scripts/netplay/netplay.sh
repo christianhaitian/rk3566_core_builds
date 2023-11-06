@@ -199,7 +199,13 @@ Client() {
     clist=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
   fi
 
-  Select ArkOS_AP_"$1"
+  if [ -z "$(echo $clist | grep $1)" ]; then
+    dialog --infobox "\nCould not find the $1 ArkOS NetPlay session" 5 $width > /dev/tty1
+    sleep 3
+    MainMenu
+  else
+    Select ArkOS_AP_"$1"
+  fi
   # Set colon as the delimiter
   #IFS=':'
   #unset coptions
@@ -387,4 +393,3 @@ if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; the
 fi
 
 MainMenu $1
-
