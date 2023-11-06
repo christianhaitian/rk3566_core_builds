@@ -25,12 +25,12 @@
 # Local NetPlay Setup
 #
 
-sudo chmod 666 /dev/tty1
-printf "\033c" > /dev/tty1
+sudo chmod 666 /dev/tty0
+printf "\033c" > /dev/tty0
 
 # hide cursor
-#printf "\e[?25l" > /dev/tty1
-dialog --clear
+#printf "\e[?25l" > /dev/tty0
+dialog --clear 2>&1 > /dev/tty0
 
 if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
   sudo setfont /usr/share/consolefonts/Lat7-TerminusBold28x14.psf.gz
@@ -56,12 +56,12 @@ fi
 
 pgrep -f gptokeyb | sudo xargs kill -9
 pgrep -f osk.py | sudo xargs kill -9
-printf "\033c" > /dev/tty1
-printf "Starting Local Netplay Session Manager.  Please wait..." > /dev/tty1
+printf "\033c" > /dev/tty0
+printf "Starting Local Netplay Session Manager.  Please wait..." 2>&1 > /dev/tty0
 old_ifs="$IFS"
 
 ExitMenu() {
-  printf "\033c" > /dev/tty1
+  printf "\033c" > /dev/tty0
   if [[ ! -z $(pgrep -f gptokeyb) ]]; then
     pgrep -f gptokeyb | sudo xargs kill -9
   fi
@@ -84,7 +84,7 @@ Select() {
     /opt/inttools/gptokeyb -1 "netplay.sh" -c "/opt/inttools/keys.gptk" & > /dev/null
   fi
 
-  dialog --infobox "\nConnecting to local network named $1..." 5 $width > /dev/tty1
+  dialog --infobox "\nConnecting to local network named $1..." 5 $width 2>&1 > /dev/tty0
   clist2=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
   WPA3=`echo "$clist2" | grep "$1" | grep "WPA3"`
 
@@ -106,7 +106,7 @@ Select() {
     pgrep -f gptokeyb | sudo xargs kill -9
     PASS=`$KEYBOARD "Enter the local netplay session password for $1" | tail -n 1`
     /opt/inttools/gptokeyb -1 "netplay.sh" -c "/opt/inttools/keys.gptk" & > /dev/null
-    dialog --infobox "\nConnecting to local network named $1..." 5 $width > /dev/tty1
+    dialog --infobox "\nConnecting to local network named $1..." 5 $width 2>&1 > /dev/tty0
     clist2=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
     WPA3=`echo "$clist2" | grep "$1" | grep "WPA3"`
 
@@ -140,7 +140,7 @@ Select() {
     sudo rm -f /etc/NetworkManager/system-connections/"$1".nmconnection
   fi
 
-  dialog --infobox "\n$output" 6 $width > /dev/tty1
+  dialog --infobox "\n$output" 6 $width 2>&1 > /dev/tty0
   sleep 3
   ExitCode="138"
   ExitMenu
@@ -148,30 +148,31 @@ Select() {
 
 Host() {
 
-  dialog --infobox "\nSetting up local netplay session ..." 5 $width > /dev/tty1
+  dialog --infobox "\nSetting up local netplay session ..." 5 $width 2>&1 > /dev/tty0
 
   sleep 1
 
-  output=`arkos_ap_mode.sh Enable $1`
+  output=`arkos_ap_mode.sh Enable $core`
 
   success=`echo "$output" | grep Success`
 
   if [ -z "$success" ]; then
     output="Failed setting up hosting for the local netplay session."
+    dialog --infobox "\n$output" 6 $width 2>&1 > /dev/tty0
+    sleep 3
     MainMenu
   else
     output="Host setup for local netplay session is now ready!"
+    dialog --infobox "\n$output" 6 $width 2>&1 > /dev/tty0
+    sleep 3
     ExitCode="250"
+    ExitMenu
   fi
-
-  dialog --infobox "\n$output" 6 $width > /dev/tty1
-  sleep 3
-  ExitMenu
 }
 
 StopHost() {
 
-  dialog --infobox "\nDisabling local hosting of netplay session ..." 5 $width > /dev/tty1
+  dialog --infobox "\nDisabling local hosting of netplay session ..." 5 $width 2>&1 > /dev/tty0
 
   sleep 1
 
@@ -185,60 +186,27 @@ StopHost() {
     output="Hosting for the local netplay session is now disabled!"
   fi
 
-  dialog --infobox "\n$output" 6 $width > /dev/tty1
+  dialog --infobox "\n$output" 6 $width 2>&1 > /dev/tty0
   sleep 3
   MainMenu
 }
 
 Client() {
 
-  dialog --infobox "\nLooking for $1 ArkOS NetPlay session ..." 5 $width > /dev/tty1
+  dialog --infobox "\nLooking for $core ArkOS NetPlay session ..." 5 $width 2>&1 > /dev/tty0
   sleep 1
   clist=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
   if [ -z "$clist" ]; then
     clist=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
   fi
 
-  if [ -z "$(echo $clist | grep $1)" ]; then
-    dialog --infobox "\nCould not find the $1 ArkOS NetPlay session" 5 $width > /dev/tty1
+  if [ -z "$(echo $clist | grep $core)" ]; then
+    dialog --infobox "\nCould not find the $core ArkOS NetPlay session" 5 $width 2>&1 > /dev/tty0
     sleep 3
     MainMenu
   else
-    Select ArkOS_AP_"$1"
+    Select ArkOS_AP_"$core"
   fi
-  # Set colon as the delimiter
-  #IFS=':'
-  #unset coptions
-  #while IFS= read -r clist; do
-    # Read the split words into an array based on colon delimiter
-  #  read -a strarr <<< "$clist"
-
-  #  INUSE=`printf '%-5s' "${strarr[0]}"`
-  #  SSID="${strarr[1]}"
-  #  CHAN=`printf '%-5s' "${strarr[2]}"`
-  #  SIGNAL=`printf '%-5s' "${strarr[3]}%"`
-  #  SECURITY="${strarr[4]}"
-
-  #  coptions+=("$SSID" "$INUSE $CHAN $SIGNAL $SECURITY")
-  #done <<< "$clist"
-
-  #while true; do
-  #  cselection=(dialog \
-  # 	--backtitle "Available Connections" \
-  # 	--title "SSID  IN-USE  CHANNEL  SIGNAL  SECURITY" \
-  # 	--no-collapse \
-  # 	--clear \
-  #     --cancel-label "Back" \
-  #     --menu "" $height $width 15)
-
-  #  cchoices=$("${cselection[@]}" "${coptions[@]}" 2>&1 > /dev/tty1) || MainMenu
-
-  #  for cchoice in $cchoices; do
-  #    case $cchoice in
-  #      *) Select $cchoice ;;
-  #    esac
-  #  done
-  #done
 }
 
 LessBusyChannel() {
@@ -313,20 +281,20 @@ Settings() {
     --cancel-label "Select + Start to Exit" \
     --menu "What do you want to do?" $height $width 15)
 
-  settingschoices=$("${settingsselection[@]}" "${settingsoptions[@]}" 2>&1 > /dev/tty1) || TopLevel
+  settingschoices=$("${settingsselection[@]}" "${settingsoptions[@]}" 2>&1 > /dev/tty0) || TopLevel
 
     for choice in $settingschoices; do
       case $choice in
         1) if [[ $curapmodecfg == "Switch to 2.4Ghz AP Mode" ]]; then
              sudo sed -i "/hw_mode\=/c\hw_mode\=g" /etc/hostapd/hostapd.conf
-             dialog --infobox "\nSwitching to 2.4Ghz AP Mode..." 5 $width > /dev/tty1
+             dialog --infobox "\nSwitching to 2.4Ghz AP Mode..." 5 $width 2>&1 > /dev/tty0
              LessBusyChannel
              sudo sed -i "/channel\=/c\channel\=$BestChannel" /etc/hostapd/hostapd.conf
              systemctl is-active --quiet hostapd.service && sudo systemctl restart hostapd.service
              dialog --clear --backtitle "AP Mode has been set to 2.4Ghz" --title "[ Settings Menu ]" --clear --msgbox "\n\nAP Mode has been set to 2.4Ghz" $height $width 2>&1 > ${CUR_TTY}
            else
              sudo sed -i "/hw_mode\=/c\hw_mode\=a" /etc/hostapd/hostapd.conf
-             dialog --infobox "\nSwitching to 5Ghz AP Mode..." 5 $width > /dev/tty1
+             dialog --infobox "\nSwitching to 5Ghz AP Mode..." 5 $width 2>&1 > /dev/tty0
              LessBusyChannel
              sudo sed -i "/channel\=/c\channel\=$BestChannel" /etc/hostapd/hostapd.conf
              systemctl is-active --quiet hostapd.service && sudo systemctl restart hostapd.service
@@ -334,10 +302,10 @@ Settings() {
            fi
            Settings
         ;;
-        2)dialog --infobox "\nFinding a less busy wireless channel in your current area..." 5 $width > /dev/tty1
+        2)dialog --infobox "\nFinding a less busy wireless channel in your current area..." 5 $width 2>&1 > /dev/tty0
           LessBusyChannel
           sudo sed -i "/channel\=/c\channel\=$BestChannel" /etc/hostapd/hostapd.conf
-          dialog --infobox "\nAP Mode channel has now been set to $BestChannel" 5 $width > /dev/tty1
+          dialog --infobox "\nAP Mode channel has now been set to $BestChannel" 5 $width 2>&1 > /dev/tty0
           sleep 3
           Settings
         ;;
@@ -349,26 +317,28 @@ Settings() {
 }
 
 MainMenu() {
-  mainoptions=( 1 "Host a local Netplay Session" 2 "Stop hosting a local Netplay Session" 3 "Connect to a local Netplay Session" 4 "Settings" 5 "Exit" )
+  mainoptions=( 1 "Host a local Netplay Session" 2 "Stop hosting a local Netplay Session" 3 "Connect to a local Netplay Session" 4 "Start without NetPlay" 5 "Settings" 6 "Exit" )
   IFS="$old_ifs"
   while true; do
     mainselection=(dialog \
-   	--backtitle "Netplay Session: $1" \
+   	--backtitle "Netplay Session: $core" \
    	--title "Main Menu" \
    	--no-collapse \
    	--clear \
 	--cancel-label "Select + Start to Exit" \
 	--menu "Please make your selection" $height $width 15)
 
-	mainchoices=$("${mainselection[@]}" "${mainoptions[@]}" 2>&1 > /dev/tty1)
+	mainchoices=$("${mainselection[@]}" "${mainoptions[@]}" 2>&1 > /dev/tty0)
 
     for mchoice in $mainchoices; do
       case $mchoice in
-	1) Host $1 ;;
+	1) Host ;;
 	2) StopHost ;;
-	3) Client $1 ;;
-	4) Settings ;;
-	5) ExitMenu ;;
+	3) Client ;;
+	4) ExitCode="230"
+	   ExitMenu ;;
+	5) Settings ;;
+	6) ExitMenu ;;
       esac
     done
   done
@@ -385,11 +355,13 @@ if [[ ! -z $(pgrep -f gptokeyb) ]]; then
   pgrep -f gptokeyb | sudo xargs kill -9
 fi
 /opt/inttools/gptokeyb -1 "netplay.sh" -c "/opt/inttools/keys.gptk" &
-printf "\033c" > /dev/tty1
+printf "\033c" > /dev/tty0
 dialog --clear
 
 if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
   sudo setfont /usr/share/consolefonts/Lat7-TerminusBold20x10.psf.gz
 fi
 
-MainMenu $1
+core="$1"
+
+MainMenu
