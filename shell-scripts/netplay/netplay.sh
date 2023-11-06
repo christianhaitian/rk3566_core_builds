@@ -32,6 +32,10 @@ printf "\033c" > /dev/tty1
 #printf "\e[?25l" > /dev/tty1
 dialog --clear
 
+if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
+  sudo setfont /usr/share/consolefonts/Lat7-TerminusBold28x14.psf.gz
+fi
+
 height="15"
 width="55"
 
@@ -148,7 +152,7 @@ Host() {
 
   sleep 1
 
-  output=`arkos_ap_mode.sh Enable`
+  output=`arkos_ap_mode.sh Enable $1`
 
   success=`echo "$output" | grep Success`
 
@@ -188,46 +192,47 @@ StopHost() {
 
 Client() {
 
-  dialog --infobox "\nScanning available Wi-Fi access points ..." 5 $width > /dev/tty1
+  dialog --infobox "\nLooking for $1 ArkOS NetPlay session ..." 5 $width > /dev/tty1
   sleep 1
   clist=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
   if [ -z "$clist" ]; then
     clist=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
   fi
 
+  Select ArkOS_AP_"$1"
   # Set colon as the delimiter
-  IFS=':'
-  unset coptions
-  while IFS= read -r clist; do
+  #IFS=':'
+  #unset coptions
+  #while IFS= read -r clist; do
     # Read the split words into an array based on colon delimiter
-    read -a strarr <<< "$clist"
+  #  read -a strarr <<< "$clist"
 
-    INUSE=`printf '%-5s' "${strarr[0]}"`
-    SSID="${strarr[1]}"
-    CHAN=`printf '%-5s' "${strarr[2]}"`
-    SIGNAL=`printf '%-5s' "${strarr[3]}%"`
-    SECURITY="${strarr[4]}"
+  #  INUSE=`printf '%-5s' "${strarr[0]}"`
+  #  SSID="${strarr[1]}"
+  #  CHAN=`printf '%-5s' "${strarr[2]}"`
+  #  SIGNAL=`printf '%-5s' "${strarr[3]}%"`
+  #  SECURITY="${strarr[4]}"
 
-    coptions+=("$SSID" "$INUSE $CHAN $SIGNAL $SECURITY")
-  done <<< "$clist"
+  #  coptions+=("$SSID" "$INUSE $CHAN $SIGNAL $SECURITY")
+  #done <<< "$clist"
 
-  while true; do
-    cselection=(dialog \
-   	--backtitle "Available Connections" \
-   	--title "SSID  IN-USE  CHANNEL  SIGNAL  SECURITY" \
-   	--no-collapse \
-   	--clear \
-	--cancel-label "Back" \
-	--menu "" $height $width 15)
+  #while true; do
+  #  cselection=(dialog \
+  # 	--backtitle "Available Connections" \
+  # 	--title "SSID  IN-USE  CHANNEL  SIGNAL  SECURITY" \
+  # 	--no-collapse \
+  # 	--clear \
+  #     --cancel-label "Back" \
+  #     --menu "" $height $width 15)
 
-    cchoices=$("${cselection[@]}" "${coptions[@]}" 2>&1 > /dev/tty1) || MainMenu
+  #  cchoices=$("${cselection[@]}" "${coptions[@]}" 2>&1 > /dev/tty1) || MainMenu
 
-    for cchoice in $cchoices; do
-      case $cchoice in
-        *) Select $cchoice ;;
-      esac
-    done
-  done
+  #  for cchoice in $cchoices; do
+  #    case $cchoice in
+  #      *) Select $cchoice ;;
+  #    esac
+  #  done
+  #done
 }
 
 LessBusyChannel() {
@@ -342,7 +347,7 @@ MainMenu() {
   IFS="$old_ifs"
   while true; do
     mainselection=(dialog \
-   	--backtitle "Netplay Session" \
+   	--backtitle "Netplay Session: $1" \
    	--title "Main Menu" \
    	--no-collapse \
    	--clear \
@@ -353,9 +358,9 @@ MainMenu() {
 
     for mchoice in $mainchoices; do
       case $mchoice in
-	1) Host ;;
+	1) Host $1 ;;
 	2) StopHost ;;
-	3) Client ;;
+	3) Client $1 ;;
 	4) Settings ;;
 	5) ExitMenu ;;
       esac
@@ -377,4 +382,9 @@ fi
 printf "\033c" > /dev/tty1
 dialog --clear
 
-MainMenu
+if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
+  sudo setfont /usr/share/consolefonts/Lat7-TerminusBold20x10.psf.gz
+fi
+
+MainMenu $1
+
