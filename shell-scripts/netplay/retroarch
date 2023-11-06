@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+printf "\033c" > /dev/tty1
+dialog --clear
+
+. /usr/local/bin/buttonmon.sh
+
+Test_Button_X
+if [ "$?" -eq "10" ]; then
+  netplay.sh
+  results="$(echo $?)"
+  if [ "$results" -eq "250" ]; then
+    core="$(echo "$@" | grep -o -P '(?<=cores\/).*(?=_libretro.so)')"
+    /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg -H --nick=ArkOS_Host_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" "$@"
+  elif [ "$results" -eq "138" ]; then
+    core="$(echo "$@" | grep -o -P '(?<=cores\/).*(?=_libretro.so)')"
+    /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg --connect=192.168.1.1 --nick=ArkOS_Client_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" "$@"
+  fi
+  
+  printf "\033c" > /dev/tty1
+  dialog --clear
+
+  if [[ "$(iw dev wlan0 info | grep ssid | cut -c 7-30)" == *"ArkOS_"* ]] || [ -z "$(iw dev wlan0 info | grep ssid | cut -c 7-30)" ]; then
+    arkos_ap_mode.sh Disable
+  fi
+  exit 0
+fi
+
+/usr/local/bin/controller_setup.sh
+
+if [ "$(ls /dev/input/ | wc -l)" -gt "7" ]; then
+  testJoy=$(timeout 1 sdljoytest | grep Found)
+  testJoy=$(echo "$testJoy" | cut -d " " -f6)
+  if [ "$testJoy" -gt "1" ]; then
+    /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg --appendconfig=/home/ark/.config/retroarch/retroarch.cfg.ext "$@"
+  else
+    /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg "$@"
+  fi  
+else
+  /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg "$@"
+fi
