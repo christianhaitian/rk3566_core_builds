@@ -74,7 +74,10 @@ ExitMenu() {
 Select() {
   KEYBOARD="osk"
 
-  pgrep -f gptokeyb | sudo xargs kill -9
+  if [[ "$1" != "ArkOS_AP" ]]; then
+    pgrep -f gptokeyb | sudo xargs kill -9
+  fi
+
   # get password from input
   if [[ "$1" == *"ArkOS_"* ]]; then
    PASS="Ark0s11o52o23"
@@ -86,6 +89,10 @@ Select() {
 
   dialog --infobox "\nConnecting to local network named $1..." 5 $width 2>&1 > /dev/tty0
   clist2=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+  if [ -z "$(echo $clist2 | grep ArkOS_)" ]; then
+    sleep 5
+    clist2=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+  fi
   WPA3=`echo "$clist2" | grep "$1" | grep "WPA3"`
 
   # try to connect
@@ -126,7 +133,9 @@ Select() {
     if [ -z "$success" ]; then
       output="Activation failed: Secrets were required, but not provided ..."
       sudo rm -f /etc/NetworkManager/system-connections/"$1".nmconnection
-      MainMenu
+      if [[ "$1" != "ArkOS_AP" ]]; then
+        MainMenu
+      fi
     else
       output="Device successfully activated and connected $1 ..."
       sudo rm -f /etc/NetworkManager/system-connections/"$1".nmconnection
@@ -134,7 +143,9 @@ Select() {
   elif [ -z "$success" ]; then
     output="Activation failed: Secrets were required, but not provided ..."
     sudo rm -f /etc/NetworkManager/system-connections/"$1".nmconnection
-    MainMenu
+    if [[ "$1" != "ArkOS_AP" ]]; then
+      MainMenu
+    fi
   else
     output="Device successfully activated and connected $1 ..."
     sudo rm -f /etc/NetworkManager/system-connections/"$1".nmconnection
@@ -142,8 +153,10 @@ Select() {
 
   dialog --infobox "\n$output" 6 $width 2>&1 > /dev/tty0
   sleep 3
-  ExitCode="138"
-  ExitMenu
+  if [[ "$1" != "ArkOS_AP" ]]; then
+    ExitCode="138"
+    ExitMenu
+  fi
 }
 
 Host() {
@@ -261,6 +274,97 @@ LessBusyChannel() {
   fi
 }
 
+SendCurrentGame() {
+
+  LastClientIP="$(tail -1 /var/lib/misc/dnsmasq.leases | awk -F ' ' '{print $3}')"
+  LastClientName="$(tail -1 /var/lib/misc/dnsmasq.leases | awk -F ' ' '{print $4}')"
+
+  sudo ping -c 1 -W 5 $LastClientIP > /dev/null
+
+  if [ $? -eq 0 ]; then
+
+    roms2="$(sshpass -p "ark" ssh -o StrictHostKeyChecking=no -l ark $LastClientIP "lsblk | grep roms2")"
+
+    if [ -z $roms2 ]; then
+      DIR="roms"
+    else
+      DIR="roms2"
+    fi
+
+    Dest="$(echo $game | sed "/$(echo $game |  awk -F '/' '{print $2}')/s//$DIR/")"
+    FinalDest="$(echo $DEST | awk 'BEGIN{FS=OFS="/"}{NF--; print}')"
+    sshpass -p "ark" scp -o "ConnectionAttempts 4" -o "ConnectTimeout 1" -o "StrictHostKeyChecking no" "$game" "$LastClientIP":"$Dest"
+    if [ $? -eq 0 ]; then
+      dialog --infobox "\nTransfer of $game to $LastClientName ($LastClientIP) has completed successfully" 6 $width 2>&1 > /dev/tty0
+      sleep 5
+    else
+      dialog --infobox "\nTransfer of $game to $LastClientName ($LastClientIP) has failed" 6 $width 2>&1 > /dev/tty0
+      sleep 5
+    fi
+  else
+    dialog --infobox "\nCouldn't connect to $LastClientName at IP: $LastClientIP" 6 $width 2>&1 > /dev/tty0
+    sleep 3
+  fi
+}
+
+GameSend() {
+
+  local gamesendoptions=( 1 "Enable ArkOS_AP" 2 "Send current game to Client" 3 "Receive game from Host" 4 "Go Back" )
+
+  while true; do
+    gamesendselection=(dialog \
+    --backtitle "Game Send Mode: Connected to: $(iw dev wlan0 info | grep ssid | cut -c 7-30)" \
+    --title "[ Game Send Menu: Receive Game from Host mode: $(systemctl is-active ssh) ]" \
+    --no-collapse \
+    --clear \
+    --cancel-label "Select + Start to Exit" \
+    --menu "What do you want to do?" $height $width 15)
+
+    gamesendchoices=$("${gamesendselection[@]}" "${gamesendoptions[@]}" 2>&1 > /dev/tty0) || TopLevel
+
+    for choice in $gamesendchoices; do
+      case $choice in
+        1)echo "" | sudo tee /var/lib/misc/dnsmasq.leases
+          output=`arkos_ap_mode.sh Enable`
+
+          success=`echo "$output" | grep Success`
+
+          if [ -z "$success" ]; then
+            output="Failed setting up ArkOS_AP for client connection."
+            dialog --infobox "\n$output" 6 $width 2>&1 > /dev/tty0
+            sleep 3
+            MainMenu
+          else
+            output="ArkOS_AP is ready for a client connection"
+            dialog --infobox "\n$output" 6 $width 2>&1 > /dev/tty0
+            AP_ON="On"
+            sleep 3
+          fi
+          GameSend
+        ;;
+        2)SendCurrentGame
+          GameSend
+        ;;
+        3)sudo systemctl start ssh
+          Select ArkOS_AP
+          dialog --infobox "\nReady to receive game file now" 6 $width 2>&1 > /dev/tty0
+          SSH_ON="On"
+          sleep 3
+	  GameSend
+        ;;
+        4)if [ ! -z $AP_ON ]; then
+            arkos_ap_mode.sh Disable
+          fi
+          if [ ! -z $SSH_ON ]; then
+      	    sudo systemctl stop ssh
+          fi
+          MainMenu
+        ;;
+        esac
+      done
+    done
+}
+
 Settings() {
   if [[ ! -z $(cat /etc/hostapd/hostapd.conf | grep "hw_mode=a") ]]; then
     local curapmodecfg="Switch to 2.4Ghz AP Mode"
@@ -317,7 +421,7 @@ Settings() {
 }
 
 MainMenu() {
-  mainoptions=( 1 "Host a local Netplay Session" 2 "Stop hosting a local Netplay Session" 3 "Connect to a local Netplay Session" 4 "Start without NetPlay" 5 "Settings" 6 "Exit" )
+  mainoptions=( 1 "Host a local Netplay Session" 2 "Stop hosting a local Netplay Session" 3 "Connect to a local Netplay Session" 4 "Game Send Mode" 5 "Start without NetPlay" 6 "Settings" 7 "Exit" )
   IFS="$old_ifs"
   while true; do
     mainselection=(dialog \
@@ -335,10 +439,11 @@ MainMenu() {
 	1) Host ;;
 	2) StopHost ;;
 	3) Client ;;
-	4) ExitCode="230"
+	4) GameSend ;;
+	5) ExitCode="230"
 	   ExitMenu ;;
-	5) Settings ;;
-	6) ExitMenu ;;
+	6) Settings ;;
+	7) ExitMenu ;;
       esac
     done
   done
@@ -363,5 +468,6 @@ if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; the
 fi
 
 core="$1"
+game="$2"
 
 MainMenu
