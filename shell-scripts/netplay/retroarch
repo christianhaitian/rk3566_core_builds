@@ -8,7 +8,8 @@ dialog --clear
 Test_Button_X
 if [ "$?" -eq "10" ]; then
   core="$(echo "$@" | grep -o -P '(?<=cores\/).*(?=_libretro.so)')"
-  netplay.sh ${core}
+  game="$(echo "$@" | grep -o -P '(?<=_libretro.so ).*(?=)')"
+  netplay.sh "$core" "$game"
   results="$(echo $?)"
   if [ "$results" -eq "250" ]; then
     /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg -H --nick=ArkOS_Host_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" "$@"
