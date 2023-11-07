@@ -78,13 +78,8 @@ Select() {
     pgrep -f gptokeyb | sudo xargs kill -9
   fi
 
-  # get password from input
   if [[ "$1" == *"ArkOS_"* ]]; then
    PASS="Ark0s11o52o23"
-  else
-    pgrep -f gptokeyb | sudo xargs kill -9
-    PASS=`$KEYBOARD "Enter the local netplay session password for $1" | tail -n 1`
-    /opt/inttools/gptokeyb -1 "netplay.sh" -c "/opt/inttools/keys.gptk" & > /dev/null
   fi
 
   dialog --infobox "\nConnecting to local network named $1..." 5 $width 2>&1 > /dev/tty0
@@ -93,61 +88,18 @@ Select() {
     sleep 5
     clist2=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
   fi
-  WPA3=`echo "$clist2" | grep "$1" | grep "WPA3"`
 
-  # try to connect
-  output=`nmcli con delete "$1"`
-  if [[ "$WPA3" != *"WPA3"* ]]; then
-    output=`nmcli device wifi connect "$1" password "$PASS"`
-  else
-    #workaround for wpa2/wpa3 connectivity
-    output=`nmcli device wifi connect "$1" password "$PASS"`
-    sudo sed -i '/key-mgmt\=sae/s//key-mgmt\=wpa-psk/' /etc/NetworkManager/system-connections/"$1".nmconnection
-    sudo systemctl restart NetworkManager
-    sleep 5
-    output=`nmcli con up "$1"`
-  fi
+  output=`nmcli device wifi connect "$1" password "$PASS"`
   success=`echo "$output" | grep successfully`
 
-  if [ -z "$success" ] && [[ "$PASS" == "Ark0s11o52o23" ]]; then
-    pgrep -f gptokeyb | sudo xargs kill -9
-    PASS=`$KEYBOARD "Enter the local netplay session password for $1" | tail -n 1`
-    /opt/inttools/gptokeyb -1 "netplay.sh" -c "/opt/inttools/keys.gptk" & > /dev/null
-    dialog --infobox "\nConnecting to local network named $1..." 5 $width 2>&1 > /dev/tty0
-    clist2=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
-    WPA3=`echo "$clist2" | grep "$1" | grep "WPA3"`
-
-    # try to connect
-    output=`nmcli con delete "$1"`
-    if [[ "$WPA3" != *"WPA3"* ]]; then
-      output=`nmcli device wifi connect "$1" password "$PASS"`
-    else
-      #workaround for wpa2/wpa3 connectivity
-      output=`nmcli device wifi connect "$1" password "$PASS"`
-      sudo sed -i '/key-mgmt\=sae/s//key-mgmt\=wpa-psk/' /etc/NetworkManager/system-connections/"$1".nmconnection
-      sudo systemctl restart NetworkManager
-      sleep 5
-      output=`nmcli con up "$1"`
-    fi
-    success=`echo "$output" | grep successfully`
-    if [ -z "$success" ]; then
-      output="Activation failed: Secrets were required, but not provided ..."
-      sudo rm -f /etc/NetworkManager/system-connections/"$1".nmconnection
-      if [[ "$1" != "ArkOS_AP" ]]; then
-        MainMenu
-      fi
-    else
-      output="Device successfully activated and connected $1 ..."
-      sudo rm -f /etc/NetworkManager/system-connections/"$1".nmconnection
-    fi
-  elif [ -z "$success" ]; then
-    output="Activation failed: Secrets were required, but not provided ..."
+  if [ -z "$success" ]; then
+    output="Could not find and connect to $1 ..."
     sudo rm -f /etc/NetworkManager/system-connections/"$1".nmconnection
     if [[ "$1" != "ArkOS_AP" ]]; then
       MainMenu
     fi
   else
-    output="Device successfully activated and connected $1 ..."
+    output="Device successfully activated and connected to $1 ..."
     sudo rm -f /etc/NetworkManager/system-connections/"$1".nmconnection
   fi
 
