@@ -178,14 +178,19 @@ LessBusyChannel() {
   if [[ ! -z $(cat /etc/hostapd/hostapd.conf | grep "hw_mode=g") ]]; then
     AvailChannels=( "2412" "2437" "2462" )
     Channels=( "Channel1" "Channel6" "Channel11" )
-    AreaChannels=`timeout 6s sudo iw dev wlan0 scan | grep -E '24(12|37|62)'`
+    AreaChannels=`timeout --kill-after=1s 6s sudo iw dev wlan0 scan | grep -E '24(12|37|62)'`
+    if [[ "$AreaChannels" == "Terminated" ]]; then
+      AreaChannels=`timeout --kill-after=1s 6s sudo iw dev wlan0 scan | grep -E '24(12|37|62)'`
+    fi
     i=0
+    # Loop through channel list and get the count of them found
     for ChannelCheck in ${AvailChannels[@]}
     do
        Channels[$i]=$(echo "$AreaChannels" | grep -o "$ChannelCheck" | wc -l)
        let i++
     done
 
+    # Find the channel number with the lowest number of occurrence
     Position=$(echo "${Channels[@]}" | tr -s ' ' '\n' | awk '{print($0" "NR)}' | sort -g -k1,1 | head -1 | cut -f2 -d' ')
     case $Position in
        1) BestChannel=1
@@ -198,27 +203,38 @@ LessBusyChannel() {
        ;;
     esac
   else
-    AvailChannels=( "5180" "5220" "5745" "5765" "5785" )
-    Channels=( "Channel36" "Channel44" "Channel149" "Channel153" "Channel157" )
-    AreaChannels=`timeout 6s sudo iw dev wlan0 scan | grep -E '5(180|220|745|765|785)'`
+    AvailChannels=( "5180" "5200" "5220" "5240" "5745" "5765" "5785" "5805" )
+    Channels=( "Channel36" "Channel40" "Channel44" "Channel48" "Channel149" "Channel153" "Channel157" "Channel161" )
+    AreaChannels=`timeout --kill-after=1s 6s sudo iw dev wlan0 scan | grep -E '5(180|200|220|240|745|765|785|805)'`
+    if [[ "$AreaChannels" == "Terminated" ]]; then
+      AreaChannels=`timeout --kill-after=1s 6s sudo iw dev wlan0 scan | grep -E '5(180|200|220|240|745|765|785|805)'`
+    fi
     i=0
+    # Loop through channel list and get the count of them found
     for ChannelCheck in ${AvailChannels[@]}
     do
        Channels[$i]=$(echo "$AreaChannels" | grep -o "$ChannelCheck" | wc -l)
        let i++
     done
 
+    # Find the channel number with the lowest number of occurrence
     Position=$(echo "${Channels[@]}" | tr -s ' ' '\n' | awk '{print($0" "NR)}' | sort -g -k1,1 | head -1 | cut -f2 -d' ')
     case $Position in
        1) BestChannel=36
        ;;
-       2) BestChannel=44
+       2) BestChannel=40
        ;;
-       3) BestChannel=149
+       3) BestChannel=44
        ;;
-       4) BestChannel=153
+       4) BestChannel=48
        ;;
-       5) BestChannel=157
+       5) BestChannel=149
+       ;;
+       6) BestChannel=153
+       ;;
+       7) BestChannel=157
+       ;;
+       8) BestChannel=161
        ;;
        *) BestChannel=44
        ;;
@@ -244,8 +260,8 @@ SendCurrentGame() {
     fi
 
     Dest="$(echo $game | sed "/$(echo $game |  awk -F '/' '{print $2}')/s//$DIR/")"
-    FinalDest="$(echo $DEST | awk 'BEGIN{FS=OFS="/"}{NF--; print}')"
-    sshpass -p "ark" scp -o "ConnectionAttempts 4" -o "ConnectTimeout 1" -o "StrictHostKeyChecking no" "$game" "$LastClientIP":"$Dest"
+    sshpass -p "ark" rsync -P -r -v --progress -e ssh "$game" ark@"$LastClientIP":"\"$Dest\"" | dialog --progressbox $height $width 2>&1 > /dev/tty0
+    #sshpass -p "ark" scp -T -o "ConnectionAttempts 4" -o "ConnectTimeout 1" -o "StrictHostKeyChecking no" "$game" "$LastClientIP":"\"$Dest\""
     if [ $? -eq 0 ]; then
       dialog --infobox "\nTransfer of $game to $LastClientName ($LastClientIP) has completed successfully" 6 $width 2>&1 > /dev/tty0
       sleep 5
