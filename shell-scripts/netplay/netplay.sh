@@ -2,15 +2,15 @@
 
 #Copyright 2023 Christian_Haitian
 #
-#Permission is hereby granted, free of charge, to any person 
+#Permission is hereby granted, free of charge, to any person
 #obtaining a copy of this software and associated documentation
-#files (the “Software”), to deal in the Software without 
+#files (the “Software”), to deal in the Software without
 #restriction, including without limitation the rights to use,
 #copy, modify, merge, publish, distribute, sublicense, and/or
 #sell copies of the Software, and to permit persons to whom
 #the Software is furnished to do so, subject to the following conditions:
 #
-#The above copyright notice and this permission notice shall be included 
+#The above copyright notice and this permission notice shall be included
 #in all copies or substantial portions of the Software.
 #
 #THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND,
@@ -98,6 +98,25 @@ Select() {
     if [[ "$1" != "ArkOS_AP" ]]; then
       MainMenu
     fi
+
+    . /usr/local/bin/buttonmon.sh
+
+    dialog --infobox "Trying to connect to Host...\nPress and hold B to stop waiting and cancel receiving game file" 6 $width 2>&1 > /dev/tty0
+    while true
+    do
+      Test_Button_B
+      if [ "$?" -ne "10" ]; then
+        clist2=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+        output=`nmcli device wifi connect "$1" password "$PASS"`
+        success=`echo "$output" | grep successfully`
+        if [ ! -z "$success" ]; then
+          output="Device successfully connected to $1 ..."
+          break
+        fi
+      else
+        break
+      fi
+   done
   else
     output="Device successfully activated and connected to $1 ..."
     sudo rm -f /etc/NetworkManager/system-connections/"$1".nmconnection
@@ -244,42 +263,73 @@ LessBusyChannel() {
 
 SendCurrentGame() {
 
-  LastClientIP="$(tail -1 /var/lib/misc/dnsmasq.leases | awk -F ' ' '{print $3}')"
-  LastClientName="$(tail -1 /var/lib/misc/dnsmasq.leases | awk -F ' ' '{print $4}')"
+echo "" | sudo tee /var/lib/misc/dnsmasq.leases
+output=`arkos_ap_mode.sh Enable`
 
-  sudo ping -c 1 -W 5 $LastClientIP > /dev/null
+success=`echo "$output" | grep Success`
 
-  if [ $? -eq 0 ]; then
+if [ -z "$success" ]; then
+  output="Failed setting up ArkOS_AP for client connection."
+  dialog --infobox "\n$output" 6 $width 2>&1 > /dev/tty0
+  sleep 3
+  GameSend
+else
+  output="ArkOS_AP is ready for a client connection"
+  dialog --infobox "\n$output" 6 $width 2>&1 > /dev/tty0
+  AP_ON="On"
+  sleep 3
+fi
 
-    roms2="$(sshpass -p "ark" ssh -o StrictHostKeyChecking=no -l ark $LastClientIP "lsblk | grep roms2")"
+. /usr/local/bin/buttonmon.sh
 
-    if [ -z $roms2 ]; then
-      DIR="roms"
-    else
-      DIR="roms2"
-    fi
+dialog --infobox "\nWaiting for client to connect to send $(echo $game | awk -F '/' '{print $NF}')\n \
+Press B to stop waiting and cancel sending $(echo $game | awk -F '/' '{print $NF}')" 6 $width 2>&1 > /dev/tty0
+while true
+do
+  Test_Button_B
+  if [ "$?" -ne "10" ]; then
+    LastClientIP="$(tail -1 /var/lib/misc/dnsmasq.leases | awk -F ' ' '{print $3}')"
+    if [ ! -z $LastClientIP ]; then
+      LastClientName="$(tail -1 /var/lib/misc/dnsmasq.leases | awk -F ' ' '{print $4}')"
 
-    Dest="$(echo $game | sed "/$(echo $game |  awk -F '/' '{print $2}')/s//$DIR/")"
-    sshpass -p "ark" rsync -P -r -v --progress -e ssh "$game" ark@"$LastClientIP":"\"$Dest\"" | \
-    stdbuf -i0 -o0 -e0 tr '\r' '\n' | stdbuf -i0 -o0 -e0  awk -W interactive '/^ / { print int(+$2) ; fflush() ;  next } $0 { print "# " $0  }' | \
-    dialog --title "Sending" --gauge "Copying $(echo $game | awk -F '/' '{print $NF}') to $LastClientName ($LastClientIP)\n\nPlease Wait..." $height $width 2>&1 > /dev/tty0
-    #sshpass -p "ark" scp -T -o "ConnectionAttempts 4" -o "ConnectTimeout 1" -o "StrictHostKeyChecking no" "$game" "$LastClientIP":"\"$Dest\""
-    if [ $? -eq 0 ]; then
-      dialog --infobox "\nTransfer of $game to $LastClientName ($LastClientIP) has completed successfully" 6 $width 2>&1 > /dev/tty0
-      sleep 5
-    else
-      dialog --infobox "\nTransfer of $game to $LastClientName ($LastClientIP) has failed" 6 $width 2>&1 > /dev/tty0
-      sleep 5
+      sudo ping -c 1 -W 5 $LastClientIP > /dev/null
+
+      if [ $? -eq 0 ]; then
+
+        roms2="$(sshpass -p "ark" ssh -o StrictHostKeyChecking=no -l ark $LastClientIP "lsblk | grep roms2")"
+
+        if [ -z $roms2 ]; then
+          DIR="roms"
+        else
+          DIR="roms2"
+        fi
+
+        Dest="$(echo $game | sed "/$(echo $game |  awk -F '/' '{print $2}')/s//$DIR/")"
+        sshpass -p "ark" rsync -P -r -v --progress -e ssh "$game" ark@"$LastClientIP":"\"$Dest\"" | \
+        stdbuf -i0 -o0 -e0 tr '\r' '\n' | stdbuf -i0 -o0 -e0  awk -W interactive '/^ / { print int(+$2) ; fflush() ;  next } $0 { print "# " $0  }' | \
+        dialog --title "Sending" --gauge "Copying $(echo $game | awk -F '/' '{print $NF}') to $LastClientName ($LastClientIP)\n\nPlease Wait..." $height $width 2>&1 > /dev/tty0
+        if [ $? -eq 0 ]; then
+          dialog --infobox "\nTransfer of $game to $LastClientName ($LastClientIP) has completed successfully" 6 $width 2>&1 > /dev/tty0
+          sleep 5
+        else
+          dialog --infobox "\nTransfer of $game to $LastClientName ($LastClientIP) has failed" 6 $width 2>&1 > /dev/tty0
+          sleep 5
+        fi
+      else
+        dialog --infobox "\nCouldn't connect to $LastClientName at IP: $LastClientIP" 6 $width 2>&1 > /dev/tty0
+        sleep 3
+      fi
+      break
     fi
   else
-    dialog --infobox "\nCouldn't connect to $LastClientName at IP: $LastClientIP" 6 $width 2>&1 > /dev/tty0
-    sleep 3
+   break
   fi
+done
 }
 
 GameSend() {
 
-  local gamesendoptions=( 1 "Enable ArkOS_AP" 2 "Send current game to Client" 3 "Receive game from Host" 4 "Go Back" )
+  local gamesendoptions=( 1 "Send current game to Client" 2 "Receive game from Host" 4 "Go Back" )
 
   while true; do
     gamesendselection=(dialog \
@@ -294,30 +344,12 @@ GameSend() {
 
     for choice in $gamesendchoices; do
       case $choice in
-        1)echo "" | sudo tee /var/lib/misc/dnsmasq.leases
-          output=`arkos_ap_mode.sh Enable`
-
-          success=`echo "$output" | grep Success`
-
-          if [ -z "$success" ]; then
-            output="Failed setting up ArkOS_AP for client connection."
-            dialog --infobox "\n$output" 6 $width 2>&1 > /dev/tty0
-            sleep 3
-            MainMenu
-          else
-            output="ArkOS_AP is ready for a client connection"
-            dialog --infobox "\n$output" 6 $width 2>&1 > /dev/tty0
-            AP_ON="On"
-            sleep 3
-          fi
+        1)SendCurrentGame
           GameSend
         ;;
-        2)SendCurrentGame
-          GameSend
-        ;;
-        3)sudo systemctl start ssh
-          Select ArkOS_AP
+        2)Select ArkOS_AP
           if [ "$success" ]; then
+            sudo systemctl start ssh &
             dialog --infobox "\nReady to receive game file now" 6 $width 2>&1 > /dev/tty0
             SSH_ON="On"
           else
