@@ -260,7 +260,9 @@ SendCurrentGame() {
     fi
 
     Dest="$(echo $game | sed "/$(echo $game |  awk -F '/' '{print $2}')/s//$DIR/")"
-    sshpass -p "ark" rsync -P -r -v --progress -e ssh "$game" ark@"$LastClientIP":"\"$Dest\"" | dialog --progressbox $height $width 2>&1 > /dev/tty0
+    sshpass -p "ark" rsync -P -r -v --progress -e ssh "$game" ark@"$LastClientIP":"\"$Dest\"" | \
+    stdbuf -i0 -o0 -e0 tr '\r' '\n' | stdbuf -i0 -o0 -e0  awk -W interactive '/^ / { print int(+$2) ; fflush() ;  next } $0 { print "# " $0  }' | \
+    dialog --title "Sending" --gauge "Copying $(echo $game | awk -F '/' '{print $NF}') to $LastClientName ($LastClientIP)\n\nPlease Wait..." $height $width 2>&1 > /dev/tty0
     #sshpass -p "ark" scp -T -o "ConnectionAttempts 4" -o "ConnectTimeout 1" -o "StrictHostKeyChecking no" "$game" "$LastClientIP":"\"$Dest\""
     if [ $? -eq 0 ]; then
       dialog --infobox "\nTransfer of $game to $LastClientName ($LastClientIP) has completed successfully" 6 $width 2>&1 > /dev/tty0
@@ -315,8 +317,12 @@ GameSend() {
         ;;
         3)sudo systemctl start ssh
           Select ArkOS_AP
-          dialog --infobox "\nReady to receive game file now" 6 $width 2>&1 > /dev/tty0
-          SSH_ON="On"
+          if [ "$success" ]; then
+            dialog --infobox "\nReady to receive game file now" 6 $width 2>&1 > /dev/tty0
+            SSH_ON="On"
+          else
+            dialog --infobox "\nNot ready to receive game file now as Host could not be found" 6 $width 2>&1 > /dev/tty0
+          fi
           sleep 3
 	  GameSend
         ;;
