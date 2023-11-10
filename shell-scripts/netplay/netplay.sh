@@ -304,15 +304,23 @@ do
           DIR="roms2"
         fi
 
-        Dest="$(echo $game | sed "/$(echo $game |  awk -F '/' '{print $2}')/s//$DIR/")"
-        sshpass -p "ark" rsync -P -r -v --progress -e ssh "$game" ark@"$LastClientIP":"\"$Dest\"" | \
-        stdbuf -i0 -o0 -e0 tr '\r' '\n' | stdbuf -i0 -o0 -e0  awk -W interactive '/^ / { print int(+$2) ; fflush() ;  next } $0 { print "# " $0  }' | \
-        dialog --title "Sending" --gauge "Copying $(echo $game | awk -F '/' '{print $NF}') to $LastClientName ($LastClientIP)\n\nPlease Wait..." $height $width 2>&1 > /dev/tty0
+        oifs="$IFS"  ## save original IFS
+        IFS=$'\n'    ## set IFS to break on newline
+        game_array=( $(ls "${game%.*}".*) ) ## get list of game files that start with this game name in case it is multiple files like cd games
+        IFS="$oifs"  ## restore original IFS
+
+        for g in "${game_array[@]}"
+        do
+          Dest="$(echo $g | sed "/$(echo $g |  awk -F '/' '{print $2}')/s//$DIR/")"
+          sshpass -p "ark" rsync -P -r -v --progress -e ssh "$g" ark@"$LastClientIP":"\"$Dest\"" | \
+          stdbuf -i0 -o0 -e0 tr '\r' '\n' | stdbuf -i0 -o0 -e0  awk -W interactive '/^ / { print int(+$2) ; fflush() ;  next } $0 { print "# " $0  }' | \
+          dialog --title "Sending" --gauge "Copying $(echo $g | awk -F '/' '{print $NF}') to $LastClientName ($LastClientIP)\n\nPlease Wait..." $height $width 2>&1 > /dev/tty0
+        done
         if [ $? -eq 0 ]; then
-          dialog --infobox "\nTransfer of $game to $LastClientName ($LastClientIP) has completed successfully" 6 $width 2>&1 > /dev/tty0
+          dialog --infobox "\nTransfer of ${game%.*} to $LastClientName ($LastClientIP) has completed successfully" 6 $width 2>&1 > /dev/tty0
           sleep 5
         else
-          dialog --infobox "\nTransfer of $game to $LastClientName ($LastClientIP) has failed" 6 $width 2>&1 > /dev/tty0
+          dialog --infobox "\nTransfer of ${game%.*} to $LastClientName ($LastClientIP) has failed" 6 $width 2>&1 > /dev/tty0
           sleep 5
         fi
       else
