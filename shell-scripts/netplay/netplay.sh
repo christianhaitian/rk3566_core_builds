@@ -32,10 +32,6 @@ printf "\033c" > /dev/tty0
 #printf "\e[?25l" > /dev/tty0
 dialog --clear 2>&1 > /dev/tty0
 
-if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
-  sudo setfont /usr/share/consolefonts/Lat7-TerminusBold28x14.psf.gz
-fi
-
 height="15"
 width="55"
 
@@ -51,7 +47,7 @@ export TERM=linux
 export XDG_RUNTIME_DIR=/run/user/$UID/
 
 if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
-  sudo setfont /usr/share/consolefonts/Lat7-TerminusBold20x10.psf.gz
+  sudo setfont /usr/share/consolefonts/Lat7-TerminusBold28x14.psf.gz
 fi
 
 pgrep -f gptokeyb | sudo xargs kill -9
@@ -304,10 +300,9 @@ do
           DIR="roms2"
         fi
 
-        oifs="$IFS"  ## save original IFS
         IFS=$'\n'    ## set IFS to break on newline
         game_array=( $(ls "${game%.*}".*) ) ## get list of game files that start with this game name in case it is multiple files like cd games
-        IFS="$oifs"  ## restore original IFS
+        IFS="$old_ifs"  ## restore original IFS
 
         for g in "${game_array[@]}"
         do
