@@ -68,8 +68,6 @@ ExitMenu() {
 }
 
 Select() {
-  KEYBOARD="osk"
-
   if [[ "$1" != "ArkOS_AP" ]]; then
     pgrep -f gptokeyb | sudo xargs kill -9
   fi
@@ -150,43 +148,28 @@ Host() {
   fi
 }
 
-StopHost() {
-
-  dialog --infobox "\nDisabling local hosting of netplay session ..." 5 $width 2>&1 > /dev/tty0
-
-  sleep 1
-
-  output=`arkos_ap_mode.sh Disable`
-
-  success=`echo "$output" | grep Success`
-
-  if [ -z "$success" ]; then
-    output="Failed disabling hosting for the local netplay session."
-  else
-    output="Hosting for the local netplay session is now disabled!"
-  fi
-
-  dialog --infobox "\n$output" 6 $width 2>&1 > /dev/tty0
-  sleep 3
-  MainMenu
-}
-
 Client() {
 
-  dialog --infobox "\nLooking for $core ArkOS NetPlay session ..." 5 $width 2>&1 > /dev/tty0
-  sleep 1
-  clist=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
-  if [ -z "$clist" ]; then
-    clist=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
-  fi
+. /usr/local/bin/buttonmon.sh
 
-  if [ -z "$(echo $clist | grep $core)" ]; then
-    dialog --infobox "\nCould not find the $core ArkOS NetPlay session" 5 $width 2>&1 > /dev/tty0
-    sleep 3
-    MainMenu
+dialog --infobox "\nLooking for $core ArkOS NetPlay session ... \
+Press and hold B to cancel this attempt to connect to the $core ArkOS NetPlay session." 6 $width 2>&1 > /dev/tty0
+while true
+do
+  Test_Button_B
+  if [ "$?" -ne "10" ]; then
+    clist=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+    if [ -z "$clist" ]; then
+      clist=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+    fi
+    if [ ! -z "$(echo $clist | grep $core)" ]; then
+      Select ArkOS_AP_"$core"
+      break
+    fi
   else
-    Select ArkOS_AP_"$core"
+    break
   fi
+done
 }
 
 LessBusyChannel() {
@@ -430,7 +413,7 @@ Settings() {
 }
 
 MainMenu() {
-  mainoptions=( 1 "Host a local Netplay Session" 2 "Stop hosting a local Netplay Session" 3 "Connect to a local Netplay Session" 4 "Game Send Mode" 5 "Start without NetPlay" 6 "Settings" 7 "Exit" )
+  mainoptions=( 1 "Host a local Netplay Session" 2 "Connect to a local Netplay Session" 3 "Game Send Mode" 4 "Start without NetPlay" 5 "Settings" 6 "Exit" )
   IFS="$old_ifs"
   while true; do
     mainselection=(dialog \
@@ -446,13 +429,12 @@ MainMenu() {
     for mchoice in $mainchoices; do
       case $mchoice in
 	1) Host ;;
-	2) StopHost ;;
-	3) Client ;;
-	4) GameSend ;;
-	5) ExitCode="230"
+	2) Client ;;
+	3) GameSend ;;
+	4) ExitCode="230"
 	   ExitMenu ;;
-	6) Settings ;;
-	7) ExitMenu ;;
+	5) Settings ;;
+	6) ExitMenu ;;
       esac
     done
   done
