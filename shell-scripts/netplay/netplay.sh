@@ -152,7 +152,7 @@ Client() {
 
 . /usr/local/bin/buttonmon.sh
 
-dialog --infobox "\nLooking for $core ArkOS NetPlay session ... \
+dialog --infobox "\nLooking for $core ArkOS NetPlay session ...\n \
 Press and hold B to cancel this attempt to connect to the $core ArkOS NetPlay session." 6 $width 2>&1 > /dev/tty0
 while true
 do
