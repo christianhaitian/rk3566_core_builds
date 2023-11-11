@@ -43,11 +43,18 @@ fi
 
 ExitCode="0"
 
+if [[ -z $(iw list | grep "Band 2") ]]; then
+  if [[ ! -z $(cat /etc/hostapd/hostapd.conf | grep "hw_mode=a") ]]; then
+    sudo sed -i "/hw_mode\=/c\hw_mode\=g" /etc/hostapd/hostapd.conf
+    LessBusyChannel
+  fi
+fi
+
 export TERM=linux
 export XDG_RUNTIME_DIR=/run/user/$UID/
 
 if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
-  sudo setfont /usr/share/consolefonts/Lat7-TerminusBold28x14.psf.gz
+  sudo setfront /usr/share/consolefonts/Lat2-Fixed13.psf.gz
 fi
 
 pgrep -f gptokeyb | sudo xargs kill -9
@@ -63,6 +70,9 @@ ExitMenu() {
   fi
   if [[ ! -z $(pgrep -f gptokeyb) ]]; then
     pgrep -f gptokeyb | sudo xargs kill -9
+  fi
+  if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
+    sudo setfont /usr/share/consolefonts/Lat7-TerminusBold20x10.psf.gz
   fi
   exit ${ExitCode}
 }
@@ -366,7 +376,12 @@ Settings() {
     local curapmode="2.4"
   fi
 
-  local settingsoptions=( 1 "$curapmodecfg" 2 "Set less busy channel for AP Mode" 3 "Go Back" )
+
+  if [[ -z $(iw list | grep "Band 2") ]]; then
+    local settingsoptions=( 2 "Set less busy channel for AP Mode" 3 "Go Back" )
+  else
+    local settingsoptions=( 1 "$curapmodecfg" 2 "Set less busy channel for AP Mode" 3 "Go Back" )
+  fi
 
   while true; do
     settingsselection=(dialog \
@@ -454,11 +469,28 @@ fi
 printf "\033c" > /dev/tty0
 dialog --clear
 
-if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
-  sudo setfont /usr/share/consolefonts/Lat7-TerminusBold20x10.psf.gz
+if [ -z $(ifconfig | grep wlan0 | tr -d '\0') ]; then
+  dialog --infobox "\nYou currently do not have a compatible wireless Adapter connected.  Exiting..." 5 $width 2>&1 > /dev/tty0
+  sleep 5
+  ExitCode="0"
+  ExitMenu
+fi
+
+if [ -z $(iw list | grep "* AP" | tr -d '\0') ]; then
+  dialog --infobox "\nYour wireless adapter is not compatible with local NetPlay.  Exiting..." 5 $width 2>&1 > /dev/tty0
+  sleep 5
+  ExitCode="0"
+  ExitMenu
 fi
 
 core="$1"
 game="$2"
+
+if [[ -z $(iw list | grep "Band 2") ]]; then
+  if [[ ! -z $(cat /etc/hostapd/hostapd.conf | grep "hw_mode=a") ]]; then
+    sudo sed -i "/hw_mode\=/c\hw_mode\=g" /etc/hostapd/hostapd.conf
+    sudo sed -i "/channel\=/c\channel\=6" /etc/hostapd/hostapd.conf
+  fi
+fi
 
 MainMenu
