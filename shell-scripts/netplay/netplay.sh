@@ -318,7 +318,11 @@ done
 
 GameSend() {
 
-  local gamesendoptions=( 1 "Send current game to Client" 2 "Receive game from Host" 4 "Go Back" )
+  if [[ ! -z $AP_Support ]]; then
+    local gamesendoptions=( 2 "Receive game from Host" 3 "Go Back" )
+  else
+    local gamesendoptions=( 1 "Send current game to Client" 2 "Receive game from Host" 3 "Go Back" )
+  fi
 
   while true; do
     gamesendselection=(dialog \
@@ -347,7 +351,7 @@ GameSend() {
           sleep 3
 	  GameSend
         ;;
-        4)if [ ! -z $AP_ON ]; then
+        3)if [ ! -z $AP_ON ]; then
             arkos_ap_mode.sh Disable
           fi
           if [ ! -z $SSH_ON ]; then
@@ -421,7 +425,11 @@ Settings() {
 }
 
 MainMenu() {
-  mainoptions=( 1 "Host a local Netplay Session" 2 "Connect to a local Netplay Session" 3 "Game Send Mode" 4 "Start without NetPlay" 5 "Settings" 6 "Exit" )
+  if [[ ! -z $AP_Support ]]; then
+    mainoptions=( 1 "Host a local Netplay Session" 2 "Connect to a local Netplay Session" 3 "Game Send Mode" 4 "Start without NetPlay" 5 "Settings" 6 "Exit" )
+  else
+    mainoptions=( 2 "Connect to a local Netplay Session" 3 "Game Send Mode" 4 "Start without NetPlay" 5 "Settings" 6 "Exit" )
+  fi
   IFS="$old_ifs"
   while true; do
     mainselection=(dialog \
@@ -470,10 +478,7 @@ if [ -z $(ifconfig | grep wlan0 | tr -d '\0') ]; then
 fi
 
 if [ -z $(iw list | grep "* AP" | tr -d '\0') ]; then
-  dialog --infobox "\nYour wireless adapter is not compatible with local NetPlay.  Exiting..." 5 $width 2>&1 > /dev/tty0
-  sleep 5
-  ExitCode="0"
-  ExitMenu
+  AP_Support="No"
 fi
 
 core="$1"
