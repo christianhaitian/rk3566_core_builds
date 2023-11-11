@@ -425,7 +425,7 @@ Settings() {
 }
 
 MainMenu() {
-  if [[ ! -z $AP_Support ]]; then
+  if [[ -z $AP_Support ]]; then
     mainoptions=( 1 "Host a local Netplay Session" 2 "Connect to a local Netplay Session" 3 "Game Send Mode" 4 "Start without NetPlay" 5 "Settings" 6 "Exit" )
   else
     mainoptions=( 2 "Connect to a local Netplay Session" 3 "Game Send Mode" 4 "Start without NetPlay" 5 "Settings" 6 "Exit" )
