@@ -43,13 +43,6 @@ fi
 
 ExitCode="0"
 
-if [[ -z $(iw list | grep "Band 2") ]]; then
-  if [[ ! -z $(cat /etc/hostapd/hostapd.conf | grep "hw_mode=a") ]]; then
-    sudo sed -i "/hw_mode\=/c\hw_mode\=g" /etc/hostapd/hostapd.conf
-    LessBusyChannel
-  fi
-fi
-
 export TERM=linux
 export XDG_RUNTIME_DIR=/run/user/$UID/
 
