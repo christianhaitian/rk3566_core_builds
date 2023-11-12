@@ -382,7 +382,7 @@ Settings() {
 
   while true; do
     settingsselection=(dialog \
-    --backtitle "NetPlay Session: Current AP Mode: ${curapmode}Ghz | Current Channel: $(cat /etc/hostapd/hostapd.conf | grep -oP "(?<=channel=).*")" \
+    --backtitle "NetPlay Session: Current AP Mode: ${curapmode}Ghz | CH: $(cat /etc/hostapd/hostapd.conf | grep -oP "(?<=channel=).*")" \
     --title "[ Settings Menu ]" \
     --no-collapse \
     --clear \
