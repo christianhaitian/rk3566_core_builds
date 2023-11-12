@@ -79,7 +79,7 @@ bitness="$(getconf LONG_BIT)"
      updateapt="N"
      for libs in "${neededlibs[@]}"
      do
-          if [[ "${libs}" == "libfreetype6-dev" ]] && [ ! -f "/.LIBFREETYPE6-DEV-REINSTALLED" ]; then
+          if [[ "${libs}" == "libfreetype6-dev" ]] && [ ! -f "/.LIBFREETYPE6-DEV-REINSTALLED" ] && [[ $(cat /usr/share/plymouth/themes/text.plymouth) == *"ArkOS"* ]]; then
             apt-get -y --reinstall install --no-install-recommends "${libs}"
             touch /.LIBFREETYPE6-DEV-REINSTALLED
           else
