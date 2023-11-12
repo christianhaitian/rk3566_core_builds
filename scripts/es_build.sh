@@ -22,7 +22,10 @@ bitness="$(getconf LONG_BIT)"
 	 echo "What branch of emulationstation-fcamod are you wanting to build?"
 	 echo "1 for master, 2 for fullscreen, 3 for 351v, 4 for 503, 5 for all"
 	 read branch_build
-	 if [ "$branch_build" -lt 1 ] || [ "$branch_build" -gt 5 ]; then
+         if [[ -z "$branch_build" ]]; then
+           branch_build=4
+           echo "We're going to use the 503 branch since you entered nothing above."
+	 elif [ "$branch_build" -lt 1 ] || [ "$branch_build" -gt 5 ]; then
 	   echo "$branch_build is not a valid option.  Exiting."
 	   exit 1
 	 fi
