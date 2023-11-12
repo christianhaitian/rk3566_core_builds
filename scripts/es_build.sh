@@ -79,7 +79,12 @@ bitness="$(getconf LONG_BIT)"
      updateapt="N"
      for libs in "${neededlibs[@]}"
      do
-          dpkg -s "${libs}" &>/dev/null
+          if [[ "${libs}" == "libfreetype6-dev" ]] && [ ! -f "/.LIBFREETYPE6-DEV-REINSTALLED" ]; then
+            apt-get -y --reinstall install --no-install-recommends "${libs}"
+            touch /.LIBFREETYPE6-DEV-REINSTALLED
+          else
+            dpkg -s "${libs}" &>/dev/null
+          fi
           if [[ $? != "0" ]]; then
            if [[ "$ updateapt" == "N" ]]; then
             apt-get -y update
