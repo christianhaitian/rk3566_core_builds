@@ -72,7 +72,7 @@ bitness="$(getconf LONG_BIT)"
      echo ""
      
 	 # Ensure dependencies are installed and available
-     neededlibs=( libboost-system-dev libboost-filesystem-dev libboost-locale-dev libfreeimage-dev libfreetype6-dev libeigen3-dev libcurl4-openssl-dev libboost-date-time-dev libasound2-dev cmake libsdl2-dev rapidjson-dev libvlc-dev libvlccore-dev vlc-bin libsdl2-mixer-dev )
+     neededlibs=( libmali-rk-dev libboost-system-dev libboost-filesystem-dev libboost-locale-dev libfreeimage-dev libfreetype6-dev libeigen3-dev libcurl4-openssl-dev libboost-date-time-dev libasound2-dev cmake libsdl2-dev rapidjson-dev libvlc-dev libvlccore-dev vlc-bin libsdl2-mixer-dev )
      updateapt="N"
      for libs in "${neededlibs[@]}"
      do
@@ -82,7 +82,19 @@ bitness="$(getconf LONG_BIT)"
             apt-get -y update
             updateapt="Y"
            fi
-           apt-get -y install --no-install-recommends "${libs}"
+           if [[ "${libs}" == "libmali-rk-dev" ]]; then
+             wget -t 3 -T 60 --no-check-certificate https://github.com/christianhaitian/EmulationStation-fcamod/raw/503noTTS/libmali-rk-dev_1.7-1+deb10_arm64.deb \
+             -O /dev/shm/libmali-rk-dev_1.7-1+deb10_arm64.deb || sudo rm -f /dev/shm/libmali-rk-dev_1.7-1+deb10_arm64.deb
+             if [ -f "/dev/shm/libmali-rk-dev_1.7-1+deb10_arm64.deb" ]; then
+               sudo dpkg -i --force-all /dev/shm/libmali-rk-dev_1.7-1+deb10_arm64.deb
+             else
+                echo " "
+                echo "Could not download and install needed library ${libs}.  Stopping here so this can be reviewed."
+                exit 1
+             fi
+           else
+             apt-get -y install --no-install-recommends "${libs}"
+           fi
            if [[ $? != "0" ]]; then
             echo " "
             echo "Could not install needed library ${libs}.  Stopping here so this can be reviewed."
