@@ -47,7 +47,7 @@ export TERM=linux
 export XDG_RUNTIME_DIR=/run/user/$UID/
 
 if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
-  sudo setfront /usr/share/consolefonts/Lat2-Fixed13.psf.gz
+  sudo setfont /usr/share/consolefonts/Lat7-TerminusBold20x10.psf.gz
 fi
 
 pgrep -f gptokeyb | sudo xargs kill -9
