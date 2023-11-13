@@ -65,9 +65,21 @@ ExitMenu() {
     pgrep -f gptokeyb | sudo xargs kill -9
   fi
   if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
-    sudo setfont /usr/share/consolefonts/Lat7-TerminusBold20x10.psf.gz
+    sudo setfont /usr/share/consolefonts/Lat7-Terminus20x10.psf.gz
   fi
-  exit ${ExitCode}
+  if [ ! -z $samegame ]; then
+    if [[ "$ExitCode" != "250" ]]; then
+      /opt/retroarch/bin/${emulator} -c /home/ark/.config/${emulator}/retroarch.cfg --connect=192.168.1.1 --nick=ArkOS_Client_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" -L /home/ark/.config/${emulator}/cores/${core}_libretro.so "$game"
+      ExitCode="231"
+      exit ${ExitCode}
+	else
+	  /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg -H --nick=ArkOS_Host_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" -L /home/ark/.config/${emulator}/cores/${core}_libretro.so "$game"
+      ExitCode="231"
+      exit ${ExitCode}
+    fi
+  else
+    exit ${ExitCode}
+  fi
 }
 
 Select() {
@@ -80,10 +92,10 @@ Select() {
   fi
 
   dialog --infobox "\nConnecting to local network named $1..." 5 $width 2>&1 > /dev/tty0
-  clist2=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+  clist2=`sudo nmcli dev wifi rescan || sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
   if [ -z "$(echo $clist2 | grep ArkOS_)" ]; then
     sleep 5
-    clist2=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+    clist2=`sudo nmcli dev wifi rescan || sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
   fi
 
   output=`nmcli device wifi connect "$1" password "$PASS"`
@@ -103,7 +115,7 @@ Select() {
     do
       Test_Button_B
       if [ "$?" -ne "10" ]; then
-        clist2=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+        clist2=`sudo nmcli dev wifi rescan || sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
         output=`nmcli device wifi connect "$1" password "$PASS"`
         success=`echo "$output" | grep successfully`
         if [ ! -z "$success" ]; then
@@ -121,7 +133,10 @@ Select() {
 
   dialog --infobox "\n$output" 6 $width 2>&1 > /dev/tty0
   sleep 3
-  if [[ "$1" != "ArkOS_AP" ]]; then
+
+  if [ ! -z "$2" ]; then
+    continue
+  elif [[ "$1" != "ArkOS_AP" ]]; then
     ExitCode="138"
     ExitMenu
   fi
@@ -161,11 +176,15 @@ while true
 do
   Test_Button_B
   if [ "$?" -ne "10" ]; then
-    clist=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+    clist=`sudo nmcli dev wifi rescan || sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
     if [ -z "$clist" ]; then
-      clist=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+      clist=`sudo nmcli dev wifi rescan || sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
     fi
-    if [ ! -z "$(echo $clist | grep $core)" ]; then
+
+    if [ ! -z "$1" ] && [ ! -z "$(echo $clist | grep $core)" ]; then
+      Select ArkOS_AP_"$core" "$1"
+      break
+    elif [ ! -z "$(echo $clist | grep $core)" ]; then
       Select ArkOS_AP_"$core"
       break
     fi
@@ -243,7 +262,7 @@ LessBusyChannel() {
   fi
 }
 
-SendCurrentGame() {
+ShareCurrentGame() {
 
 echo "" | sudo tee /var/lib/misc/dnsmasq.leases
 output=`arkos_ap_mode.sh Enable`
@@ -254,7 +273,7 @@ if [ -z "$success" ]; then
   output="Failed setting up ArkOS_AP for client connection."
   dialog --infobox "\n$output" 6 $width 2>&1 > /dev/tty0
   sleep 3
-  GameSend
+  GameShare
 else
   output="ArkOS_AP is ready for a client connection"
   dialog --infobox "\n$output" 6 $width 2>&1 > /dev/tty0
@@ -264,8 +283,8 @@ fi
 
 . /usr/local/bin/buttonmon.sh
 
-dialog --infobox "\nWaiting for client to connect to send $(echo $game | awk -F '/' '{print $NF}')\n \
-Press B to stop waiting and cancel sending $(echo $game | awk -F '/' '{print $NF}')" 6 $width 2>&1 > /dev/tty0
+dialog --infobox "\nWaiting for client to connect to share $(echo $game | awk -F '/' '{print $NF}')\n \
+Press B to stop waiting and cancel sharing $(echo $game | awk -F '/' '{print $NF}')" 6 $width 2>&1 > /dev/tty0
 while true
 do
   Test_Button_B
@@ -282,8 +301,18 @@ do
 
         if [ -z $roms2 ]; then
           DIR="roms"
-        else
-          DIR="roms2"
+        elif [ ! -z $roms2 ]; then
+		  if [[ "$roms2" == *"roms2"* ]]; then
+            DIR="roms2"
+          else
+            sleep 5
+            sshpass -p "ark" ssh -o StrictHostKeyChecking=no -l ark $LastClientIP "lsblk | grep roms2"
+            if [ -z $roms2 ]; then
+              DIR="roms"
+			else
+			  DIR="roms2"
+			fi
+          fi
         fi
 
         IFS=$'\n'    ## set IFS to break on newline
@@ -293,10 +322,17 @@ do
         for g in "${game_array[@]}"
         do
           Dest="$(echo $g | sed "/$(echo $g |  awk -F '/' '{print $2}')/s//$DIR/")"
+          echo "${emulator}" > /dev/shm/gameshare.info
+		  echo "${core}" >> /dev/shm/gameshare.info
+		  echo "${Dest}" >> /dev/shm/gameshare.info
           sshpass -p "ark" rsync -P -r -v --progress -e ssh "$g" ark@"$LastClientIP":"\"$Dest\"" | \
           stdbuf -i0 -o0 -e0 tr '\r' '\n' | stdbuf -i0 -o0 -e0  awk -W interactive '/^ / { print int(+$2) ; fflush() ;  next } $0 { print "# " $0  }' | \
-          dialog --title "Sending" --gauge "Copying $(echo $g | awk -F '/' '{print $NF}') to $LastClientName ($LastClientIP)\n\nPlease Wait..." $height $width 2>&1 > /dev/tty0
+          dialog --title "Sharing" --gauge "Copying $(echo $g | awk -F '/' '{print $NF}') to $LastClientName ($LastClientIP)\n\nPlease Wait..." $height $width 2>&1 > /dev/tty0
+          sshpass -p "ark" rsync -P -r -v --progress -e ssh "/dev/shm/gameshare.info" ark@"$LastClientIP":"/dev/shm/gameshare.info" | \
+          stdbuf -i0 -o0 -e0 tr '\r' '\n' | stdbuf -i0 -o0 -e0  awk -W interactive '/^ / { print int(+$2) ; fflush() ;  next } $0 { print "# " $0  }' | \
+          dialog --title "Sharing" --gauge "Copying gameshare.info to $LastClientName ($LastClientIP)\n\nPlease Wait..." $height $width 2>&1 > /dev/tty0
         done
+        rm -f /dev/shm/gameshare.info
         if [ $? -eq 0 ]; then
           dialog --infobox "\nTransfer of ${game%.*} to $LastClientName ($LastClientIP) has completed successfully" 6 $width 2>&1 > /dev/tty0
           sleep 5
@@ -316,40 +352,73 @@ do
 done
 }
 
-GameSend() {
+GameShare() {
 
   if [[ ! -z $AP_Support ]]; then
-    local gamesendoptions=( 2 "Receive game from Host" 3 "Go Back" )
+    local gameshareoptions=( 2 "Receive game from Host" 3 "Go Back" )
   else
-    local gamesendoptions=( 1 "Send current game to Client" 2 "Receive game from Host" 3 "Go Back" )
+    local gameshareoptions=( 1 "Share current game to Client" 2 "Receive game from Host" 3 "Go Back" )
   fi
 
   while true; do
-    gamesendselection=(dialog \
-    --backtitle "Game Send Mode: Connected to: $(iw dev wlan0 info | grep ssid | cut -c 7-30)" \
-    --title "[ Game Send Menu: Receive Game from Host mode: $(systemctl is-active ssh) ]" \
+    gameshareselection=(dialog \
+    --backtitle "Game Share Mode: Connected to: $(iw dev wlan0 info | grep ssid | cut -c 7-30)" \
+    --title "[ Game Share Menu: Receive Game from Host mode: $(systemctl is-active ssh) ]" \
     --no-collapse \
     --clear \
     --cancel-label "Select + Start to Exit" \
     --menu "What do you want to do?" $height $width 15)
 
-    gamesendchoices=$("${gamesendselection[@]}" "${gamesendoptions[@]}" 2>&1 > /dev/tty0) || TopLevel
+    gamesharechoices=$("${gameshareselection[@]}" "${gameshareoptions[@]}" 2>&1 > /dev/tty0) || TopLevel
 
-    for choice in $gamesendchoices; do
+    for choice in $gamesharechoices; do
       case $choice in
-        1)SendCurrentGame
-          GameSend
+        1)ShareCurrentGame
+          GameShare
         ;;
-        2)Select ArkOS_AP
+        2)sudo systemctl start ssh &
+          Select ArkOS_AP
           if [ "$success" ]; then
-            sudo systemctl start ssh &
-            dialog --infobox "\nReady to receive game file now" 6 $width 2>&1 > /dev/tty0
-            SSH_ON="On"
+		    success=""
+            systemctl is-active --quiet ssh.service
+			if [ "$?" -ne "3" ]; then
+              sudo systemctl start ssh &
+              SSH_ON="On"
+			fi
+            #dialog --infobox "\nReady to receive game file now" 6 $width 2>&1 > /dev/tty0
+            dialog --infobox "Waiting for transfer to complete then start the netplay session with the game...\nPress and hold B to stop waiting and cancel receiving game file" 6 $width 2>&1 > /dev/tty0
+            . /usr/local/bin/buttonmon.sh
+            while true
+            do
+              Test_Button_B
+              if [ "$?" -ne "10" ] && [ -f /dev/shm/gameshare.info ]; then
+                emulator="$(sed '1q;d' /dev/shm/gameshare.info)"
+                core="$(sed '2q;d' /dev/shm/gameshare.info)"
+                game="$(sed '3q;d' /dev/shm/gameshare.info)"
+                if [ ! -z $SSH_ON ]; then
+                  sudo systemctl stop ssh &
+				fi
+                Client "gameshare"
+                Test_Button_B
+                if [ "$?" -ne "10" ]; then
+                  dialog --clear 2>&1 > /dev/tty0
+                  printf "\033c" > /dev/tty0
+                  /opt/retroarch/bin/${emulator} -c /home/ark/.config/${emulator}/retroarch.cfg --connect=192.168.1.1 --nick=ArkOS_Client_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" -L /home/ark/.config/${emulator}/cores/${core}_libretro.so "$game"
+                  rm -f /dev/shm/gameshare.info
+                  ExitCode="231"
+                  ExitMenu
+                else
+                  samegame="N"
+                  rm -f /dev/shm/gameshare.info
+                  GameShare
+                fi
+              fi
+            done
           else
             dialog --infobox "\nNot ready to receive game file now as Host could not be found" 6 $width 2>&1 > /dev/tty0
           fi
           sleep 3
-	  GameSend
+          GameShare
         ;;
         3)if [ ! -z $AP_ON ]; then
             arkos_ap_mode.sh Disable
@@ -426,9 +495,9 @@ Settings() {
 
 MainMenu() {
   if [[ -z $AP_Support ]]; then
-    mainoptions=( 1 "Host a local Netplay Session" 2 "Connect to a local Netplay Session" 3 "Game Send Mode" 4 "Start without NetPlay" 5 "Settings" 6 "Exit" )
+    mainoptions=( 1 "Host a local Netplay Session" 2 "Connect to a local Netplay Session" 3 "Game Share Mode" 4 "Start without NetPlay" 5 "Settings" 6 "Exit" )
   else
-    mainoptions=( 2 "Connect to a local Netplay Session" 3 "Game Send Mode" 4 "Start without NetPlay" 5 "Settings" 6 "Exit" )
+    mainoptions=( 2 "Connect to a local Netplay Session" 3 "Game Share Mode" 4 "Start without NetPlay" 5 "Settings" 6 "Exit" )
   fi
   IFS="$old_ifs"
   while true; do
@@ -446,7 +515,7 @@ MainMenu() {
       case $mchoice in
 	1) Host ;;
 	2) Client ;;
-	3) GameSend ;;
+	3) GameShare ;;
 	4) ExitCode="230"
 	   ExitMenu ;;
 	5) Settings ;;
@@ -483,6 +552,7 @@ fi
 
 core="$1"
 game="$2"
+emulator="$3"
 
 if [[ -z $(iw list | grep "Band 2") ]]; then
   if [[ ! -z $(cat /etc/hostapd/hostapd.conf | grep "hw_mode=a") ]]; then
