@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-printf "\033c" > /dev/tty1
+printf "\033c" > /dev/tty0
 dialog --clear
 
 . /usr/local/bin/buttonmon.sh
@@ -9,7 +9,8 @@ Test_Button_X
 if [ "$?" -eq "10" ]; then
   core="$(echo "$@" | grep -o -P '(?<=cores\/).*(?=_libretro.so)')"
   game="$(echo "$@" | grep -o -P '(?<=_libretro.so ).*(?=)')"
-  netplay.sh "$core" "$game"
+  emulator="retroarch"
+  netplay.sh "$core" "$game" "$emulator"
   results="$(echo $?)"
   if [ "$results" -eq "250" ]; then
     /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg -H --nick=ArkOS_Host_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" "$@"
@@ -19,7 +20,8 @@ if [ "$?" -eq "10" ]; then
     continue
   fi
   
-  printf "\033c" > /dev/tty1
+  sudo setfront /usr/share/consolefonts/Lat2-Fixed13.psf.gz
+  printf "\033c" > /dev/tty0
   dialog --clear
 
   if [[ "$(iw dev wlan0 info | grep ssid | cut -c 7-30)" == *"ArkOS_"* ]] || [ -z "$(iw dev wlan0 info | grep ssid | cut -c 7-30)" ]; then
@@ -30,16 +32,20 @@ if [ "$?" -eq "10" ]; then
   fi
 fi
 
-/usr/local/bin/controller_setup.sh
+if [ -f "/boot/rk3566.dtb" ] || [ -f "/boot/rk3566-OC.dtb" ]; then
+  /usr/local/bin/controller_setup.sh
 
-if [ "$(ls /dev/input/ | wc -l)" -gt "7" ]; then
-  testJoy=$(timeout 1 sdljoytest | grep Found)
-  testJoy=$(echo "$testJoy" | cut -d " " -f6)
-  if [ "$testJoy" -gt "1" ]; then
-    /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg --appendconfig=/home/ark/.config/retroarch/retroarch.cfg.ext "$@"
+  if [ "$(ls /dev/input/ | wc -l)" -gt "7" ]; then
+    testJoy=$(timeout 1 sdljoytest | grep Found)
+    testJoy=$(echo "$testJoy" | cut -d " " -f6)
+    if [ "$testJoy" -gt "1" ]; then
+      /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg --appendconfig=/home/ark/.config/retroarch/retroarch.cfg.ext "$@"
+    else
+      /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg "$@"
+    fi  
   else
     /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg "$@"
-  fi  
+  fi
 else
   /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg "$@"
 fi
