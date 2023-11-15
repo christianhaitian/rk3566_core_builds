@@ -67,13 +67,13 @@ ExitMenu() {
   if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
     sudo setfont /usr/share/consolefonts/Lat7-Terminus20x10.psf.gz
   fi
-  if [ ! -z $samegame ]; then
+  if [ ! -z "$samegame" ]; then
     if [[ "$ExitCode" != "250" ]]; then
       /opt/retroarch/bin/${emulator} -c /home/ark/.config/${emulator}/retroarch.cfg --connect=192.168.1.1 --nick=ArkOS_Client_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" -L /home/ark/.config/${emulator}/cores/${core}_libretro.so "$game"
       ExitCode="231"
       exit ${ExitCode}
-	else
-	  /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg -H --nick=ArkOS_Host_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" -L /home/ark/.config/${emulator}/cores/${core}_libretro.so "$game"
+    else
+      /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg -H --nick=ArkOS_Host_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" -L /home/ark/.config/${emulator}/cores/${core}_libretro.so "$game"
       ExitCode="231"
       exit ${ExitCode}
     fi
@@ -92,10 +92,10 @@ Select() {
   fi
 
   dialog --infobox "\nConnecting to local network named $1..." 5 $width 2>&1 > /dev/tty0
-  clist2=`sudo nmcli dev wifi rescan || sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+  clist2=`sleep 1 && sudo nmcli dev wifi rescan && sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
   if [ -z "$(echo $clist2 | grep ArkOS_)" ]; then
     sleep 5
-    clist2=`sudo nmcli dev wifi rescan || sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+    clist2=`sudo nmcli dev wifi rescan && sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
   fi
 
   output=`nmcli device wifi connect "$1" password "$PASS"`
@@ -115,7 +115,7 @@ Select() {
     do
       Test_Button_B
       if [ "$?" -ne "10" ]; then
-        clist2=`sudo nmcli dev wifi rescan || sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+        clist2=`sleep 1 && sudo nmcli dev wifi rescan && sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
         output=`nmcli device wifi connect "$1" password "$PASS"`
         success=`echo "$output" | grep successfully`
         if [ ! -z "$success" ]; then
@@ -176,9 +176,9 @@ while true
 do
   Test_Button_B
   if [ "$?" -ne "10" ]; then
-    clist=`sudo nmcli dev wifi rescan || sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+    clist=`sleep 1 && sudo nmcli dev wifi rescan && sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
     if [ -z "$clist" ]; then
-      clist=`sudo nmcli dev wifi rescan || sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+      clist=`sleep 1 && sudo nmcli dev wifi rescan && sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
     fi
 
     if [ ! -z "$1" ] && [ ! -z "$(echo $clist | grep $core)" ]; then
@@ -290,7 +290,7 @@ do
   Test_Button_B
   if [ "$?" -ne "10" ]; then
     LastClientIP="$(tail -1 /var/lib/misc/dnsmasq.leases | awk -F ' ' '{print $3}')"
-    if [ ! -z $LastClientIP ]; then
+    if [ ! -z "$LastClientIP" ]; then
       LastClientName="$(tail -1 /var/lib/misc/dnsmasq.leases | awk -F ' ' '{print $4}')"
 
       sudo ping -c 1 -W 5 $LastClientIP > /dev/null
@@ -299,19 +299,19 @@ do
 
         roms2="$(sshpass -p "ark" ssh -o StrictHostKeyChecking=no -l ark $LastClientIP "lsblk | grep roms2")"
 
-        if [ -z $roms2 ]; then
+        if [ -z "$roms2" ]; then
           DIR="roms"
-        elif [ ! -z $roms2 ]; then
-		  if [[ "$roms2" == *"roms2"* ]]; then
+        elif [ ! -z "$roms2" ]; then
+          if [[ "$roms2" == *"roms2"* ]]; then
             DIR="roms2"
           else
             sleep 5
             sshpass -p "ark" ssh -o StrictHostKeyChecking=no -l ark $LastClientIP "lsblk | grep roms2"
-            if [ -z $roms2 ]; then
+            if [ -z "$roms2" ]; then
               DIR="roms"
-			else
-			  DIR="roms2"
-			fi
+            else
+              DIR="roms2"
+            fi
           fi
         fi
 
@@ -323,8 +323,8 @@ do
         do
           Dest="$(echo $g | sed "/$(echo $g |  awk -F '/' '{print $2}')/s//$DIR/")"
           echo "${emulator}" > /dev/shm/gameshare.info
-		  echo "${core}" >> /dev/shm/gameshare.info
-		  echo "${Dest}" >> /dev/shm/gameshare.info
+          echo "${core}" >> /dev/shm/gameshare.info
+          echo "${Dest}" >> /dev/shm/gameshare.info
           sshpass -p "ark" rsync -P -r -v --progress -e ssh "$g" ark@"$LastClientIP":"\"$Dest\"" | \
           stdbuf -i0 -o0 -e0 tr '\r' '\n' | stdbuf -i0 -o0 -e0  awk -W interactive '/^ / { print int(+$2) ; fflush() ;  next } $0 { print "# " $0  }' | \
           dialog --title "Sharing" --gauge "Copying $(echo $g | awk -F '/' '{print $NF}') to $LastClientName ($LastClientIP)\n\nPlease Wait..." $height $width 2>&1 > /dev/tty0
@@ -379,12 +379,12 @@ GameShare() {
         2)sudo systemctl start ssh &
           Select ArkOS_AP
           if [ "$success" ]; then
-		    success=""
+            success=""
             systemctl is-active --quiet ssh.service
-			if [ "$?" -ne "3" ]; then
+            if [ "$?" -ne "3" ]; then
               sudo systemctl start ssh &
               SSH_ON="On"
-			fi
+            fi
             #dialog --infobox "\nReady to receive game file now" 6 $width 2>&1 > /dev/tty0
             dialog --infobox "Waiting for transfer to complete then start the netplay session with the game...\nPress and hold B to stop waiting and cancel receiving game file" 6 $width 2>&1 > /dev/tty0
             . /usr/local/bin/buttonmon.sh
@@ -395,9 +395,9 @@ GameShare() {
                 emulator="$(sed '1q;d' /dev/shm/gameshare.info)"
                 core="$(sed '2q;d' /dev/shm/gameshare.info)"
                 game="$(sed '3q;d' /dev/shm/gameshare.info)"
-                if [ ! -z $SSH_ON ]; then
+                if [ ! -z "$SSH_ON" ]; then
                   sudo systemctl stop ssh &
-				fi
+                fi
                 Client "gameshare"
                 Test_Button_B
                 if [ "$?" -ne "10" ]; then
@@ -420,10 +420,10 @@ GameShare() {
           sleep 3
           GameShare
         ;;
-        3)if [ ! -z $AP_ON ]; then
+        3)if [ ! -z "$AP_ON" ]; then
             arkos_ap_mode.sh Disable
           fi
-          if [ ! -z $SSH_ON ]; then
+          if [ ! -z "$SSH_ON" ]; then
       	    sudo systemctl stop ssh
           fi
           MainMenu
