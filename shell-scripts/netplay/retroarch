@@ -10,8 +10,20 @@ if [ "$?" -eq "10" ]; then
   core="$(echo "$@" | grep -o -P '(?<=cores\/).*(?=_libretro.so)')"
   game="$(echo "$@" | grep -o -P '(?<=_libretro.so ).*(?=)')"
   emulator="retroarch"
+  nonetplay=( "atari800" "hatari" "bluemsx" "coolcv" "dosbox" "dosbox_pure" "ecwolf" "freechaf" "fuse" \
+			  "gw" "gpsp" "vbam" "vba_next" "vice_xplus4" "vice_x64" "vice_x128" "vice_xvic" "prosystem" \
+			  "easyrpg" "freeintv" "fake08" "gambatte" "mgba" "mgba_rumble" "same_cdi" "pcsx_rearmed" \
+			  "arduous" "pokemini" "pcsx_rearmed_rumble" "duckstation" "swanstation" "ppsspp" "puae" "puae2021" \
+			  "parallel_n64" "mupen64plus_next" "mupen64plus" "o2em" "nekop2" "flycast32_rumble" \
+			  "flycast_rumble" "flycast_xtreme" "reicast_xtreme" "flycast" "uae4arm" "vemulator" \
+			  "wasm4" "onscripter" "vecx" "uzem" "theodore" "px68k" "x1" "scummvm" )
+  if [[ ${nonetplay[@]} =~ $core ]]; then
+    msgbox "The $core emulation core does not support netplay."
+	exit 0
+  fi
   netplay.sh "$core" "$game" "$emulator"
   results="$(echo $?)"
+
   if [ "$results" -eq "250" ]; then
     /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg -H --nick=ArkOS_Host_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" "$@"
   elif [ "$results" -eq "138" ]; then
@@ -20,9 +32,7 @@ if [ "$?" -eq "10" ]; then
     continue
   fi
   
-  sudo setfront /usr/share/consolefonts/Lat2-Fixed13.psf.gz
   printf "\033c" > /dev/tty0
-  dialog --clear
 
   if [[ "$(iw dev wlan0 info | grep ssid | cut -c 7-30)" == *"ArkOS_"* ]] || [ -z "$(iw dev wlan0 info | grep ssid | cut -c 7-30)" ]; then
     arkos_ap_mode.sh Disable
