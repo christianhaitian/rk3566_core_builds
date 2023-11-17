@@ -17,7 +17,7 @@ if [ "$?" -eq "10" ]; then
 			  "parallel_n64" "mupen64plus_next" "mupen64plus" "o2em" "nekop2" "flycast32_rumble" \
 			  "flycast_rumble" "flycast_xtreme" "reicast_xtreme" "flycast" "uae4arm" "vemulator" \
 			  "wasm4" "onscripter" "vecx" "uzem" "theodore" "px68k" "x1" "scummvm" )
-  if [[ ${nonetplay[@]} =~ $core ]]; then
+  if [ ! -z $core ] && [[ ${nonetplay[@]} =~ $core ]]; then
     msgbox "The $core emulation core does not support netplay."
 	exit 0
   fi
