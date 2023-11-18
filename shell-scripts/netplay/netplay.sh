@@ -65,7 +65,7 @@ ExitMenu() {
     pgrep -f gptokeyb | sudo xargs kill -9
   fi
   if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
-    sudo setfont /usr/share/consolefonts/Lat7-Terminus20x10.psf.gz
+    sudo setfont /usr/share/consolefonts/Lat7-Terminus24x12.psf.gz
   fi
   if [ ! -z "$samegame" ]; then
     if [[ "$ExitCode" != "250" ]]; then
