@@ -91,10 +91,12 @@ Select() {
   fi
 
   dialog --infobox "\nConnecting to local network named $1..." 5 $width 2>&1 > /dev/tty0
-  clist2=`sleep 1 && sudo nmcli dev wifi rescan && sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
-  if [ -z "$(echo $clist2 | grep ArkOS_)" ]; then
-    sleep 5
-    clist2=`sudo nmcli dev wifi rescan && sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+  if [[ "$1" == "ArkOS_AP" ]]; then
+    clist2=`sudo wpa_cli scan > /dev/null && sudo wpa_cli scan_results`
+    if [ -z "$(echo $clist2 | grep ArkOS_)" ]; then
+      sleep 2
+      clist2=`sudo wpa_cli scan > /dev/null && sudo wpa_cli scan_results`
+    fi
   fi
 
   output=`nmcli device wifi connect "$1" password "$PASS"`
@@ -114,7 +116,7 @@ Select() {
     do
       Test_Button_B
       if [ "$?" -ne "10" ]; then
-        clist2=`sleep 1 && sudo nmcli dev wifi rescan && sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
+        clist2=`sleep 1 && sudo wpa_cli scan > /dev/null && sudo wpa_cli scan_results`
         output=`nmcli device wifi connect "$1" password "$PASS"`
         success=`echo "$output" | grep successfully`
         if [ ! -z "$success" ]; then
@@ -175,10 +177,7 @@ while true
 do
   Test_Button_B
   if [ "$?" -ne "10" ]; then
-    clist=`sleep 1 && sudo nmcli dev wifi rescan && sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
-    if [ -z "$clist" ]; then
-      clist=`sleep 1 && sudo nmcli dev wifi rescan && sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
-    fi
+    clist=`sleep 1 && sudo wpa_cli scan > /dev/null && sudo wpa_cli scan_results`
 
     if [ ! -z "$1" ] && [ ! -z "$(echo $clist | grep $core)" ]; then
       Select ArkOS_AP_"$core" "$1"
@@ -315,16 +314,17 @@ do
         for g in "${game_array[@]}"
         do
           Dest="$(echo $g | sed "/$(echo $g |  awk -F '/' '{print $2}')/s//$DIR/")"
-          echo "${emulator}" > /dev/shm/gameshare.info
-          echo "${core}" >> /dev/shm/gameshare.info
-          echo "${Dest}" >> /dev/shm/gameshare.info
           sshpass -p "ark" rsync -P -r -v --progress -e ssh "$g" ark@"$LastClientIP":"\"$Dest\"" | \
           stdbuf -i0 -o0 -e0 tr '\r' '\n' | stdbuf -i0 -o0 -e0  awk -W interactive '/^ / { print int(+$2) ; fflush() ;  next } $0 { print "# " $0  }' | \
           dialog --title "Sharing" --gauge "Copying $(echo $g | awk -F '/' '{print $NF}') to $LastClientName ($LastClientIP)\n\nPlease Wait..." $height $width 2>&1 > /dev/tty0
-          sshpass -p "ark" rsync -P -r -v --progress -e ssh "/dev/shm/gameshare.info" ark@"$LastClientIP":"/dev/shm/gameshare.info" | \
-          stdbuf -i0 -o0 -e0 tr '\r' '\n' | stdbuf -i0 -o0 -e0  awk -W interactive '/^ / { print int(+$2) ; fflush() ;  next } $0 { print "# " $0  }' | \
-          dialog --title "Sharing" --gauge "Copying gameshare.info to $LastClientName ($LastClientIP)\n\nPlease Wait..." $height $width 2>&1 > /dev/tty0
         done
+        echo "${emulator}" > /dev/shm/gameshare.info
+        echo "${core}" >> /dev/shm/gameshare.info
+        Dest="$(echo $game | sed "/$(echo $game |  awk -F '/' '{print $2}')/s//$DIR/")"
+        echo "${Dest}" >> /dev/shm/gameshare.info
+        sshpass -p "ark" rsync -P -r -v --progress -e ssh "/dev/shm/gameshare.info" ark@"$LastClientIP":"/dev/shm/gameshare.info" | \
+        stdbuf -i0 -o0 -e0 tr '\r' '\n' | stdbuf -i0 -o0 -e0  awk -W interactive '/^ / { print int(+$2) ; fflush() ;  next } $0 { print "# " $0  }' | \
+        dialog --title "Sharing" --gauge "Copying gameshare.info to $LastClientName ($LastClientIP)\n\nPlease Wait..." $height $width 2>&1 > /dev/tty0
         rm -f /dev/shm/gameshare.info
         if [ $? -eq 0 ]; then
           dialog --infobox "\nTransfer of ${game%.*} to $LastClientName ($LastClientIP) has completed successfully" 6 $width 2>&1 > /dev/tty0
@@ -350,13 +350,13 @@ GameShare() {
   if [[ ! -z $AP_Support ]]; then
     local gameshareoptions=( 2 "Receive game from Host" 3 "Go Back" )
   else
-    local gameshareoptions=( 1 "Share current game to Client" 2 "Receive game from Host" 3 "Go Back" )
+    local gameshareoptions=( 1 "Share current game with Client" 2 "Share game from Host" 3 "Go Back" )
   fi
 
   while true; do
     gameshareselection=(dialog \
     --backtitle "Game Share Mode: Connected to: $(iw dev wlan0 info | grep ssid | cut -c 7-30)" \
-    --title "[ Game Share Menu: Receive Game from Host mode: $(systemctl is-active ssh) ]" \
+    --title "[ Game Share Menu: Share game from Host mode: $(systemctl is-active ssh) ]" \
     --no-collapse \
     --clear \
     --cancel-label "Select + Start to Exit" \
