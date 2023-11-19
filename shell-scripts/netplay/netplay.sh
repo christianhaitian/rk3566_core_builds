@@ -26,11 +26,13 @@
 #
 
 sudo chmod 666 /dev/tty0
+export TERM=linux
+export XDG_RUNTIME_DIR=/run/user/$UID/
 printf "\033c" > /dev/tty0
 
 # hide cursor
-#printf "\e[?25l" > /dev/tty0
-dialog --clear 2>&1 > /dev/tty0
+printf "\e[?25l" > /dev/tty0
+dialog --clear
 
 height="15"
 width="55"
@@ -43,11 +45,8 @@ fi
 
 ExitCode="0"
 
-export TERM=linux
-export XDG_RUNTIME_DIR=/run/user/$UID/
-
 if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
-  sudo setfont /usr/share/consolefonts/Lat7-TerminusBold20x10.psf.gz
+  sudo setfont /usr/share/consolefonts/Lat7-TerminusBold24x12.psf.gz
 fi
 
 pgrep -f gptokeyb | sudo xargs kill -9
@@ -65,7 +64,7 @@ ExitMenu() {
     pgrep -f gptokeyb | sudo xargs kill -9
   fi
   if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
-    sudo setfont /usr/share/consolefonts/Lat7-Terminus24x12.psf.gz
+    sudo setfont /usr/share/consolefonts/Lat7-Terminus20x10.psf.gz
   fi
   if [ ! -z "$samegame" ]; then
     if [[ "$ExitCode" != "250" ]]; then
@@ -73,7 +72,7 @@ ExitMenu() {
       ExitCode="231"
       exit ${ExitCode}
     else
-      /opt/retroarch/bin/retroarch -c /home/ark/.config/retroarch/retroarch.cfg -H --nick=ArkOS_Host_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" -L /home/ark/.config/${emulator}/cores/${core}_libretro.so "$game"
+      /opt/retroarch/bin/${emulator} -c /home/ark/.config/${emulator}/retroarch.cfg -H --nick=ArkOS_Host_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" -L /home/ark/.config/${emulator}/cores/${core}_libretro.so "$game"
       ExitCode="231"
       exit ${ExitCode}
     fi
@@ -198,10 +197,7 @@ LessBusyChannel() {
   if [[ ! -z $(cat /etc/hostapd/hostapd.conf | grep "hw_mode=g") ]]; then
     AvailChannels=( "2412" "2437" "2462" )
     Channels=( "Channel1" "Channel6" "Channel11" )
-    AreaChannels=`timeout --kill-after=1s 6s sudo iw dev wlan0 scan | grep -E '24(12|37|62)'`
-    if [[ "$AreaChannels" == "Terminated" ]]; then
-      AreaChannels=`timeout --kill-after=1s 6s sudo iw dev wlan0 scan | grep -E '24(12|37|62)'`
-    fi
+    AreaChannels=`sudo wpa_cli scan > /dev/null && sudo wpa_cli scan_results | grep -Eoh '24(12|37|62)'`
     i=0
     # Loop through channel list and get the count of them found
     for ChannelCheck in ${AvailChannels[@]}
@@ -225,10 +221,7 @@ LessBusyChannel() {
   else
     AvailChannels=( "5180" "5200" "5220" "5240" "5745" "5765" "5785" "5805" )
     Channels=( "Channel36" "Channel40" "Channel44" "Channel48" "Channel149" "Channel153" "Channel157" "Channel161" )
-    AreaChannels=`timeout --kill-after=1s 6s sudo iw dev wlan0 scan | grep -E '5(180|200|220|240|745|765|785|805)'`
-    if [[ "$AreaChannels" == "Terminated" ]]; then
-      AreaChannels=`timeout --kill-after=1s 6s sudo iw dev wlan0 scan | grep -E '5(180|200|220|240|745|765|785|805)'`
-    fi
+    AreaChannels=`sudo wpa_cli scan > /dev/null && sudo wpa_cli scan_results | grep -Eoh '5(180|200|220|240|745|765|785|805)'`
     i=0
     # Loop through channel list and get the count of them found
     for ChannelCheck in ${AvailChannels[@]}
