@@ -22,8 +22,8 @@ index 50e3466..b542510 100644
     SHARED := -shared -Wl,--version-script=$(CORE_DIR)/libretro/link.T
     LIBM :=   
 +
-+# RK3326 
-+else ifeq ($(platform), rk3326)
++# RK3566 
++else ifeq ($(platform), rk3566)
 +   CPUFLAGS := -Ofast -march=armv8-a+crc+fp+simd -mcpu=cortex-a55 -flto -DUSE_RENDER_THREAD -DNO_ASM -DARM_ASM -frename-registers -ftree-vectorize
 +   CFLAGS   := -DNDEBUG -Ofast -fno-ident
 +   LDFLAGS  += -Ofast -fno-ident
