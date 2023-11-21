@@ -22,13 +22,14 @@
 #THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 #
-# Local NetPlay Setup
+# Adhoc NetPlay Setup
 #
 
 sudo chmod 666 /dev/tty0
 export TERM=linux
 export XDG_RUNTIME_DIR=/run/user/$UID/
-printf "\033c" > /dev/tty0
+#printf "\033c" > /dev/tty0
+reset
 
 # hide cursor
 printf "\e[?25l" > /dev/tty0
@@ -52,7 +53,7 @@ fi
 pgrep -f gptokeyb | sudo xargs kill -9
 pgrep -f osk.py | sudo xargs kill -9
 printf "\033c" > /dev/tty0
-printf "Starting Local Netplay Session Manager.  Please wait..." 2>&1 > /dev/tty0
+printf "Starting Adhoc Netplay Session Manager.  Please wait..." 2>&1 > /dev/tty0
 old_ifs="$IFS"
 
 ExitMenu() {
@@ -66,6 +67,8 @@ ExitMenu() {
   if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
     sudo setfont /usr/share/consolefonts/Lat7-Terminus20x10.psf.gz
   fi
+  reset
+
   if [ ! -z "$samegame" ]; then
     if [[ "$ExitCode" != "250" ]]; then
       /opt/retroarch/bin/${emulator} -c /home/ark/.config/${emulator}/retroarch.cfg --connect=192.168.1.1 --nick=ArkOS_Client_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" -L /home/ark/.config/${emulator}/cores/${core}_libretro.so "$game"
@@ -90,7 +93,7 @@ Select() {
    PASS="Ark0s11o52o23"
   fi
 
-  dialog --infobox "\nConnecting to local network named $1..." 5 $width 2>&1 > /dev/tty0
+  dialog --infobox "\nConnecting to adhoc network named $1..." 5 $width 2>&1 > /dev/tty0
   if [[ "$1" == "ArkOS_AP" ]]; then
     clist2=`sudo wpa_cli scan > /dev/null && sudo wpa_cli scan_results`
     if [ -z "$(echo $clist2 | grep ArkOS_)" ]; then
@@ -145,7 +148,7 @@ Select() {
 
 Host() {
 
-  dialog --infobox "\nSetting up local netplay session ..." 5 $width 2>&1 > /dev/tty0
+  dialog --infobox "\nSetting up adhoc netplay session ..." 5 $width 2>&1 > /dev/tty0
 
   sleep 1
 
@@ -154,12 +157,12 @@ Host() {
   success=`echo "$output" | grep Success`
 
   if [ -z "$success" ]; then
-    output="Failed setting up hosting for the local netplay session."
+    output="Failed setting up hosting for the adhoc netplay session."
     dialog --infobox "\n$output" 6 $width 2>&1 > /dev/tty0
     sleep 3
     MainMenu
   else
-    output="Host setup for local netplay session is now ready!"
+    output="Host setup for adhoc netplay session is now ready!"
     dialog --infobox "\n$output" 6 $width 2>&1 > /dev/tty0
     sleep 3
     ExitCode="250"
@@ -171,7 +174,7 @@ Client() {
 
 . /usr/local/bin/buttonmon.sh
 
-dialog --infobox "\nLooking for $core ArkOS NetPlay session ...\n \
+dialog --infobox "\nLooking for $core adhoc ArkOS NetPlay session ...\n \
 Press and hold B to cancel this attempt to connect to the $core ArkOS NetPlay session." 6 $width 2>&1 > /dev/tty0
 while true
 do
@@ -444,7 +447,7 @@ Settings() {
 
   while true; do
     settingsselection=(dialog \
-    --backtitle "NetPlay Session: Current AP Mode: ${curapmode}Ghz | CH: $(cat /etc/hostapd/hostapd.conf | grep -oP "(?<=channel=).*")" \
+    --backtitle "Adhoc NetPlay Session: AP Mode: ${curapmode}Ghz | CH: $(cat /etc/hostapd/hostapd.conf | grep -oP "(?<=channel=).*")" \
     --title "[ Settings Menu ]" \
     --no-collapse \
     --clear \
@@ -488,14 +491,14 @@ Settings() {
 
 MainMenu() {
   if [[ -z $AP_Support ]]; then
-    mainoptions=( 1 "Host a local Netplay Session" 2 "Connect to a local Netplay Session" 3 "Game Share Mode" 4 "Start without NetPlay" 5 "Settings" 6 "Exit" )
+    mainoptions=( 1 "Host a adhoc Netplay Session" 2 "Connect to a adhoc Netplay Session" 3 "Game Share Mode" 4 "Start without NetPlay" 5 "Settings" 6 "Exit" )
   else
-    mainoptions=( 2 "Connect to a local Netplay Session" 3 "Game Share Mode" 4 "Start without NetPlay" 5 "Settings" 6 "Exit" )
+    mainoptions=( 2 "Connect to a adhoc Netplay Session" 3 "Game Share Mode" 4 "Start without NetPlay" 5 "Settings" 6 "Exit" )
   fi
   IFS="$old_ifs"
   while true; do
     mainselection=(dialog \
-   	--backtitle "Netplay Session: $core" \
+   	--backtitle "Adhoc Netplay Session: $core" \
    	--title "Main Menu" \
    	--no-collapse \
    	--clear \
@@ -550,7 +553,8 @@ emulator="$3"
 if [[ -z $(iw list | grep "Band 2") ]]; then
   if [[ ! -z $(cat /etc/hostapd/hostapd.conf | grep "hw_mode=a") ]]; then
     sudo sed -i "/hw_mode\=/c\hw_mode\=g" /etc/hostapd/hostapd.conf
-    sudo sed -i "/channel\=/c\channel\=6" /etc/hostapd/hostapd.conf
+    LessBusyChannel
+    sudo sed -i "/channel\=/c\channel\=$BestChannel" /etc/hostapd/hostapd.conf
   fi
 fi
 
