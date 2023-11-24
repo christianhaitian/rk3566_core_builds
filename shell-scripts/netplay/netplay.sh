@@ -140,6 +140,8 @@ Select() {
 
   if [ ! -z "$2" ]; then
     continue
+  elif [[ "$ExitCode" == "139" ]]; then
+    ExitMenu
   elif [[ "$1" != "ArkOS_AP" ]]; then
     ExitCode="138"
     ExitMenu
@@ -491,9 +493,9 @@ Settings() {
 
 MainMenu() {
   if [[ -z $AP_Support ]]; then
-    mainoptions=( 1 "Host a adhoc Netplay Session" 2 "Connect to a adhoc Netplay Session" 3 "Game Share Mode" 4 "Start without NetPlay" 5 "Settings" 6 "Exit" )
+    mainoptions=( 1 "Host an adhoc Netplay Session" 2 "Connect to an adhoc Netplay Session" 3 "Spectate an adhoc Netplay Session" 4 "Game Share Mode" 5 "Start without NetPlay" 6 "Settings" 7 "Exit" )
   else
-    mainoptions=( 2 "Connect to a adhoc Netplay Session" 3 "Game Share Mode" 4 "Start without NetPlay" 5 "Settings" 6 "Exit" )
+    mainoptions=( 2 "Connect to an adhoc Netplay Session" 3 "Spectate an adhoc Netplay Session" 4 "Game Share Mode" 5 "Start without NetPlay" 6 "Settings" 7 "Exit" )
   fi
   IFS="$old_ifs"
   while true; do
@@ -511,11 +513,13 @@ MainMenu() {
       case $mchoice in
 	1) Host ;;
 	2) Client ;;
-	3) GameShare ;;
-	4) ExitCode="230"
+	3) ExitCode="139"
+	   Client ;;
+	4) GameShare ;;
+	5) ExitCode="230"
 	   ExitMenu ;;
-	5) Settings ;;
-	6) ExitMenu ;;
+	6) Settings ;;
+	7) ExitMenu ;;
       esac
     done
   done
