@@ -13,7 +13,7 @@ cur_wd="$PWD"
 bitness="$(getconf LONG_BIT)"
 
 	# Libretro Flycast build
-	if [[ "$var" == "flycast_xtreme" || "$var" == "all" ]]; then
+	if [[ "$var" == "flycast_xtreme" || "$var" == "all" ]] && [[ "$bitness" == "32" ]]; then
 	 flycast_rumblepatch="no"
 	 cd $cur_wd
 	  if [ ! -d "flycast_xtreme/" ]; then
@@ -50,12 +50,9 @@ bitness="$(getconf LONG_BIT)"
 	  done
 	 fi
 	  make clean
+	  sed -i '/a35/s//a55/g' Makefile
 
-	  if [[ "$bitness" == "64" ]]; then
-		make FORCE_GLES=1 platform=RK3566 HAVE_OPENMP=1 HAVE_LTCG=0 -j$(nproc)
-	  else 
-		make FORCE_GLES=1 platform=classic_armv8_a55 -j$(nproc)
-	  fi
+	  make platform=classic_armv8_a55 -j$(nproc)
 
 	  if [[ $? != "0" ]]; then
 		echo " "
@@ -63,17 +60,17 @@ bitness="$(getconf LONG_BIT)"
 		exit 1
 	  fi
 
-	  strip km_xtreme_flycast_libretro.so
+	  strip km_flycast_xtreme_libretro.so
 
 	  if [ ! -d "../cores$bitness/" ]; then
 		mkdir -v ../cores$bitness
 	  fi
 
-      cp km_xtreme_flycast_libretro.so ../cores$bitness/flycast_xtreme_libretro.so
+          cp km_flycast_xtreme_libretro.so ../cores$bitness/flycast_xtreme_libretro.so
 
 	  gitcommit=$(git log | grep -m 1 commit | cut -c -14 | cut -c 8-)
 	  echo $gitcommit > ../cores$bitness/$(basename $PWD)_libretro.so.commit
 
 	  echo " "
-	  echo "flycast_libretro.so has been created and has been placed in the rk3566_core_builds/cores$bitness subfolder"
+	  echo "flycast_xtreme_libretro.so has been created and has been placed in the rk3566_core_builds/cores$bitness subfolder"
 	fi

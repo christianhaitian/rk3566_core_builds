@@ -20,19 +20,6 @@ index 6883de83a7..44dbc9bc73 100644
  	ASFLAGS  += $(CFLAGS)
  endif
  
-diff --git a/core/libretro-common/include/glsm/glsm.h b/core/libretro-common/include/glsm/glsm.h
-index 770ff51a40..9113bdc9a1 100644
---- a/core/libretro-common/include/glsm/glsm.h
-+++ b/core/libretro-common/include/glsm/glsm.h
-@@ -32,7 +32,7 @@
- RETRO_BEGIN_DECLS
- 
- #ifdef HAVE_OPENGLES2
--//typedef GLfloat GLdouble;
-+typedef GLfloat GLdouble;
- typedef GLclampf GLclampd;
- #endif
- 
 diff --git a/core/libretro/libretro.cpp b/core/libretro/libretro.cpp
 index 48450e25fb..1d8b7e89c4 100644
 --- a/core/libretro/libretro.cpp
