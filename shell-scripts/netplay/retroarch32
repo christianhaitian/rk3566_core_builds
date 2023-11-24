@@ -32,6 +32,8 @@ if [ "$?" -eq "10" ]; then
     /opt/retroarch/bin/retroarch32 -c /home/ark/.config/retroarch32/retroarch.cfg -H --nick=ArkOS_Host_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" "$@"
   elif [ "$results" -eq "138" ]; then
     /opt/retroarch/bin/retroarch32 -c /home/ark/.config/retroarch32/retroarch.cfg --connect=192.168.1.1 --nick=ArkOS_Client_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" "$@"
+  elif [ "$results" -eq "139" ]; then
+    /opt/retroarch/bin/retroarch32 -c /home/ark/.config/retroarch32/retroarch.cfg --connect=192.168.1.1 --nick=ArkOS_Spectator_"${core}"_Session_"$(cat /sys/class/net/wlan0/address | awk -F':' '{ print $4$5$6}')" --appendconfig=/home/ark/.config/retroarch32/retroarch.cfg.spectate "$@"
   elif [ "$results" -eq "230" ]; then
     continue
   fi
