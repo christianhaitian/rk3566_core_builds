@@ -201,7 +201,7 @@ LessBusyChannel() {
   if [[ ! -z $(cat /etc/hostapd/hostapd.conf | grep "hw_mode=g") ]]; then
     AvailChannels=( "2412" "2437" "2462" )
     Channels=( "Channel1" "Channel6" "Channel11" )
-    AreaChannels=`sudo wpa_cli scan > /dev/null && sudo wpa_cli scan_results | grep -Eoh '24(12|37|62)'`
+    AreaChannels=`sudo wpa_cli scan > /dev/null && sleep 5 && sudo wpa_cli scan_results | grep -Eoh '24(12|37|62)'`
     i=0
     # Loop through channel list and get the count of them found
     for ChannelCheck in ${AvailChannels[@]}
@@ -225,7 +225,7 @@ LessBusyChannel() {
   else
     AvailChannels=( "5180" "5200" "5220" "5240" "5745" "5765" "5785" "5805" )
     Channels=( "Channel36" "Channel40" "Channel44" "Channel48" "Channel149" "Channel153" "Channel157" "Channel161" )
-    AreaChannels=`sudo wpa_cli scan > /dev/null && sudo wpa_cli scan_results | grep -Eoh '5(180|200|220|240|745|765|785|805)'`
+    AreaChannels=`sudo wpa_cli scan > /dev/null && sleep 5 && sudo wpa_cli scan_results | grep -Eoh '5(180|200|220|240|745|765|785|805)'`
     i=0
     # Loop through channel list and get the count of them found
     for ChannelCheck in ${AvailChannels[@]}
