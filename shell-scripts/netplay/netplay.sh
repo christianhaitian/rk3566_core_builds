@@ -556,6 +556,7 @@ emulator="$3"
 
 if [[ -z $(iw list | grep "Band 2") ]]; then
   if [[ ! -z $(cat /etc/hostapd/hostapd.conf | grep "hw_mode=a") ]]; then
+    dialog --infobox "\nYour wireless adapter supports only 2.4Ghz.  Updating your host configs.  Please wait..." 5 $width 2>&1 > /dev/tty0
     sudo sed -i "/hw_mode\=/c\hw_mode\=g" /etc/hostapd/hostapd.conf
     LessBusyChannel
     sudo sed -i "/channel\=/c\channel\=$BestChannel" /etc/hostapd/hostapd.conf
