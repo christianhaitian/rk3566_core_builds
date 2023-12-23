@@ -51,6 +51,8 @@ else
   Last_Core=`grep '"core_path":' /home/ark/.config/${@}/content_history.lpl | head -1 | grep -oP '(?<=": ").*?(?=")'`
 fi
 
+echo "/usr/local/bin/BaRT_QuickMode.sh"
+
 if [[ ${@} != "pico8" ]] && [[ ! -z $(pgrep quickmode.sh) ]]; then
   echo ". /usr/local/bin/buttonmon.sh"
   echo "Test_Button_R1"
@@ -81,6 +83,41 @@ if [[ ${@} != "pico8" ]] && [[ ! -z $(pgrep quickmode.sh) ]]; then
   echo "  done"
   echo "fi"
   echo ""
+fi
+
+if [[ "$(tr -d '\0' < /proc/device-tree/compatible)" == *"rk3326"* ]]; then
+  gpu="ff400000"
+else
+  gpu="fde60000"
+fi
+
+echo "sudo systemctl stop ondemand"
+echo "sudo chmod 777 /sys/devices/platform/${gpu}.gpu/devfreq/${gpu}.gpu/governor"
+echo "sudo chmod 777 /sys/devices/system/cpu/cpufreq/policy0/scaling_governor"
+echo "sudo chmod 777 /sys/devices/platform/dmc/devfreq/dmc/governor"
+
+mapfile settings < /dev/shm/governor_settings.state
+echo "echo $(echo ${settings[0]}) | sudo tee /sys/devices/platform/${gpu}.gpu/devfreq/${gpu}.gpu/governor > /dev/null"
+echo "echo $(echo ${settings[1]}) | sudo tee /sys/devices/system/cpu/cpufreq/policy0/scaling_governor > /dev/null"
+echo "echo $(echo ${settings[2]}) | sudo tee /sys/devices/platform/dmc/devfreq/dmc/governor > /dev/null"
+echo "cat /sys/devices/platform/${gpu}.gpu/devfreq/${gpu}.gpu/governor > /dev/shm/governor_settings.state"
+echo "cat /sys/devices/system/cpu/cpufreq/policy0/scaling_governor >> /dev/shm/governor_settings.state"
+echo "cat /sys/devices/platform/dmc/devfreq/dmc/governor >> /dev/shm/governor_settings.state"
+
+if [[ "$(cat /dev/shm/governor_settings.state)" == *"userspace"* ]]; then
+  if [ -f "/dev/shm/QBMODE" ]; then
+    echo "echo $(cat /sys/devices/platform/${gpu}.gpu/devfreq/${gpu}.gpu/userspace/set_freq) | sudo tee /sys/devices/platform/${gpu}.gpu/devfreq/${gpu}.gpu/userspace/set_freq > /dev/null"
+    echo "echo $(cat /sys/devices/system/cpu/cpufreq/policy0/scaling_setspeed) | sudo tee /sys/devices/system/cpu/cpufreq/policy0/scaling_setspeed > /dev/null"
+    echo "echo $(cat /sys/devices/platform/dmc/devfreq/dmc/userspace/set_freq) | sudo tee /sys/devices/platform/dmc/devfreq/dmc/userspace/set_freq > /dev/null"
+  else
+    mapfile usettings < /dev/shm/userspace_speed_settings.state
+    echo "echo $(echo ${usettings[0]}) | sudo tee /sys/devices/platform/${gpu}.gpu/devfreq/${gpu}.gpu/userspace/set_freq > /dev/null"
+    echo "echo $(echo ${usettings[1]}) | sudo tee /sys/devices/system/cpu/cpufreq/policy0/scaling_setspeed > /dev/null"
+    echo "echo $(echo ${usettings[2]}) | sudo tee /sys/devices/platform/dmc/devfreq/dmc/userspace/set_freq > /dev/null"
+    echo "cat /sys/devices/platform/${gpu}.gpu/devfreq/${gpu}.gpu/userspace/set_freq > /dev/shm/userspace_speed_settings.state"
+    echo "cat /sys/devices/system/cpu/cpufreq/policy0/scaling_setspeed >> /dev/shm/userspace_speed_settings.state"
+    echo "cat /sys/devices/platform/dmc/devfreq/dmc/userspace/set_freq >> /dev/shm/userspace_speed_settings.state"
+  fi
 fi
 
 echo "/usr/local/bin/${@} -L ${Last_Core} \"${Last_Game}\""
