@@ -25,7 +25,8 @@
 #
 
 sudo chmod 666 /dev/tty1
-printf "\033c" > /dev/tty1
+#printf "\033c" > /dev/tty1
+reset
 
 # hide cursor
 printf "\e[?25l" > /dev/tty1
@@ -44,18 +45,37 @@ export TERM=linux
 export XDG_RUNTIME_DIR=/run/user/$UID/
 
 if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
-  sudo setfont /usr/share/consolefonts/Lat7-TerminusBold20x10.psf.gz
+  if test ! -z "$(cat /home/ark/.config/.DEVICE | grep RG503 | tr -d '\0')"
+  then
+    sudo setfont /usr/share/consolefonts/Lat7-TerminusBold20x10.psf.gz
+  else
+    sudo setfont /usr/share/consolefonts/Lat7-TerminusBold22x11.psf.gz
+  fi
+else
+  sudo setfont /usr/share/consolefonts/Lat7-Terminus16.psf.gz
 fi
 
 pgrep -f gptokeyb | sudo xargs kill -9
 pgrep -f osk.py | sudo xargs kill -9
 printf "\033c" > /dev/tty1
 printf "Starting Wifi Manager.  Please wait..." > /dev/tty1
-#sudo systemctl stop networkwatchdaemon
-#sudo systemctl start NetworkManager
 
-#cur_ap=`iw dev wlan0 info | grep ssid | cut -c 7-30`
 old_ifs="$IFS"
+
+ToggleWifi() {
+  dialog --infobox "\nTurning Wifi $1, please wait..." 5 $width > /dev/tty1
+  if [[ ${1} == "Off" ]]; then
+	sudo systemctl stop NetworkManager &
+	sudo systemctl disable NetworkManager &
+	sudo rfkill block wlan
+  else
+	sudo rfkill unblock wlan
+	sudo systemctl enable NetworkManager
+	sudo systemctl start NetworkManager
+	sleep 5
+  fi
+  MainMenu
+}
 
 ExitMenu() {
   printf "\033c" > /dev/tty1
@@ -65,7 +85,9 @@ ExitMenu() {
   if [[ ! -z $(pgrep -f gptokeyb) ]]; then
     pgrep -f gptokeyb | sudo xargs kill -9
   fi
-#  unset SDL_GAMECONTROLLERCONFIG_FILE
+  if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
+    sudo setfont /usr/share/consolefonts/Lat7-Terminus20x10.psf.gz
+  fi
   exit 0
 }
 
@@ -113,7 +135,10 @@ Select() {
   pgrep -f gptokeyb | sudo xargs kill -9
   # get password from input
   PASS=`$KEYBOARD "Enter Wi-Fi password for $1" | tail -n 1`
-  /opt/inttools/gptokeyb -1 "Wifi.sh" -c "/opt/inttools/keys.gptk" & > /dev/null
+  /opt/inttools/gptokeyb -1 "Wifi.sh" -c "/opt/inttools/keys.gptk" > /dev/null &
+  if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
+    sudo setfont /usr/share/consolefonts/Lat7-TerminusBold24x12.psf.gz
+  fi
 
   dialog --infobox "\nConnecting to Wi-Fi $1 ..." 5 $width > /dev/tty1
   clist2=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
@@ -126,7 +151,6 @@ Select() {
   else
     #workaround for wpa2/wpa3 connectivity
     output=`nmcli device wifi connect "$1" password "$PASS"`
-    #sudo sed -i '/psk=/a sae-password='"$PASS"'\nieee80211w=1' /etc/NetworkManager/system-connections/"$1".nmconnection
     sudo sed -i '/key-mgmt\=sae/s//key-mgmt\=wpa-psk/' /etc/NetworkManager/system-connections/"$1".nmconnection
     sudo systemctl restart NetworkManager
     sleep 5
@@ -138,6 +162,17 @@ Select() {
     output="Activation failed: Secrets were required, but not provided ..."
     sudo rm -f /etc/NetworkManager/system-connections/"$1".nmconnection
   else
+    #bssid=`nmcli -f in-use,bssid dev wifi | grep "*" | awk -F ' ' '{print $2}'`
+    #band=`iw dev | grep -Eo "\([0-9][0-9][0-9][0-9] MHz\)" | tail -1 | cut -c2`
+    #if [[ "$band" == "5" ]]; then
+    #  band="a"
+    #elif [[ "$band" == "2" ]]; then
+    #  band="bg"
+    #fi
+    #sudo sed -i "/ssid\=/abssid=$bssid" /etc/NetworkManager/system-connections/"$1".nmconnection
+    #if [ ! -z "$band" ]; then
+    #  sudo sed -i "/ssid\=/aband=$band" /etc/NetworkManager/system-connections/"$1".nmconnection
+    #fi
     output="Device successfully activated and connected to Wi-Fi ..."
     cur_ap=`iw dev wlan0 info | grep ssid | cut -c 7-30`
   fi
@@ -251,12 +286,22 @@ NetworkInfo() {
 }
 
 MainMenu() {
-  mainoptions=( 1 "Connect to new Wifi connection" 2 "Activate existing Wifi Connection" 3 "Delete exiting connections" 4 "Current Network Info" 5 "Exit" )
-  cur_ap=`iw dev wlan0 info | grep ssid | cut -c 7-30`
+
+  if [[ ! -z $(rfkill -n -o TYPE,SOFT | grep wlan | grep -w unblocked) ]]; then
+    local Wifi_Stat="On"
+	local Wifi_MStat="Off"
+	cur_ap="Currently connected to `iw dev wlan0 info | grep ssid | cut -c 7-30`"
+  else
+    local Wifi_Stat="Off"
+	local Wifi_MStat="On"
+	cur_ap="Wifi Disabled"
+  fi
+
+  mainoptions=( 1 "Turn Wifi $Wifi_MStat (Currently: $Wifi_Stat)" 2 "Connect to new Wifi connection" 3 "Activate existing Wifi Connection" 4 "Delete exiting connections" 5 "Current Network Info" 6 "Exit" )
   IFS="$old_ifs"
   while true; do
     mainselection=(dialog \
-   	--backtitle "Wifi Manager: Currently connected to $cur_ap" \
+   	--backtitle "Wifi Manager: $cur_ap" \
    	--title "Main Menu" \
    	--no-collapse \
    	--clear \
@@ -267,11 +312,12 @@ MainMenu() {
 
     for mchoice in $mainchoices; do
       case $mchoice in
-        1) Connect ;;
-		2) Activate ;;
-		3) Delete ;;
-		4) NetworkInfo ;;
-		5) ExitMenu ;;
+		1) ToggleWifi $Wifi_MStat ;;
+        2) Connect ;;
+		3) Activate ;;
+		4) Delete ;;
+		5) NetworkInfo ;;
+		6) ExitMenu ;;
       esac
     done
   done
@@ -287,7 +333,7 @@ export SDL_GAMECONTROLLERCONFIG_FILE="/opt/inttools/gamecontrollerdb.txt"
 if [[ ! -z $(pgrep -f gptokeyb) ]]; then
   pgrep -f gptokeyb | sudo xargs kill -9
 fi
-/opt/inttools/gptokeyb -1 "Wifi.sh" -c "/opt/inttools/keys.gptk" &
+/opt/inttools/gptokeyb -1 "Wifi.sh" -c "/opt/inttools/keys.gptk" > /dev/null &
 printf "\033c" > /dev/tty1
 dialog --clear
 
