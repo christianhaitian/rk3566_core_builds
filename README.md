@@ -347,6 +347,9 @@ cd rk3566_core_builds
 ### To build just x1 (64bit only):
 `./builds.sh x1`
 
+### To build just xroar (64bit only):
+`./builds.sh xroar`
+
 ### To build just retroarch:
 `./builds.sh retroarch`
 
