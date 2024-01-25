@@ -1,13 +1,11 @@
 #!/bin/bash
-
 ##################################################################
 # Created by Christian Haitian and EnsignRutherford              #
 ##################################################################
 
 EMULATOR=$1
 CORE=$2
-ROM="$3"
-GAME="$ROM"
+GAME="$3"
 
 if [[ $EMULATOR == "standalone" ]]; then
   # We'll get the root folder here so we can pass that info to the xroar executable for locating bios rom files
@@ -64,6 +62,8 @@ if [[ $EMULATOR == "standalone" ]]; then
     else
       rm -rf /dev/shm/cocoroms/*
     fi
+    # 'GAME' will be updated with the file that is found in the zip archive
+    ROM="$GAME"
     unzip -qq -o "$ROM" -d /dev/shm/cocoroms/
     for CART in cas ccc dsk rom; do
       GAME=`find /dev/shm/cocoroms/ -iname "*.${CART}" | tac | head -n 1`
@@ -92,7 +92,7 @@ if [[ $EMULATOR == "standalone" ]]; then
     cmd="-run"
     type=""
   fi
-  
+
   # Now run the game
   /opt/xroar/xroar -rompath /$directory/bios -machine $CORE -tv-input cmp-br -ram 2048 ${cmd} "$GAME" ${params} ${type}
 
@@ -115,29 +115,33 @@ if [[ $EMULATOR == "standalone" ]]; then
   exit 0
 else
   # Get the ROM folder to use for setting up the control files
-  directory=$(dirname "$ROM" | cut -d "/" -f2)
+  # Note: mess ONLY supports zip files with naming conventions in coco_cart.xml and coco_flop.xml in the mame hash folder
+  directory=$(dirname "$GAME" | cut -d "/" -f2)
 
   # Get the game name to use for the controls file
-  gamecontrols=$(echo "$(ls "$ROM" | cut -d "/" -f4 | cut -d "." -f1)")
+  gamecontrols=$(echo "$(ls "$GAME" | cut -d "/" -f4 | cut -d "." -f1)")
 
   # Repoint the mapping directory in an appended config file
   if [[ ! -d "/$directory/coco3/cfg" ]]; then
     mkdir /$directory/coco3/cfg
   fi
 
+  # Create the config file that points the input remapping directory to within the roms(2)/coco3 folder.
   if [[ ! -f "/$directory/coco3/cfg/retroarch_coco3.cfg" ]]; then
     echo "input_remapping_directory = "\"/$directory/coco3/controls\" > /$directory/coco3/cfg/retroarch_coco3.cfg
   fi
 
+  # Create the necessary folder structure for mess.
   if [[ ! -d "/$directory/coco3/controls" ]]; then
     mkdir /$directory/coco3/controls
     mkdir /$directory/coco3/controls/MAME
   fi
 
+  # Copy a default input remapping file.  It's easier to manage it in retroarch as gptokeyb requires a file editor.
   if [[ ! -f "/$directory/coco3/controls/MAME/$gamecontrols.rmp" ]]; then
     cp /opt/coco/coco3.rmp "/$directory/coco3/controls/MAME/$gamecontrols.rmp"
   fi
 
   # Just run this game with libretro mess instead.  Good luck!
-  /usr/local/bin/"$EMULATOR" -v -L /home/ark/.config/"$EMULATOR"/cores/"$CORE"_libretro.so --appendconfig=/$directory/coco3/cfg/retroarch_coco3.cfg "$ROM"
+  /usr/local/bin/"$EMULATOR" -v -L /home/ark/.config/"$EMULATOR"/cores/"$CORE"_libretro.so --appendconfig=/$directory/coco3/cfg/retroarch_coco3.cfg "$GAME"
 fi
