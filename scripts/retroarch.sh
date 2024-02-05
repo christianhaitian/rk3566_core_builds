@@ -135,17 +135,17 @@ bitness="$(getconf LONG_BIT)"
 		mkdir -v ../retroarch$bitness
 	  fi
 
-	  cp retroarch ../retroarch$bitness/.
+	  cp retroarch ../retroarch$bitness/retroarch-rgarotated
 
 	  if [[ "$bitness" == "32" ]]; then
-		mv ../retroarch$bitness/retroarch ../retroarch$bitness/retroarch32
+		mv ../retroarch$bitness/retroarch-rgarotated ../retroarch$bitness/retroarch32-rgarotated
 	  fi
 
 	  echo " "
 	  if [[ "$bitness" == "32" ]]; then
-		echo "retroarch32 has been created and has been placed in the rk3566_core_builds/retroarch$bitness subfolder"
+		echo "retroarch32-rgarotated has been created and has been placed in the rk3566_core_builds/retroarch$bitness subfolder"
 	  else
-		echo "retroarch has been created and has been placed in the rk3566_core_builds/retroarch$bitness subfolder"
+		echo "retroarch-rgarotated has been created and has been placed in the rk3566_core_builds/retroarch$bitness subfolder"
 	  fi
 
       if [[ $retroarch_rgapatch == "yes" ]]; then
@@ -174,17 +174,17 @@ bitness="$(getconf LONG_BIT)"
 		    mkdir -v ../retroarch$bitness
 	      fi
 
-	      cp retroarch ../retroarch$bitness/retroarch-rgaunrotated
+	      cp retroarch ../retroarch$bitness/retroarch
 
 	      if [[ "$bitness" == "32" ]]; then
-		    mv ../retroarch$bitness/retroarch-rgaunrotated ../retroarch$bitness/retroarch32-rgaunrotated
+		    mv ../retroarch$bitness/retroarch ../retroarch$bitness/retroarch32
 	      fi
 
 	      echo " "
 	      if [[ "$bitness" == "32" ]]; then
-		    echo "retroarch32-rgaunrotated has been created and has been placed in the rk3566_core_builds/retroarch$bitness subfolder"
+		    echo "retroarch32 has been created and has been placed in the rk3566_core_builds/retroarch$bitness subfolder"
 	      else
-		    echo "retroarch-rgaunrotated has been created and has been placed in the rk3566_core_builds/retroarch$bitness subfolder"
+		    echo "retroarch has been created and has been placed in the rk3566_core_builds/retroarch$bitness subfolder"
 	      fi
       fi
 
