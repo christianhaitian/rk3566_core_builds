@@ -54,9 +54,10 @@ bitness="$(getconf LONG_BIT)"
      done
 
 	cd ppsspp/ffmpeg
-	./linux_arm64.sh
+	sed -i '/--disable-everything \\/s//--disable-everything \\\n    --disable-iconv \\/g' linux_arm64.sh
+	./linux_arm64.sh 
 	cd ..
-         
+
 	 ppsspp_patches=$(find *.patch)
 	 
 	 if [[ ! -z "$ppsspp_patches" ]]; then
@@ -74,10 +75,24 @@ bitness="$(getconf LONG_BIT)"
 
 	  mkdir build
 	  cd build
-	  cmake -DUSING_EGL=OFF -DCMAKE_BUILD_TYPE=Release -DUSING_GLES2=ON \
-	  -DUSE_FFMPEG=YES -DUSE_SYSTEM_FFMPEG=NO -DUSING_X11_VULKAN=OFF \
-      -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
-      -DCMAKE_C_FLAGS=-fpermissive -DCMAKE_CXX_FLAGS=-fpermissive ../.
+	  cmake -DUSING_EGL=OFF \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DUSING_GLES2=ON \
+		-DUSE_FFMPEG=YES \
+		-DUSE_SYSTEM_FFMPEG=NO \
+		-DVULKAN=OFF \
+		-DUSE_VULKAN_DISPLAY_KHR=OFF \
+		-DUSING_X11_VULKAN=OFF \
+		-DUSE_WAYLAND_WSI=OFF \
+		-DUSING_FBDEV=ON \
+		-DCMAKE_C_COMPILER=/usr/bin/clang \
+		-DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
+		-DCMAKE_C_FLAGS="-fpermissive -march=armv8-a+crc -mtune=cortex-a55 -funsafe-math-optimizations" \
+		-DCMAKE_CXX_FLAGS="-fpermissive -march=armv8-a+crc -mtune=cortex-a55 -funsafe-math-optimizations" \
+		-DUSE_MINIUPNPC=OFF \
+		-DUSING_QT_UI=OFF \
+		-DUSE_DISCORD=OFF \
+		-DCMAKE_CXX_FLAGS=-fpermissive ../.
 	  make -j$(nproc)
 
 	  if [[ $? != "0" ]]; then
