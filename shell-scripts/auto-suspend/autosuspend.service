@@ -1,0 +1,16 @@
+[Unit]
+Description=Auto Suspend Service
+
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=ark
+Restart=always
+RestartSec=1
+
+ExecStart=/usr/local/bin/auto_suspend.py
+
+[Install]
+WantedBy=multi-user.target
+
