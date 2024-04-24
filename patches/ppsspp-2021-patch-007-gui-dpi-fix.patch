@@ -1,0 +1,13 @@
+diff --git a/Core/Core.cpp b/Core/Core.cpp
+index b6af6456f..b85a8949f 100644
+--- a/Core/Core.cpp
++++ b/Core/Core.cpp
+@@ -168,7 +168,7 @@ bool UpdateScreenScale(int width, int height) {
+ 	g_dpi_scale_x = 96.0f / g_dpi;
+ 	g_dpi_scale_y = 96.0f / g_dpi;
+ #else
+-	g_dpi = 96.0f;
++	g_dpi = 72.0f;
+ 	g_dpi_scale_x = 1.0f;
+ 	g_dpi_scale_y = 1.0f;
+ #endif
