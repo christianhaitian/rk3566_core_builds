@@ -86,7 +86,23 @@ minfluidsynthverneeded="3"
       cd ../..
      fi      
 
-	  ./configure --backend=sdl --enable-optimizations --opengl-mode=gles2 --enable-vkeybd --disable-debug --enable-release
+	  git checkout v2.8.1
+
+	  scummvm_patches=$(find *.patch)
+	 
+	  if [[ ! -z "$scummvm_patches" ]]; then
+	   for patching in scummvm-patch*
+	   do
+		    patch -Np1 < "$patching"
+		    if [[ $? != "0" ]]; then
+			 echo " "
+			 echo "There was an error while applying $patching.  Stopping here."
+			 exit 1
+		    fi
+		    rm "$patching" 
+	   done
+	  fi
+	  ./configure --backend=sdl --enable-optimizations --opengl-mode=gles2 --enable-vkeybd --enable-sdl-ts-vmouse --disable-debug --enable-release
 	  make clean
 	  make -j$(nproc)
 
