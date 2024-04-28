@@ -14,9 +14,10 @@ bitness="$(getconf LONG_BIT)"
 #commit="25f9ed87ff6947d9576fc9d79dee0784e638ac58" # SDL 2.0.16
 #commit="f9b918ff403782986f2a6712e6e2a462767a0457" # SDL 2.0.20 although it builds as 2.0.18.2 ¯\_(ツ)_/¯
 #commit="f070c83a6059c604cbd098680ddaee391b0a7341" # SDL 2.0.26.2
-commit="ac13ca9ab691e13e8eebe9684740ddcb0d716203" # SDL 2.0.26.5
+#commit="ac13ca9ab691e13e8eebe9684740ddcb0d716203" # SDL 2.0.26.5
 #commit="031912c4b6c5db80b443f04aa56fec3e4e645153" # SDL 2.0.28.2
 #commit="cc016b0046d563287f0aa9f09b958b5e70d43696" # SDL 2.0.28.4
+commit="f461d91cd265d7b9a44b4d472b1df0c0ad2855a0" # SDL 2.0.30.2
 
 	# sdl2 Standalone Build
 	if [[ "$var" == "sdl2" ]]; then
