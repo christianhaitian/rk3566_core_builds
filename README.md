@@ -89,6 +89,9 @@ cd rk3566_core_builds
 ### To build just fbneo (64bit only):
 `./builds.sh fbneo`
 
+### To build just fbneo-kmfd (FBNeo-Xtreme-Amped) (64bit only):
+`./builds.sh fbneo-kmfd`
+
 ### To build just fbneo standalone emulator (64bit only):
 `./builds.sh fbneosa`
 
