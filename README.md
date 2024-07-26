@@ -50,6 +50,9 @@ cd rk3566_core_builds
 ### To build just caprice32 (64bit only):
 `./builds.sh cap32`
 
+### To build just chimerasnes (64bit only):
+`./builds.sh chimerasnes`
+
 ### To build just crocods (64bit only):
 `./builds.sh crocods`
 
