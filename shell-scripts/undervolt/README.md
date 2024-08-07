@@ -8,6 +8,9 @@ Then edit the `FDT` line in /boot/extlinux/extlinux.conf to point to the newly c
 
 If booting fails, just revert the `FDT` line to the previous `/rk3566-OC.dtb` text to restore the stock cpu voltages.
 
+To create the dtbo overlay file using the supplied dts source files from within ArkOS: \
+`dtc -@ -I dts -O dtb -o yourchoiceofname.dtbo undervolt.(low or medium or high).dts`
+
 Thanks to sydarn and the rest of the ROCKNIX team for the research on this.
 
 Reference: https://github.com/ROCKNIX/distribution/tree/dev/packages/kernel/device-tree-overlays/sources
