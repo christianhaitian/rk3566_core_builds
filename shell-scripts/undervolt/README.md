@@ -6,7 +6,7 @@ From within ArkOS (via terminal or a ssh session), copy the provided dtb files t
 `sudo fdtoverlay -i /boot/rk3566-OC.dtb -o /boot/rk3566-OC.dtb.undervolt /boot/overlays/undervolt.(low or medium or high).dtbo` \
 Then edit the `FDT` line in /boot/extlinux/extlinux.conf to point to the newly created undervolt file. \
 
-If booting fails, just revert the `FDT` line to the previous `/rk3566-OC.dtb` line to restore the stock cpu voltages.
+If booting fails, just revert the `FDT` line to the previous `/rk3566-OC.dtb` text to restore the stock cpu voltages.
 
 Thanks to sydarn and the rest of the ROCKNIX team for the research on this.
 
