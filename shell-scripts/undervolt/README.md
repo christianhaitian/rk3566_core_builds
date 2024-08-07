@@ -1,4 +1,4 @@
-These are dts files that can be used to create undervolted dtb files for supported rk3566 devices.  This can be useful to minimize 
+These are dts files that can be used to create undervolted dtbo files for supported rk3566 devices.  This can be useful to minimize 
 heat generation during intense usage like high end emulation such as Dreamcast, N64, PSP, and Saturn.
 
 From within ArkOS (via terminal or a ssh session), copy the provided dtb files to /boot/overlays then do: \
