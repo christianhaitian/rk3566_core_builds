@@ -3,7 +3,7 @@ heat generation during intense usage like high end emulation such as Dreamcast, 
 booting of devices, however, this can be reverted per the instructions below.
 
 From within ArkOS (via terminal or a ssh session), copy the provided dtb files to /boot/overlays then do: \
-`sudo fdtoverlay -i /boot/rk3566-OC.dtb -o /boot/rk3566-OC.dtb.undervolt /boot/overlays/undervolt.(low or medium or high).dtbo` \
+`sudo fdtoverlay -i /boot/rk3566-OC.dtb -o /boot/rk3566-OC.dtb.undervolt /boot/overlays/undervolt.(light or medium or maximum).dtbo` \
 Then edit the `FDT` line in /boot/extlinux/extlinux.conf to point to the newly created undervolt file. \
 
 If booting fails, just revert the `FDT` line to the previous `/rk3566-OC.dtb` text to restore the stock cpu voltages.
