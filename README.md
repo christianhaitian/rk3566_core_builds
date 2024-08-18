@@ -209,6 +209,9 @@ cd rk3566_core_builds
 ### To build just mupen64plus Standalone emulator:
 `./builds.sh mupen64plussa`
 
+### To build just minivmac (64bit only):
+`./builds.sh minivmac`
+
 ### To build just nekop2 (64bit only):
 `./builds.sh nekop2`
 
