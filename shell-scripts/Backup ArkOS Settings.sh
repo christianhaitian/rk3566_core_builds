@@ -16,10 +16,12 @@ do
 		sudo chmod 666 /dev/tty1
 		#tail -f $LOG_FILE >> /dev/tty1 &
 
+		# Backup currently set timezone
+		/usr/local/bin/timezones current > /dev/shm/TZ
 		if [ -f "/boot/rk3566.dtb" ] || [ -f "/boot/rk3566-OC.dtb" ]; then
-		  sudo tar -zchvf /roms/backup/arkosbackup.tar.gz /home/ark/.config/panel_settings.txt /home/ark/.kodi/ /etc/localtime /etc/NetworkManager/system-connections /home/ark/.config/retroarch/retroarch.cfg /home/ark/.config/retroarch/config /home/ark/.config/retroarch/retroarch-core-options.cfg /home/ark/.config/retroarch32/retroarch.cfg /home/ark/.config/retroarch32/retroarch-core-options.cfg /home/ark/.config/retroarch32/config /home/ark/.emulationstation/collections /home/ark/.emulationstation/es_settings.cfg /opt/amiberry/savestates /opt/amiberry/whdboot /opt/mupen64plus/InputAutoCfg.ini /opt/drastic/config/drastic.cfg | tee -a "$LOG_FILE"
+		  sudo tar -zchvf /roms/backup/arkosbackup.tar.gz /home/ark/.config/panel_settings.txt /home/ark/.kodi/ /etc/NetworkManager/system-connections /home/ark/.config/retroarch/retroarch.cfg /home/ark/.config/retroarch/config /home/ark/.config/retroarch/retroarch-core-options.cfg /home/ark/.config/retroarch32/retroarch.cfg /home/ark/.config/retroarch32/retroarch-core-options.cfg /home/ark/.config/retroarch32/config /home/ark/.emulationstation/collections /home/ark/.emulationstation/es_settings.cfg /opt/amiberry/savestates /opt/amiberry/whdboot /opt/mupen64plus/InputAutoCfg.ini /opt/drastic/config/drastic.cfg /dev/shm/TZ | tee -a "$LOG_FILE"
 		else
-		  sudo tar -zchvf /roms/backup/arkosbackup.tar.gz /home/ark/.kodi/ /etc/localtime /etc/NetworkManager/system-connections /home/ark/.config/retroarch/retroarch.cfg /home/ark/.config/retroarch/config /home/ark/.config/retroarch32/retroarch.cfg /home/ark/.config/retroarch32/config /home/ark/.emulationstation/collections /home/ark/.emulationstation/es_settings.cfg /opt/amiberry/savestates /opt/amiberry/whdboot /opt/mupen64plus/InputAutoCfg.ini /opt/drastic/config/drastic.cfg | tee -a "$LOG_FILE"
+		  sudo tar -zchvf /roms/backup/arkosbackup.tar.gz /etc/NetworkManager/system-connections /home/ark/.config/retroarch/retroarch.cfg /home/ark/.config/retroarch/config /home/ark/.config/retroarch32/retroarch.cfg /home/ark/.config/retroarch32/config /home/ark/.emulationstation/collections /home/ark/.emulationstation/es_settings.cfg /opt/amiberry/savestates /opt/amiberry/whdboot /opt/mupen64plus/InputAutoCfg.ini /opt/drastic/config/drastic.cfg /dev/shm/TZ | tee -a "$LOG_FILE"
 		fi
 
 		if [ $? -eq 0 ]; then
