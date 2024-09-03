@@ -9,6 +9,12 @@ while true
 do
     Test_Button_A
     if [ "$?" -eq "10" ]; then
+		if [ ! -d "/roms/backup/" ]; then
+	      sudo mkdir -v /roms/backup
+		fi
+		if [ -f "/roms/backup/arkosbackup.tar.gz" ]; then
+		  sudo rm /roms/backup/arkosbackup.tar.gz
+		fi
 		LOG_FILE="/roms/backup/arkosbackup.log"
 		printf "\033[0mCreating a backup.  Please wait...\n"
 		sleep 2
