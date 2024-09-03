@@ -70,6 +70,14 @@ do
 			  [ ! -z $(find /home/ark/.config/.GameLoadingIMode* 2>/dev/null) ] && rm /home/ark/.config/.GameLoadingIMode* 2>/dev/null
 			  touch /home/ark/.config/.GameLoadingIModeNO
 			fi
+			# Properly restore auto suspend timeout state
+			if [ -z $(grep '<string name="AutoSuspendTimeout" value="Off" />' /home/ark/.emulationstation/es_settings.cfg | tr -d '\0') ]; then
+			  mins=$(grep '<string name="AutoSuspendTimeout"' /home/ark/.emulationstation/es_settings.cfg | tr -d '\0' | grep -oP '"\K[^"\047]+(?=["\047])' | tail -1)
+			  if [ ! -z "$mins" ]; then
+			    echo "$mins" > /home/ark/.config/.TIMEOUT
+				/usr/local/bin/auto_suspend_update.sh
+			  fi
+			fi
 			printf "\n\n\e[32mThe restore completed successfuly. \nYou will need to reboot your system in order for your restored settings to take effect! \n" | tee -a "$LOG_FILE"
 			printf "\033[0m" | tee -a "$LOG_FILE"
 			sleep 1
