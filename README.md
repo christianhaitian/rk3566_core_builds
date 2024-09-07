@@ -77,11 +77,14 @@ cd rk3566_core_builds
 ### To build just easyrpg (64bit only):
 `./builds.sh easyrpg`
 
+### To build just ecwolf libretro emulator (64bit only):
+`./builds.sh ecwolf`
+
 ### To build just ecwolf standalone emulator (64bit only):
-`./builds.sh ecwolfsa
+`./builds.sh ecwolfsa`
 
 ### To build just emuscv (64bit only):
-`./builds.sh emuscv
+`./builds.sh emuscv`
 
 ### To build just ep128emu (64bit only):
 `./builds.sh ep128emu`
