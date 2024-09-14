@@ -590,12 +590,6 @@ index b3f722dffd3..8b8ff27e546 100644
  };
  
  #endif
-diff --git a/backends/platform/gph/build/clean.sh b/backends/platform/gph/build/clean.sh
-old mode 100755
-new mode 100644
-diff --git a/backends/platform/maemo/debian/rules b/backends/platform/maemo/debian/rules
-old mode 100755
-new mode 100644
 diff --git a/backends/platform/sdl/sdl.cpp b/backends/platform/sdl/sdl.cpp
 index 8cd8bba06d2..5ff69f3905f 100644
 --- a/backends/platform/sdl/sdl.cpp
