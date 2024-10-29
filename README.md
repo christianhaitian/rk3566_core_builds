@@ -242,6 +242,9 @@ cd rk3566_core_builds
 ### To build just onscripter (64bit only):
 `./builds.sh onscripter`
 
+### To build just onscripterYuri (64bit only):
+`./builds.sh onscripteryuri`
+
 ### To build just openbor (64bit only):
 `./builds.sh openbor`
 
