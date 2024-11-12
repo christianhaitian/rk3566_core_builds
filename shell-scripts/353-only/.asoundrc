@@ -1,6 +1,6 @@
 # anbernic-audio alsa config
 # dmix + softvol
-# RG353V Only!  For other rk3566 devices, use the .asoundrc for the RG503
+# RG353V and RGB20 Pro units Only!  For other rk3566 devices, use the .asoundrc for the RG503
 
 pcm.!default {
         type            plug
