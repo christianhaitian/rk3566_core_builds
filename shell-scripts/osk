@@ -6,7 +6,14 @@
 ##################################################################
 
 if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
-  sudo setfont /usr/share/consolefonts/Lat7-TerminusBold28x14.psf.gz
+  if test ! -z "$(cat /home/ark/.config/.DEVICE | grep RGB20PRO | tr -d '\0')"
+  then
+    sudo setfont /usr/share/consolefonts/Lat7-TerminusBold32x16.psf.gz
+  else
+    sudo setfont /usr/share/consolefonts/Lat7-TerminusBold28x14.psf.gz
+  fi
+else
+  sudo setfont /usr/share/consolefonts/Lat7-Terminus16.psf.gz
 fi
 
 dpkg -s "python3-urwid" &>/dev/null
@@ -21,7 +28,7 @@ printf "\033c" > /dev/tty1
 if [[ -z $(pgrep -f gptokeyb) ]] && [[ -z $(pgrep -f oga_controls) ]]; then
   sudo chmod 666 /dev/uinput
   export SDL_GAMECONTROLLERCONFIG_FILE="/opt/inttools/gamecontrollerdb.txt"
-  /opt/inttools/gptokeyb -1 "python3" -c "/opt/inttools/keys.gptk" &
+  /opt/inttools/gptokeyb -1 "python3" -c "/opt/inttools/keys.gptk" > /dev/null &
   disown
   set_gptokeyb="Y"
 fi
@@ -42,7 +49,7 @@ if [[ ! -z "$set_gptokeyb" ]]; then
 fi
 
 if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
-  sudo setfont /usr/share/consolefonts/Lat7-TerminusBold20x10.psf.gz
+  sudo setfont /usr/share/consolefonts/Lat7-Terminus20x10.psf.gz
 fi
 
 echo "$RESULTS"
