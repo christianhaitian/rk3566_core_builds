@@ -1,59 +1,56 @@
 #!/bin/bash
 
 ##################################################################
-# Created by Christian Haitian for use to display a message      #
-# to the user.                                                   #
+# Created by Christian Haitian for use to display a python       #
+# based keyboard to the user.                                    #
 ##################################################################
 
 if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
-  sudo setfont /usr/share/consolefonts/Lat7-TerminusBold28x14.psf.gz
+  if test ! -z "$(cat /home/ark/.config/.DEVICE | grep RGB20PRO | tr -d '\0')"
+  then
+    sudo setfont /usr/share/consolefonts/Lat7-TerminusBold32x16.psf.gz
+  else
+    sudo setfont /usr/share/consolefonts/Lat7-TerminusBold28x14.psf.gz
+  fi
+else
+  sudo setfont /usr/share/consolefonts/Lat7-Terminus16.psf.gz
+fi
+
+dpkg -s "python3-urwid" &>/dev/null
+if [ "$?" != "0" ]; then
+  echo "Installing the python3 urwid module needed for this.  Please wait..." 2>&1 >/dev/tty1
+  sudo dpkg -i --force-all /opt/inttools/python3-urwid_2.0.1-2build2_arm64.deb
 fi
 
 sudo chmod 666 /dev/tty1
-export DIALOGRC=/opt/inttools/noshadows.dialogrc
 printf "\033c" > /dev/tty1
 
 if [[ -z $(pgrep -f gptokeyb) ]] && [[ -z $(pgrep -f oga_controls) ]]; then
   sudo chmod 666 /dev/uinput
   export SDL_GAMECONTROLLERCONFIG_FILE="/opt/inttools/gamecontrollerdb.txt"
-  /opt/inttools/gptokeyb -1 "dialog" -c "/opt/inttools/keys.gptk" &
+  /opt/inttools/gptokeyb -1 "python3" -c "/opt/inttools/keys.gptk" > /dev/null &
   disown
   set_gptokeyb="Y"
-fi
-
-# hide cursor
-printf "\e[?25l" > /dev/tty1
-dialog --clear
-
-height="10"
-width="20"
-
-if test ! -z "$(cat /home/ark/.config/.DEVICE | grep RG503 | tr -d '\0')"
-then
-  height="15"
-  width="60"
-fi
-
-if [ ${#1} -gt ${width} ]; then
-  if [ ${#1} -gt "50" ]; then
-    height="${#1}"
-  fi
-  width="${#1}"
 fi
 
 export TERM=linux
 export XDG_RUNTIME_DIR=/run/user/$UID/
 
-dialog --clear --msgbox "$1" $height $width 2>&1 > /dev/tty1
+if [[ ! -z $(pgrep -f osk.py) ]]; then
+  pgrep -f osk.py | sudo xargs kill -9
+  printf "\033c" > /dev/tty1
+fi
 
+RESULTS="$(/opt/inttools/osk.py "$1" 2>&1 >/dev/tty1 | tail -n 1)"
+#sleep 1
 if [[ ! -z "$set_gptokeyb" ]]; then
   pgrep -f gptokeyb | sudo xargs kill -9
   unset SDL_GAMECONTROLLERCONFIG_FILE
 fi
 
 if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
-  sudo setfont /usr/share/consolefonts/Lat7-TerminusBold20x10.psf.gz
+  sudo setfont /usr/share/consolefonts/Lat7-Terminus20x10.psf.gz
 fi
 
-export DIALOGRC=
+echo "$RESULTS"
 printf "\033c" > /dev/tty1
