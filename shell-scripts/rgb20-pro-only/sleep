@@ -13,12 +13,16 @@ case $1 in
       touch /dev/shm/.JUSTWOKEUP
     fi
     sudo btconnected.sh check
+    sudo systemctl stop batt_led
+    sudo systemctl stop charge_led
     echo $(cat /home/ark/.config/.PowerLEDSleep) | sudo tee /sys/class/leds/Green\ LED/brightness
     echo 0 | sudo tee /sys/class/leds/Red\ LED/brightness
     sudo sleep_governors.sh SaveSettingsOnSleep
     ;;
    post)
     echo 0 | sudo tee /sys/class/leds/Green\ LED/brightness
+    sudo systemctl start batt_led
+    sudo systemctl start charge_led
     echo $(cat /var/local/cur_bright.state) | sudo tee /sys/class/backlight/backlight/brightness
     sudo sleep_governors.sh RestoreSettingsOnWake
     sudo /usr/sbin/alsactl restore -f /var/local/asound.state
