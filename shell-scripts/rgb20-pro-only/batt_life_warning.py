@@ -2,10 +2,10 @@
 
 ##################################################################
 # Created by Christian Haitian.                                  #
-# Python script to turn the Green LED on                         #
-# while charging and off when not charging                       #
-# Red LED will also turn on while charging                       #
-# if battery is less than 90 percent                             #
+# Python script to turn the Red LED on                           #
+# when charge level left is below or equal to 20 percent         #
+# Red LED will flash when the charge level is below or           #
+# equal to 10 percent.                                           #
 ##################################################################
 
 import time
