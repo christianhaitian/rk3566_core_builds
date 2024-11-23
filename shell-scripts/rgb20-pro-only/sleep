@@ -15,14 +15,25 @@ case $1 in
     sudo btconnected.sh check
     sudo systemctl stop batt_led
     sudo systemctl stop charge_led
-    echo $(cat /home/ark/.config/.PowerLEDSleep) | sudo tee /sys/class/leds/Green\ LED/brightness
-    echo 0 | sudo tee /sys/class/leds/Red\ LED/brightness
+    echo 0 | sudo tee /sys/class/leds/Red\ LED/brightness &
+    echo 0 | sudo tee /sys/class/leds/Green\ LED/brightness &
+    echo 0 | sudo tee /sys/class/leds/low_power/brightness &
+    LED=$(cat /home/ark/.config/.PowerLEDSleep)
+    if [ -f "/home/ark/.config/.PowerLEDSleep" ]; then
+      if [[ ${LED} != "low_power" ]]; then
+        echo 1 | sudo tee /sys/class/leds/$LED\ LED/brightness &
+      else
+        echo 1 | sudo tee /sys/class/leds/$LED/brightness &
+      fi
+    fi
     sudo sleep_governors.sh SaveSettingsOnSleep
     ;;
    post)
-    echo 0 | sudo tee /sys/class/leds/Green\ LED/brightness
-    sudo systemctl start batt_led
-    sudo systemctl start charge_led
+    echo 0 | sudo tee /sys/class/leds/Red\ LED/brightness &
+    echo 0 | sudo tee /sys/class/leds/Green\ LED/brightness &
+    echo 0 | sudo tee /sys/class/leds/low_power/brightness &
+    sudo systemctl start batt_led &
+    sudo systemctl start charge_led &
     echo $(cat /var/local/cur_bright.state) | sudo tee /sys/class/backlight/backlight/brightness
     sudo sleep_governors.sh RestoreSettingsOnWake
     sudo /usr/sbin/alsactl restore -f /var/local/asound.state
