@@ -43,6 +43,9 @@
 	  done
 	 fi
 
+      update-alternatives --set gcc "/usr/local/bin/aarch64-linux-gnu-gcc-13"
+      update-alternatives --set g++ "/usr/local/bin/aarch64-linux-gnu-g++-13"
+
       if [[ "$bitness" == "32" ]]; then
         _opts='VULKAN=0 USE_GLES=1 NEON=1 VFP_HARD=1 OPTFLAGS="-O3" V=1 PIE=1 ACCURATE_FPU=1'
       else
@@ -54,13 +57,18 @@
       export LDFLAGS="$CFLAGS"
       
       make -C "projects/unix" clean
-	  make -j$(nproc) -C "projects/unix" $_opts all
+	  make -j$(nproc) -C "projects/unix" CC="gcc-8" CXX="g++-8" $_opts all
 
 	  if [[ $? != "0" ]]; then
+	  	update-alternatives --set gcc "/usr/bin/gcc-8"
+	  	update-alternatives --set g++ "/usr/bin/g++-8"
 		echo " "
 		echo "There was an error while building the newest mupen64plus-core standalone.  Stopping here."
 		exit 1
 	  fi
+
+	  update-alternatives --set gcc "/usr/bin/gcc-8"
+	  update-alternatives --set g++ "/usr/bin/g++-8"
 
 	  strip projects/unix/libmupen64plus.so.2.0.0
 

@@ -39,6 +39,10 @@ if test ! -z "$(cat /home/ark/.config/.DEVICE | grep RG503 | tr -d '\0')"
 then
   height="20"
   width="60"
+elif test ! -z "$(cat /home/ark/.config/.DEVICE | grep RGB20PRO | tr -d '\0')"
+then
+  height="20"
+  width="70"
 fi
 
 export TERM=linux
@@ -48,6 +52,9 @@ if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; the
   if test ! -z "$(cat /home/ark/.config/.DEVICE | grep RG503 | tr -d '\0')"
   then
     sudo setfont /usr/share/consolefonts/Lat7-TerminusBold20x10.psf.gz
+  elif test ! -z "$(cat /home/ark/.config/.DEVICE | grep RGB20PRO | tr -d '\0')"
+  then
+    sudo setfont /usr/share/consolefonts/Lat7-TerminusBold32x16.psf.gz
   else
     sudo setfont /usr/share/consolefonts/Lat7-TerminusBold22x11.psf.gz
   fi
@@ -82,9 +89,6 @@ ExitMenu() {
   if [[ ! -z $(pgrep -f gptokeyb) ]]; then
     pgrep -f gptokeyb | sudo xargs kill -9
   fi
-  if [[ ! -z $(pgrep -f gptokeyb) ]]; then
-    pgrep -f gptokeyb | sudo xargs kill -9
-  fi
   if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
     sudo setfont /usr/share/consolefonts/Lat7-Terminus20x10.psf.gz
   fi
@@ -93,9 +97,15 @@ ExitMenu() {
 
 DeleteConnect() {
   cur_ap=`iw dev wlan0 info | grep ssid | cut -c 7-30`
+  if [[ -z $cur_ap ]]; then
+    cur_ap=`nmcli -t -f name,device connection show --active | grep wlan0 | cut -d\: -f1`
+  fi
+
   dialog --clear --backtitle "Delete Connection: Currently connected to $cur_ap" --title "Removing $1" --clear \
   --yesno "\nWould you like to continue to remove this connection?" $height $width 2>&1 > /dev/tty1
-
+  if [[ $? != 0 ]]; then
+    exit 1
+  fi
   case $? in
      0) sudo rm -f "/etc/NetworkManager/system-connections/$1.nmconnection" ;;
   esac
@@ -106,6 +116,9 @@ DeleteConnect() {
 Activate() {
 
   cur_ap=`iw dev wlan0 info | grep ssid | cut -c 7-30`
+  if [[ -z $cur_ap ]]; then
+    cur_ap=`nmcli -t -f name,device connection show --active | grep wlan0 | cut -d\: -f1`
+  fi
 
   declare aoptions=()
   while IFS= read -r -d $'\n' ssid; do
@@ -122,6 +135,9 @@ Activate() {
     --menu "" $height $width 15)
 
     achoice=$("${aselection[@]}" "${aoptions[@]}" 2>&1 > /dev/tty1) || MainMenu
+	if [[ $? != 0 ]]; then
+	  exit 1
+	fi
 
     # There is only one choice possible
     ConnectExisting "$achoice"
@@ -137,7 +153,12 @@ Select() {
   PASS=`$KEYBOARD "Enter Wi-Fi password for $1" | tail -n 1`
   /opt/inttools/gptokeyb -1 "Wifi.sh" -c "/opt/inttools/keys.gptk" > /dev/null &
   if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
-    sudo setfont /usr/share/consolefonts/Lat7-TerminusBold24x12.psf.gz
+    if test ! -z "$(cat /home/ark/.config/.DEVICE | grep RGB20PRO | tr -d '\0')"
+    then
+      sudo setfont /usr/share/consolefonts/Lat7-TerminusBold32x16.psf.gz
+    else
+      sudo setfont /usr/share/consolefonts/Lat7-TerminusBold24x12.psf.gz
+    fi
   fi
 
   dialog --infobox "\nConnecting to Wi-Fi $1 ..." 5 $width > /dev/tty1
@@ -184,6 +205,9 @@ Select() {
 
 ConnectExisting() {
   cur_ap=`iw dev wlan0 info | grep ssid | cut -c 7-30`
+  if [[ -z $cur_ap ]]; then
+    cur_ap=`nmcli -t -f name,device connection show --active | grep wlan0 | cut -d\: -f1`
+  fi
 
   dialog --infobox "\nConnecting to Wi-Fi $1 ..." 5 $width > /dev/tty1
 
@@ -214,6 +238,9 @@ Connect() {
     clist=`sudo nmcli -f ALL --mode tabular --terse --fields IN-USE,SSID,CHAN,SIGNAL,SECURITY dev wifi`
   fi
   cur_ap=`iw dev wlan0 info | grep ssid | cut -c 7-30`
+  if [[ -z $cur_ap ]]; then
+    cur_ap=`nmcli -t -f name,device connection show --active | grep wlan0 | cut -d\: -f1`
+  fi
 
   # Set colon as the delimiter
   IFS=':'
@@ -241,6 +268,9 @@ Connect() {
     --menu "" $height $width 15)
 
     cchoices=$("${cselection[@]}" "${coptions[@]}" 2>&1 > /dev/tty1) || MainMenu
+	if [[ $? != 0 ]]; then
+	  exit 1
+	fi
 
     for cchoice in $cchoices; do
       case $cchoice in
@@ -258,6 +288,9 @@ Delete() {
   done < <(ls -1 /etc/NetworkManager/system-connections/ | rev | cut -c 14- | rev | sed -e 's/$//')
 
   cur_ap=`iw dev wlan0 info | grep ssid | cut -c 7-30`
+  if [[ -z $cur_ap ]]; then
+    cur_ap=`nmcli -t -f name,device connection show --active | grep wlan0 | cut -d\: -f1`
+  fi
 
   while true; do
     delselection=(dialog \
@@ -270,6 +303,9 @@ Delete() {
 
     # There is only a single choice possible
     delchoice=$("${delselection[@]}" "${deloptions[@]}" 2>&1 > /dev/tty1) || MainMenu
+	if [[ $? != 0 ]]; then
+	  exit 1
+	fi
     DeleteConnect "$delchoice"
   done  
 }
@@ -279,25 +315,79 @@ NetworkInfo() {
   gateway=`ip r | grep default | awk '{print $3}'`
   currentip=`ip -f inet addr show wlan0 | sed -En -e 's/.*inet ([0-9.]+).*/\1/p'`
   currentssid=`iw dev wlan0 info | grep ssid | cut -c 7-30`
+  if [[ -z $currentssid ]]; then
+    currentssid=`nmcli -t -f name,device connection show --active | grep wlan0 | cut -d\: -f1`
+  fi
   currentdns=`( nmcli dev list || nmcli dev show ) 2>/dev/null | grep DNS | awk '{print $2}'`
 
   dialog --clear --backtitle "Your Network Information" --title "" --clear \
   --msgbox "\n\nSSID: $cur_ap\nIP: $currentip\nGateway: $gateway\nDNS: $currentdns" $height $width 2>&1 > /dev/tty1
+  if [[ $? != 0 ]]; then
+    exit 1
+  fi
+}
+
+Country() {
+
+  cur_country=`sudo iw reg get | grep country | cut -c 9-10`
+  if [[ "$cur_country" == "00" ]]; then
+    cur_country="WORLD"
+  fi
+
+  declare coptions=()
+  coptions=( "WORLD" . "US" . "DZ" . "AR" . "AU" . "AT" . "BH" . "BM" . "BO" . "BR" . "BG" . "CA" . "CL" . "CN" . "CO" . "CR" . "CY" . "CZ" . "DK" . "DO" . "EC" . "EG" . "SV" . "EE" . "FI" . "FR" . "DE" . "GR" . "GT" . "HN" . "HK" . "IS" . "IN" . "ID" . "IE" . "PK" . "IL" . "IT" . "JM" . "JP3" . "JO" . "KE" . "KW" . "KW" . "LB" . "LI" . "LI" . "LT" . "LT" . "LU" . "MU" . "MX" . "MX" . "MA" . "MA" . "NL" . "NZ" . "NZ" . "NO" . "OM" . "PA" . "PA" . "PE" . "PH" . "PL" . "PL" . "PT" . "PR" . "PR" . "QA" . "KR" . "RO" . "RU" . "RU" . "SA" . "CS" . "SG" . "SK" . "SK" . "SI" . "SI" . "ZA" . "ES" . "LK" . "CH" . "TW" . "TH" . "TH" . "TT" . "TN" . "TR" . "UA" . "AE" . "GB" . "UY" . "UY" . "VE" . "VN" . )
+
+  while true; do
+    cselection=(dialog \
+   	--backtitle "Country currently set to $cur_country" \
+   	--title "Which country would you like to set your wifi to?" \
+   	--no-collapse \
+   	--clear \
+	--cancel-label "Back" \
+    --menu "" $height $width 15)
+
+    cchoice=$("${cselection[@]}" "${coptions[@]}" 2>&1 > /dev/tty1) || MainMenu
+	if [[ $? != 0 ]]; then
+	  exit 1
+	fi
+
+    # There is only one choice possible
+    if [[ "$cchoice" == "WORLD" ]]; then
+      sudo iw reg set 00
+    else
+	  sudo iw reg set "$cchoice"
+    fi
+    Country
+  done  
+
 }
 
 MainMenu() {
 
-  if [[ ! -z $(rfkill -n -o TYPE,SOFT | grep wlan | grep -w unblocked) ]]; then
-    local Wifi_Stat="On"
-	local Wifi_MStat="Off"
-	cur_ap="Currently connected to `iw dev wlan0 info | grep ssid | cut -c 7-30`"
-  else
-    local Wifi_Stat="Off"
-	local Wifi_MStat="On"
-	cur_ap="Wifi Disabled"
-  fi
+  if [[ "$(tr -d '\0' < /proc/device-tree/compatible)" == *"rk3566"* ]]; then
+    if [[ ! -z $(rfkill -n -o TYPE,SOFT | grep wlan | grep -w unblocked) ]]; then
+      local Wifi_Stat="On"
+	  local Wifi_MStat="Off"
+	  cur_ap="Currently connected to `iw dev wlan0 info | grep ssid | cut -c 7-30`"
+	  if [[ -z $cur_ap ]]; then
+	    cur_ap="Currently connected to `nmcli -t -f name,device connection show --active | grep wlan0 | cut -d\: -f1`"
+	  fi
+    else
+      local Wifi_Stat="Off"
+	  local Wifi_MStat="On"
+	  cur_ap="Wifi Disabled"
+    fi
 
-  mainoptions=( 1 "Turn Wifi $Wifi_MStat (Currently: $Wifi_Stat)" 2 "Connect to new Wifi connection" 3 "Activate existing Wifi Connection" 4 "Delete exiting connections" 5 "Current Network Info" 6 "Exit" )
+    mainoptions=( 1 "Turn Wifi $Wifi_MStat (Currently: $Wifi_Stat)" 2 "Connect to new Wifi connection" 3 "Activate existing Wifi Connection" 4 "Delete exiting connections" 5 "Current Network Info" 6 "Change Country Code" 7 "Exit" )
+  else
+    mainoptions=( 2 "Connect to new Wifi connection" 3 "Activate existing Wifi Connection" 4 "Delete exiting connections" 5 "Current Network Info" 6 "Change Country Code" 7 "Exit" )
+    C_AP=`iw dev wlan0 info | grep ssid | cut -c 7-30`
+    if [[ -z $C_AP ]]; then
+      C_AP=`nmcli -t -f name,device connection show --active | grep wlan0 | cut -d\: -f1`
+    fi
+    cur_ap="Currently connected to $C_AP"
+
+  fi
   IFS="$old_ifs"
   while true; do
     mainselection=(dialog \
@@ -309,7 +399,9 @@ MainMenu() {
     --menu "Please make your selection" $height $width 15)
 	
 	mainchoices=$("${mainselection[@]}" "${mainoptions[@]}" 2>&1 > /dev/tty1)
-
+	if [[ $? != 0 ]]; then
+	  exit 1
+	fi
     for mchoice in $mainchoices; do
       case $mchoice in
 		1) ToggleWifi $Wifi_MStat ;;
@@ -317,7 +409,8 @@ MainMenu() {
 		3) Activate ;;
 		4) Delete ;;
 		5) NetworkInfo ;;
-		6) ExitMenu ;;
+		6) Country ;;
+		7) ExitMenu ;;
       esac
     done
   done
@@ -333,8 +426,11 @@ export SDL_GAMECONTROLLERCONFIG_FILE="/opt/inttools/gamecontrollerdb.txt"
 if [[ ! -z $(pgrep -f gptokeyb) ]]; then
   pgrep -f gptokeyb | sudo xargs kill -9
 fi
-/opt/inttools/gptokeyb -1 "Wifi.sh" -c "/opt/inttools/keys.gptk" > /dev/null &
+/opt/inttools/gptokeyb -1 "Wifi.sh" -c "/opt/inttools/keys.gptk" > /dev/null 2>&1 &
+#sudo pkill tm-joypad > /dev/null 2>&1
+#sudo /opt/system/Tools/ThemeMaster/tm-joypad Wifi.sh rg552 > /dev/null 2>&1 &
+#sudo /opt/wifi/oga_controls Wifi rg552 > /dev/null 2>&1 &
 printf "\033c" > /dev/tty1
 dialog --clear
-
+trap ExitMenu EXIT
 MainMenu

@@ -15,6 +15,8 @@ if [ -f "/boot/rk3566.dtb" ] || [ -f "/boot/rk3566-OC.dtb" ]; then
     DEVICE="rg503"
   elif [ "$(cat ~/.config/.DEVICE)" == "RG353V" ]; then
     DEVICE="rg353v"
+  elif [ "$(cat ~/.config/.DEVICE)" == "RGB20PRO" ]; then
+    DEVICE="rg353v"
   elif [ "$(cat ~/.config/.DEVICE)" == "RK2023" ]; then
     DEVICE="rg503"
   elif [ "$(cat ~/.config/.DEVICE)" == "RGB30" ]; then
