@@ -24,7 +24,14 @@ if [[ -f $(find /opt/system/Tools -maxdepth 1 -iname wifikeyfile.txt) ]]; then
 	  height="20"
 	  width="60"
 	elif [[ -e "/dev/input/by-path/platform-singleadc-joypad-event-joystick" ]]; then
-	  sudo setfont /usr/share/consolefonts/Lat7-Terminus20x10.psf.gz
+ 	  if [ -f "/boot/rk3566.dtb" ] || [ -f "/boot/rk3566-OC.dtb" ]; then
+	    if test ! -z "$(cat /home/ark/.config/.DEVICE | grep RGB20PRO | tr -d '\0')"
+	    then
+	      sudo setfont /usr/share/consolefonts/Lat7-TerminusBold32x16.psf.gz
+	    else
+	      sudo setfont /usr/share/consolefonts/Lat7-Terminus20x10.psf.gz
+  	    fi
+	  fi
 	  height="20"
 	  width="60"
 	else
