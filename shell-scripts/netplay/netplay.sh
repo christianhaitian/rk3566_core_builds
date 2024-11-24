@@ -47,7 +47,14 @@ fi
 ExitCode="0"
 
 if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
-  sudo setfont /usr/share/consolefonts/Lat7-TerminusBold24x12.psf.gz
+  if test ! -z "$(cat /home/ark/.config/.DEVICE | grep RGB20PRO | tr -d '\0')"
+  then
+    sudo setfont /usr/share/consolefonts/Lat7-TerminusBold32x16.psf.gz
+  else
+    sudo setfont /usr/share/consolefonts/Lat7-TerminusBold24x12.psf.gz
+  fi
+else
+  sudo setfont /usr/share/consolefonts/Lat7-Terminus16.psf.gz
 fi
 
 pgrep -f gptokeyb | sudo xargs kill -9
