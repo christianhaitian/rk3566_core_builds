@@ -10,7 +10,14 @@ if [ -f "/boot/rk3326-rg351v-linux.dtb" ] || [ -f "/boot/rk3326-rg351mp-linux.dt
   height="20"
   width="60"
 fi
-
+if [ -f "/boot/rk3566.dtb" ] || [ -f "/boot/rk3566-OC.dtb" ]; then
+  if test ! -z "$(cat /home/ark/.config/.DEVICE | grep RGB20PRO | tr -d '\0')"
+  then
+    sudo setfont /usr/share/consolefonts/Lat7-TerminusBold32x16.psf.gz
+  else
+    sudo setfont /usr/share/consolefonts/Lat7-TerminusBold28x14.psf.gz
+  fi
+fi
 if [ ! -f "/boot/doneit" ]; then 
   sudo touch "/boot/doneit"
   dialog --infobox "EASYROMS partition expansion and conversion to exfat in process.  The device will now reboot to continue the process..." $height $width 2>&1 > /dev/tty1 
