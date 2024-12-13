@@ -1,5 +1,5 @@
 diff --git a/src/platform/libretro/libretro.c b/src/platform/libretro/libretro.c
-index ca1698b01..74583be66 100644
+index d91cf8e33..f821a6fa6 100644
 --- a/src/platform/libretro/libretro.c
 +++ b/src/platform/libretro/libretro.c
 @@ -4,6 +4,9 @@
@@ -12,7 +12,24 @@ index ca1698b01..74583be66 100644
  
  #include <mgba-util/common.h>
  
-@@ -1722,13 +1725,68 @@ void retro_run(void) {
+@@ -1130,6 +1133,16 @@ static void _initRumble(void) {
+ 	struct retro_rumble_interface rumbleInterface;
+ 	if (environCallback(RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE, &rumbleInterface)) {
+ 		rumbleCallback = rumbleInterface.set_rumble_state;
++     // Check write access for duty cycle for rk3566
++     char* filepath = "/sys/class/pwm/pwmchip1/pwm0/duty_cycle";
++     int returnval;
++     returnval = access (filepath, F_OK);
++     if (returnval == 0){
++       returnval = access (filepath, W_OK);
++       if (errno == EACCES){
++         system("sudo chmod 777 /sys/class/pwm/pwmchip1/pwm0/duty_cycle &");
++       }
++     }
+ 	}
+ 
+ 	rumbleInitDone = true;
+@@ -1722,13 +1735,69 @@ void retro_run(void) {
  #endif
  
  	if (rumbleCallback) {
@@ -22,7 +39,8 @@ index ca1698b01..74583be66 100644
 -			rumbleCallback(0, RETRO_RUMBLE_STRONG, rumbleUp * 0xFFFF / (rumbleUp + rumbleDown));
 -			rumbleCallback(0, RETRO_RUMBLE_WEAK, rumbleUp * 0xFFFF / (rumbleUp + rumbleDown));
 +          uint pwm_duty_cycle = 0;
-+          switch((int)(rumbleUp*5.882)) {
++          //printf("rumbleUp is %d\n", (int)(rumbleUp*2.9));
++          switch((int)(rumbleUp*2.9)) {
 +            case 90 ... 100:
 +              pwm_duty_cycle = 100000;
 +              break;
@@ -56,7 +74,7 @@ index ca1698b01..74583be66 100644
 +            default:
 +              pwm_duty_cycle = 1000000;
 +			}
-+
++            //printf("pwm_duty_cycle is %u\n", pwm_duty_cycle);
 +   	        if ((file = fopen("/sys/class/pwm/pwmchip0/pwm0/duty_cycle", "r+"))) {
 +              fprintf(file, "%u", pwm_duty_cycle);
 +	          fclose(file);
