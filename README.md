@@ -113,6 +113,9 @@ cd rk3566_core_builds
 ### To build just freej2me:
 `./builds.sh freej2me`
 
+### To build just freej2me-plus:
+`./builds.sh freej2me-plus`
+
 ### To build just gambatte (64bit only):
 `./builds.sh gambatte`
 
