@@ -57,6 +57,7 @@ bitness="$(getconf LONG_BIT)"
 	    --disable-caca \
 	    --disable-mali_fbdev \
 	    --disable-opengl \
+	    --disable-opengl_core \
 	    --disable-opengl1 \
 	    --disable-qt \
 	    --disable-sdl \
@@ -92,6 +93,7 @@ bitness="$(getconf LONG_BIT)"
 	    --disable-caca \
 	    --disable-mali_fbdev \
 	    --disable-opengl \
+	    --disable-opengl_core \
 	    --disable-opengl1 \
 	    --disable-qt \
 	    --disable-sdl \
