@@ -86,7 +86,7 @@ minfluidsynthverneeded="3"
       cd ../..
      fi      
 
-	  git checkout v2.8.1
+	  git checkout v2.9.0
 
 	  scummvm_patches=$(find *.patch)
 	 
