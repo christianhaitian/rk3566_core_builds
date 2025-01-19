@@ -62,6 +62,9 @@ cd rk3566_core_builds
 ### To build just desmume2015 (64bit only):
 `./builds.sh desmume2015`
 
+### To build just doukutsu-rs (64bit only):
+`./builds.sh doukutsu-rs-lr`
+
 ### To build devilutionX (64bit only)
 `./builds.sh devilutionx`
 
