@@ -51,7 +51,13 @@ fi
 export TERM=linux
 export XDG_RUNTIME_DIR=/run/user/$UID/
 
-dialog --clear --msgbox "$1" $height $width 2>&1 > /dev/tty1
+# If a second argument (a dialog title) is given, we'll add it as output
+if [ -n "$2" ]; then
+  dialog --clear --title "$2" --msgbox "$1" $height $width 2>&1 > /dev/tty1
+else
+  # If no dialog title is given we'll just use the orignial line
+  dialog --clear --msgbox "$1" $height $width 2>&1 > /dev/tty1
+fi 
 
 if [[ ! -z "$set_gptokeyb" ]]; then
   pgrep -f gptokeyb | sudo xargs kill -9
