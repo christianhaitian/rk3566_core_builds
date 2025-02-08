@@ -150,7 +150,7 @@ Select() {
 
   pgrep -f gptokeyb | sudo xargs kill -9
   # get password from input
-  PASS=`$KEYBOARD "Enter Wi-Fi password for $1" | tail -n 1`
+  PASS=`$KEYBOARD "Enter Wi-Fi password for ${1:0:15}" | tail -n 1`
   /opt/inttools/gptokeyb -1 "Wifi.sh" -c "/opt/inttools/keys.gptk" > /dev/null &
   if [[ ! -e "/dev/input/by-path/platform-odroidgo2-joypad-event-joystick" ]]; then
     if test ! -z "$(cat /home/ark/.config/.DEVICE | grep RGB20PRO | tr -d '\0')"
