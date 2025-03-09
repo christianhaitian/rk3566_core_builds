@@ -24,6 +24,7 @@ bitness="$(getconf LONG_BIT)"
 		fi
 		cp patches/retrorun-patch* retrorun/.
 	  fi
+	fi
 
 	 cd retrorun/
 
