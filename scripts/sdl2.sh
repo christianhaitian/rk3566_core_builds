@@ -85,7 +85,9 @@ commit="9c821dc21ccbd69b2bda421fdb35cb4ae2da8f5e" # SDL 2.0.30.10
        #else
          mkdir build
          cd build
-         cmake -DSDL_STATIC=OFF \
+         cmake -DCMAKE_INSTALL_PREFIX="/usr/lib/aarch64-linux-gnu" \
+	       -DCMAKE_INSTALL_LIBDIR="/usr/lib/aarch64-linux-gnu" \
+               -DSDL_STATIC=OFF \
                -DSDL_LIBC=ON \
                -DSDL_GCC_ATOMICS=ON \
                -DSDL_ALTIVEC=OFF \
