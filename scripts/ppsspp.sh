@@ -3,7 +3,7 @@
 ##################################################################
 # Created by Christian Haitian for use to easily update          #
 # various standalone emulators, libretro cores, and other        #
-# various programs for the RK3566 platform for various Linux     #
+# various programs for the RK3326 platform for various Linux     #
 # based distributions.                                           #
 # See the LICENSE.md file at the top-level directory of this     #
 # repository.                                                    #
@@ -11,6 +11,7 @@
 
 cur_wd="$PWD"
 bitness="$(getconf LONG_BIT)"
+TAG="v1.18.1"
 
 	# PPSSPP Standalone build
 	if [[ "$var" == "ppsspp" ]] && [[ "$bitness" == "64" ]]; then
@@ -18,7 +19,7 @@ bitness="$(getconf LONG_BIT)"
 
 	  # Now we'll start the clone and build of PPSSPP
 	  if [ ! -d "ppsspp/" ]; then
-		git clone https://github.com/hrydgard/ppsspp.git --recursive
+		git clone --recursive --depth=1 https://github.com/hrydgard/ppsspp.git -b ${TAG}
 
 		if [[ $? != "0" ]]; then
 		  echo " "
@@ -34,7 +35,7 @@ bitness="$(getconf LONG_BIT)"
 	  fi
 
 	 # Ensure dependencies are installed and available
-     neededlibs=( libx11-dev libsm-dev libxext-dev git cmake mercurial libudev-dev libdrm-dev zlib1g-dev pkg-config libasound2-dev libfreetype6-dev libx11-xcb1 libxcb-dri2-0 )
+     neededlibs=( libx11-dev libsm-dev libxext-dev git clang cmake mercurial libudev-dev libdrm-dev zlib1g-dev pkg-config libasound2-dev libfreetype6-dev libx11-xcb1 libxcb-dri2-0 )
      updateapt="N"
      for libs in "${neededlibs[@]}"
      do
@@ -53,11 +54,14 @@ bitness="$(getconf LONG_BIT)"
           fi
      done
 
-	cd ppsspp/ffmpeg
-	sed -i '/--disable-everything \\/s//--disable-everything \\\n    --disable-iconv \\/g' linux_arm64.sh
-	./linux_arm64.sh 
-	cd ..
-
+	 #cd ppsspp/ffmpeg
+	 #sed -i '/--disable-everything \\/s//--disable-everything \\\n    --disable-iconv \\/g' linux_arm64.sh
+	 #./linux_arm64.sh
+         #rm -rf linux/x86_64/*
+	 #cp -R linux/aarch64/. linux/x86_64/
+         #cd ..
+	 cd ppsspp
+	 
 	 ppsspp_patches=$(find *.patch)
 	 
 	 if [[ ! -z "$ppsspp_patches" ]]; then
@@ -73,7 +77,7 @@ bitness="$(getconf LONG_BIT)"
 	  done
 	 fi
 
-	  export CCC_OVERRIDE_OPTIONS="^--gcc-install-dir=/lib/gcc/aarch64-linux-gnu/8"
+	  #export CCC_OVERRIDE_OPTIONS="^--gcc-install-dir=/lib/gcc/aarch64-linux-gnu/8"
 	  mkdir build
 	  cd build
 	  cmake -DUSING_EGL=OFF \
@@ -83,6 +87,8 @@ bitness="$(getconf LONG_BIT)"
 		-DUSE_SYSTEM_FFMPEG=NO \
 		-DUSE_SYSTEM_LIBPNG=OFF \
 		-DVULKAN=OFF \
+  		-DSDL2_LIBRARY="/usr/lib/aarch64-linux-gnu/libSDL2.so" \
+  		-DSDL2_INCLUDE_DIR="/usr/lib/aarch64-linux-gnu/include/SDL2" \
 		-DUSE_VULKAN_DISPLAY_KHR=OFF \
 		-DUSING_X11_VULKAN=OFF \
 		-DUSE_WAYLAND_WSI=OFF \
@@ -102,7 +108,7 @@ bitness="$(getconf LONG_BIT)"
 		echo "There was an error while building the newest ppsspp standalone.  Stopping here."
 		exit 1
 	  fi
-	  unset CCC_OVERRIDE_OPTIONS
+	  #unset CCC_OVERRIDE_OPTIONS
 
 	  strip PPSSPPSDL
 
@@ -114,6 +120,6 @@ bitness="$(getconf LONG_BIT)"
 	  tar -zchvf ../../ppsspp$bitness/ppssppsdl_pkg_$(git rev-parse HEAD | cut -c -7).tar.gz assets/ PPSSPPSDL
 
 	  echo " "
-	  echo "PPSSPPSDL executable and ppssppsdl_pkg_$(git rev-parse HEAD | cut -c -7).tar.gz package has been created and has been placed in the rk3566_core_builds/ppsspp$bitness subfolder"
+	  echo "PPSSPPSDL executable and ppssppsdl_pkg_$(git rev-parse HEAD | cut -c -7).tar.gz package has been created and has been placed in the rk3326_core_builds/ppsspp$bitness subfolder"
 
 	fi
