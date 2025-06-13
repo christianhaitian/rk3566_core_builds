@@ -68,6 +68,8 @@ tag="v1.21.0"
 	    --disable-vulkan_display \
 	    --disable-wayland \
 	    --disable-x11 \
+            --disable-jack \
+	    --disable-pulse \
 	    --disable-xrandr \
 	    --disable-winrawinput \
 	    --disable-gdi \
@@ -104,6 +106,8 @@ tag="v1.21.0"
 	    --disable-vulkan_display \
 	    --disable-wayland \
 	    --disable-x11 \
+            --disable-jack \
+	    --disable-pulse \
         --disable-xrandr \
         --disable-winrawinput \
         --disable-gdi \
