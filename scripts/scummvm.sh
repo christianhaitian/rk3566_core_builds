@@ -87,7 +87,7 @@ minfluidsynthverneeded="3"
       cd ../..
      fi      
 
-	  git checkout v2.9.0
+	  #git checkout v2.9.0
 
 	  scummvm_patches=$(find *.patch)
 	 
@@ -105,7 +105,7 @@ minfluidsynthverneeded="3"
 	  fi
 	  ./configure --backend=sdl --enable-optimizations --opengl-mode=gles2 --enable-vkeybd --enable-sdl-ts-vmouse --disable-debug --enable-release
 	  make clean
-	  make -j$(nproc)
+	  make -j$(( $(nproc) + 2 ))
 
 	  if [[ $? != "0" ]]; then
 		echo " "
