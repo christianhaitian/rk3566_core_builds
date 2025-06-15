@@ -27,6 +27,11 @@ commit="9c821dc21ccbd69b2bda421fdb35cb4ae2da8f5e" # SDL 2.0.30.10
 #commit="7a44b1ab002cee6efa56d3b4c0e146b7fbaed80b" # SDL 2.0.32.0
 #commit="e11183ea6caa3ae4895f4bc54cad2bbb0e365417" # SDL 2.0.32.2
 
+if [[ $bitness == "32" ]]; then
+  INSTALL_FOLDER="/usr/lib/arm-linux-gnueabihf"
+else
+  INSTALL_FOLDER="/usr/lib/aarch64-linux-gnu"
+fi
 	# sdl2 Standalone Build
 	if [[ "$var" == "sdl2" ]]; then
 	 cd $cur_wd
@@ -85,8 +90,8 @@ commit="9c821dc21ccbd69b2bda421fdb35cb4ae2da8f5e" # SDL 2.0.30.10
        #else
          mkdir build
          cd build
-         cmake -DCMAKE_INSTALL_PREFIX="/usr/lib/aarch64-linux-gnu" \
-	       -DCMAKE_INSTALL_LIBDIR="/usr/lib/aarch64-linux-gnu" \
+         cmake -DCMAKE_INSTALL_PREFIX="${INSTALL_FOLDER}" \
+	       -DCMAKE_INSTALL_LIBDIR="${INSTALL_FOLDER}" \
                -DSDL_STATIC=OFF \
                -DSDL_LIBC=ON \
                -DSDL_GCC_ATOMICS=ON \
