@@ -23,6 +23,9 @@ if [ -d "NetworkManager-${version}/" ]; then
   exit 1
 fi
 
+# Add deb-src to sources.list file
+echo "deb-src http://deb.debian.org/debian bookworm main" >> /etc/apt/sources.list 
+apt-get update
 #Make sure we have dependencies installed
 apt-get -y build-dep network-manager
 #Make sure we have necessary tools installed
