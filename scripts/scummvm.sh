@@ -115,7 +115,7 @@ minfluidsynthverneeded="3"
 
 	  strip scummvm
 	  
-	  mkdir extra
+	  mkdir -p extra/shaders
 	  mkdir themes
 	  cp backends/vkeybd/packs/*.zip extra/.
 	  cp dists/pred.dic extra/.
