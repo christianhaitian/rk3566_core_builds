@@ -54,7 +54,8 @@ bitness="$(getconf LONG_BIT)"
      done
 
 	 cd openMSX
-	 
+         git checkout RELEASE_17_0
+
 	 openmsx_patches=$(find *.patch)
 	 
 	 if [[ ! -z "$openmsx_patches" ]]; then
