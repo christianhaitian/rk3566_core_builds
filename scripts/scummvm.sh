@@ -125,7 +125,6 @@ minfluidsynthverneeded="3"
 	  cp dists/engine-data/queen.tbl extra/.
 	  cp dists/engine-data/sky.cpt extra/.
 	  cp dists/engine-data/wintermute.zip extra/.
-	  cp dists/engine-data/xeen.ccs extra/.
 	  cp engines/myst3/shaders/* extra/shaders/.
 	  cp engines/wintermute/base/gfx/opengl/shaders/* extra/shaders/.
 	  cp engines/grim/shaders/* extra/shaders/.
