@@ -26,6 +26,7 @@ bitness="$(getconf LONG_BIT)"
 commit="9c821dc21ccbd69b2bda421fdb35cb4ae2da8f5e" # SDL 2.0.30.10
 #commit="7a44b1ab002cee6efa56d3b4c0e146b7fbaed80b" # SDL 2.0.32.0
 #commit="e11183ea6caa3ae4895f4bc54cad2bbb0e365417" # SDL 2.0.32.2
+extension="3000.10"
 
 if [[ $bitness == "32" ]]; then
   INSTALL_FOLDER="/usr/lib/arm-linux-gnueabihf"
