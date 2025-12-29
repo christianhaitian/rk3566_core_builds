@@ -53,7 +53,9 @@ if [[ "$var" == "update" ]]; then
     if [[ ! -z "$builtcore_so" ]]; then
       for core in $builtcore_so
       do
-	execstack -c $core
+	if [[ "$bitness" == "32" ]]; then
+	  execstack -c $core
+	fi
 	cp -f $core $folder/.
 	if [[ $? != "0" ]]; then
 	  echo " "
