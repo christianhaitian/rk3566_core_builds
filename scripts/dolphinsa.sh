@@ -74,6 +74,16 @@ bitness="$(getconf LONG_BIT)"
              fi
            fi
 
+           if [[ "$0" == *"builds-alt"* ]]; then
+             mkdir -p /opt/dolphin/lib
+			 cp ../../mali/aarch64/libmali-bifrost-g52-g2p0-gbm.so /opt/dolphin/lib/libmali.so
+			 sed -i 's|/usr/local/lib/aarch64-linux-gnu/libGLESv2\.so|/opt/dolphin/lib/libmali.so|g' CMakeCache.txt
+             sed -i 's|/usr/local/lib/aarch64-linux-gnu/libGLESv3\.so|/opt/dolphin/lib/libmali.so|g' CMakeCache.txt
+             sed -i 's|/usr/local/lib/aarch64-linux-gnu/libgbm\.so|/opt/dolphin/lib/libmali.so|g' CMakeCache.txt
+             sed -i 's|/usr/lib/aarch64-linux-gnu/libgbm\.so|/opt/dolphin/lib/libmali.so|g' CMakeCache.txt
+             sed -i 's|/usr/local/lib/aarch64-linux-gnu/libEGL\.so|/opt/dolphin/lib/libmali.so|g' CMakeCache.txt
+             sed -i 's|/usr/lib/aarch64-linux-gnu/libEGL\.so|/opt/dolphin/lib/libmali.so|g' CMakeCache.txt
+		   fi
            make -j$(nproc)
            if [[ $? != "0" ]]; then
 		     echo " "
