@@ -33,20 +33,20 @@ do
     else
       archtest="aarch64-linux-gnu"
     fi
-    if test -z "$(ls -l /usr/lib/${archtest}/libMali.so | grep g52-g2p0-gbm | tr -d '\0')"
+    if test -z "$(ls -l /usr/lib/${archtest}/libMali.so | grep g52-g13p0-gbm | tr -d '\0')"
     then
-      printf "\nUpdating libMali to properly link to ibmali-bifrost-g52-g2p0-gbm.so in the dev environment, please wait...\n"
+      printf "\nUpdating libMali to properly link to ibmali-bifrost-g52-g13p0-gbm.so in the dev environment, please wait...\n"
       if [[ ${bitness} == "32" ]] && [[ ! " ${g31only[*]} " =~ " ${var} " ]]; then
-        cp mali/armhf/libmali-bifrost-g52-g2p0-gbm.so /usr/lib/arm-linux-gnueabihf/.
-        cp mali/armhf/libmali-bifrost-g52-g2p0-gbm.so /usr/local/lib/arm-linux-gnueabihf/.
+        cp mali/armhf/libmali-bifrost-g52-g13p0-gbm.so /usr/lib/arm-linux-gnueabihf/.
+        cp mali/armhf/libmali-bifrost-g52-g13p0-gbm.so /usr/local/lib/arm-linux-gnueabihf/.
         cd /usr/lib/arm-linux-gnueabihf/
-        whichmali="libmali-bifrost-g52-g2p0-gbm.so"
+        whichmali="libmali-bifrost-g52-g13p0-gbm.so"
         arch="arm-linux-gnueabihf"
       elif [[ ! " ${g31only[*]} " =~ " ${var} " ]]; then
-        cp mali/aarch64/libmali-bifrost-g52-g2p0-gbm.so /usr/lib/aarch64-linux-gnu/.
-        cp mali/aarch64/libmali-bifrost-g52-g2p0-gbm.so /usr/local/lib/aarch64-linux-gnu/.
+        cp mali/aarch64/libmali-bifrost-g52-g13p0-gbm.so /usr/lib/aarch64-linux-gnu/.
+        cp mali/aarch64/libmali-bifrost-g52-g13p0-gbm.so /usr/local/lib/aarch64-linux-gnu/.
         cd /usr/lib/aarch64-linux-gnu/
-        whichmali="libmali-bifrost-g52-g2p0-gbm.so"
+        whichmali="libmali-bifrost-g52-g13p0-gbm.so"
         arch="aarch64-linux-gnu"
       elif [[ ${bitness} == "32" ]]; then
         cp mali/armhf/libmali-bifrost-g31-rxp0-gbm.so /usr/lib/arm-linux-gnueabihf/.
