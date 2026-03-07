@@ -86,7 +86,6 @@ TAG="v1.19.3"
 		-DUSE_FFMPEG=YES \
 		-DUSE_SYSTEM_FFMPEG=NO \
 		-DUSE_SYSTEM_LIBPNG=OFF \
-		-DVULKAN=OFF \
   		-DSDL2_LIBRARY="/usr/lib/aarch64-linux-gnu/libSDL2.so" \
   		-DSDL2_INCLUDE_DIR="/usr/lib/aarch64-linux-gnu/include/SDL2" \
 		-DUSE_VULKAN_DISPLAY_KHR=ON \
