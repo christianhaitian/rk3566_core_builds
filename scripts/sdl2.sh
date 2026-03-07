@@ -133,7 +133,8 @@ fi
                -DSDL_X11=OFF \
                -DSDL_OPENGL=OFF \
                -DSDL_OPENGLES=ON \
-               -DSDL_VULKAN=OFF \
+               -DSDL_VULKAN=ON \
+			   -DVIDEO_VULKAN=ON \
                -DSDL_KMSDRM=ON \
                -DSDL_PULSEAUDIO=OFF ..
           export LDFLAGS="${LDFLAGS} -lrga"
