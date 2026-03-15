@@ -1,0 +1,35 @@
+diff --git a/yabause/src/vulkan/VIDVulkan.cpp b/yabause/src/vulkan/VIDVulkan.cpp
+index ceaac6d1..b8321e0b 100644
+--- a/yabause/src/vulkan/VIDVulkan.cpp
++++ b/yabause/src/vulkan/VIDVulkan.cpp
+@@ -172,8 +172,8 @@ extern "C" {
+   extern Vdp2 * fixVdp2Regs;
+ 
+ 
+-  PFN_vkCmdSetStencilTestEnableEXT vkCmdSetStencilTestEnable = 0;
+-  PFN_vkCmdSetStencilOpEXT vkCmdSetStencilOp = 0;
++  PFN_vkCmdSetStencilTestEnableEXT pfn_vkCmdSetStencilTestEnableEXT = nullptr;
++  PFN_vkCmdSetStencilOpEXT pfn_vkCmdSetStencilOpEXT = nullptr;
+ 
+ }
+ 
+@@ -255,8 +255,10 @@ int VIDVulkan::init(void)
+   std::set<std::string> exts = get_supported_extensions();
+ 
+   const VkDevice device = _renderer->GetVulkanDevice();
+-  vkCmdSetStencilTestEnable = (PFN_vkCmdSetStencilTestEnableEXT)vkGetDeviceProcAddr(device, "vkCmdSetStencilTestEnableEXT");
+-  vkCmdSetStencilOp = (PFN_vkCmdSetStencilOpEXT)vkGetDeviceProcAddr(device, "vkCmdSetStencilOpEXT");
++  pfn_vkCmdSetStencilTestEnableEXT = reinterpret_cast<PFN_vkCmdSetStencilTestEnableEXT>(
++      vkGetDeviceProcAddr(device, "vkCmdSetStencilTestEnableEXT"));
++  pfn_vkCmdSetStencilOpEXT = reinterpret_cast<PFN_vkCmdSetStencilOpEXT>(
++      vkGetDeviceProcAddr(device, "vkCmdSetStencilOpEXT"));
+ 
+   generateOffscreenRenderer();
+ 
+@@ -7005,4 +7007,4 @@ void VIDVulkan::blitSubRenderTarget(VkCommandBuffer commandBuffer) {
+     VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
+ 
+ 
+-}
+\ No newline at end of file
++}

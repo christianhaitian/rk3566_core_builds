@@ -35,7 +35,7 @@ TAG="pi4-1-9-0"
 	  fi
 
 	 # Ensure dependencies are installed and available
-     neededlibs=( git python-pip cmake build-essential protobuf-compiler libprotobuf-dev libsecret-1-dev libssl-dev libsdl2-dev libboost-all-dev )
+     neededlibs=( git python3-pip cmake build-essential protobuf-compiler libglfw3-dev libprotobuf-dev libsecret-1-dev libshaderc-dev libssl-dev libsdl2-dev libboost-all-dev libvulkan-dev )
      updateapt="N"
      for libs in "${neededlibs[@]}"
      do
@@ -88,7 +88,7 @@ TAG="pi4-1-9-0"
                      -DYAB_PORTS=retro_arena \
                      -DYAB_WANT_DYNAREC_DEVMIYAX=ON \
                      -DYAB_WANT_ARM7=ON \
-                     -DYAB_WANT_VULKAN=OFF \
+                     -DYAB_WANT_VULKAN=ON \
                      -DUSE_EGL=ON \
                      -DCMAKE_TOOLCHAIN_FILE=../yabause/src/retro_arena/n2.cmake \
                      -DCMAKE_BUILD_TYPE=Release

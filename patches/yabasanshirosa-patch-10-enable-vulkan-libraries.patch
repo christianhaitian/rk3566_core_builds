@@ -1,0 +1,58 @@
+diff --git a/yabause/src/CMakeLists.txt b/yabause/src/CMakeLists.txt
+index 0b0e6242..a418a152 100644
+--- a/yabause/src/CMakeLists.txt
++++ b/yabause/src/CMakeLists.txt
+@@ -762,19 +762,31 @@ option(YAB_WANT_VULKAN "Vulkan Graphics Core" OFF)
+ if (YAB_WANT_VULKAN)
+ 
+ add_definitions(-DHAVE_VULKAN=1)
++add_definitions(-DUSE_FRAMEWORK_GLFW)
+ 
+ include(vulkan/external_glm.cmake)
+ 
+ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+   include(vulkan/external_shaderc.cmake)
+-	include(vulkan/external_glfw.cmake)
+-	set(LIBVULKAN_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/include)
+-	set(LIBVULKAN ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/lib/x86/vulkan-1.lib )
++  include(vulkan/external_glfw.cmake)
++  set(LIBVULKAN_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/include)
++  set(LIBVULKAN ${CMAKE_CURRENT_SOURCE_DIR}/vulkan/lib/x86/vulkan-1.lib)
++elseif (${CMAKE_SYSTEM_NAME} MATCHES "Android")
++  set(SHADERC_INCLUDE_DIR ${ANDROID_NDK}/sources/third_party/shaderc/include)
++  set(SHADERC_LIBRARY_DIR ${ANDROID_NDK}/sources/third_party/shaderc/libs/c++_shared/${ANDROID_ABI})
++  set(SHADERC_LIBRARIES ${ANDROID_NDK}/sources/third_party/shaderc/libs/c++_shared/${ANDROID_ABI}/libshaderc.a)
++  set(LIBVULKAN vulkan)
+ else()
+-  set( SHADERC_INCLUDE_DIR ${ANDROID_NDK}/sources/third_party/shaderc/include  )
+-  set( SHADERC_LIBRARY_DIR ${ANDROID_NDK}/sources/third_party/shaderc/libs/c++_shared/${ANDROID_ABI}  )
+-	set( SHADERC_LIBRARIES ${ANDROID_NDK}/sources/third_party/shaderc/libs/c++_shared/${ANDROID_ABI}/libshaderc.a  )
+-	set( LIBVULKAN vulkan )
++  find_package(PkgConfig REQUIRED)
++  pkg_check_modules(SHADERC REQUIRED shaderc)
++  find_package(Vulkan REQUIRED)
++  find_package(glfw3 REQUIRED)
++
++  set(SHADERC_INCLUDE_DIR ${SHADERC_INCLUDE_DIRS})
++  set(SHADERC_LIBRARIES ${SHADERC_LIBRARIES})
++  set(GLFW_INCLUDE_DIR "")
++  set(GLFW_LIBRARIES glfw)
++  set(LIBVULKAN Vulkan::Vulkan)
+ endif()
+ 
+ #${ANDROID_NDK}/sources/third_party/shaderc/libshaderc/include 
+@@ -822,10 +834,10 @@ set(yabause_SOURCES
+   ${VULKAN_SOURCES}
+ )
+ 
+-#set(YABAUSE_LIBRARIES
+-#  ${YABAUSE_LIBRARIES} 
+-#  ${VULKAN_LIBRARIES}
+-#)
++set(YABAUSE_LIBRARIES
++  ${YABAUSE_LIBRARIES} 
++  ${VULKAN_LIBRARIES}
++)
+ 
+ endif(YAB_WANT_VULKAN)
+ 

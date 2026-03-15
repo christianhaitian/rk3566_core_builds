@@ -1,0 +1,65 @@
+diff --git a/yabause/src/vulkan/Window.cpp b/yabause/src/vulkan/Window.cpp
+index bbd91e01..0591d8e9 100644
+--- a/yabause/src/vulkan/Window.cpp
++++ b/yabause/src/vulkan/Window.cpp
+@@ -499,3 +499,60 @@ void Window::_DeInitSynchronizations()
+ {
+ 	vkDestroyFence( _renderer->GetVulkanDevice(), _swapchain_image_available, nullptr );
+ }
++
++#if USE_FRAMEWORK_GLFW
++
++void Window::_InitOSWindow()
++{
++	if (!glfwInit()) {
++		assert(0 && "glfwInit failed");
++		std::exit(-1);
++	}
++
++	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
++	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
++
++	_glfw_window = glfwCreateWindow(
++		_surface_size_x,
++		_surface_size_y,
++		_window_name.c_str(),
++		nullptr,
++		nullptr);
++
++	if (!_glfw_window) {
++		glfwTerminate();
++		assert(0 && "glfwCreateWindow failed");
++		std::exit(-1);
++	}
++}
++
++void Window::_DeInitOSWindow()
++{
++	if (_glfw_window) {
++		glfwDestroyWindow(_glfw_window);
++		_glfw_window = nullptr;
++	}
++	glfwTerminate();
++}
++
++void Window::_UpdateOSWindow()
++{
++	glfwPollEvents();
++
++	if (_glfw_window && glfwWindowShouldClose(_glfw_window)) {
++		_window_should_run = false;
++	}
++}
++
++void Window::_InitOSSurface()
++{
++	VkResult res = glfwCreateWindowSurface(
++		_renderer->GetVulkanInstance(),
++		_glfw_window,
++		nullptr,
++		&_surface);
++
++	ErrorCheck(res);
++}
++
++#endif
