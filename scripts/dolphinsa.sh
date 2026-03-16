@@ -35,7 +35,7 @@ TAG="2603"
 
 	 cd dolphin
 	 git checkout ${TAG}
-	 git submodule update --init
+	 git submodule update --init --recursive
 	 dolphin_patches=$(find *.patch)
 	 
 	 if [[ ! -z "$dolphin_patches" ]]; then
