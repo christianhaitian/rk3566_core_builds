@@ -25,7 +25,7 @@ TAG="2603"
 		  echo "There was an error while cloning the dolphin standalone git.  Is Internet active or did the git location change?  Stopping here."
 		  exit 1
 		fi
-		#cp patches/dolphinsa-patch* dolphin/.
+		cp patches/dolphinsa-patch* dolphin/.
 	  else
 		echo " "
 		echo "A dolphin standalone subfolder already exists.  Stopping here to not impact anything in the folder that may be needed.  If not needed, please remove the dolphin standalone folder and rerun this script."
