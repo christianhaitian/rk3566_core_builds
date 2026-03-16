@@ -64,8 +64,6 @@ tag="v1.22.2"
 	    --disable-qt \
 	    --disable-sdl \
 	    --disable-vg \
-	    --disable-vulkan \
-	    --disable-vulkan_display \
 	    --disable-wayland \
 	    --disable-x11 \
             --disable-jack \
@@ -90,6 +88,8 @@ tag="v1.22.2"
 	    --enable-opengles3_2 \
 	    --enable-ozone \
 	    --enable-udev \
+	    --enable-vulkan \
+	    --enable-vulkan_display \
 	    --enable-wifi
       else
 	    CFLAGS="-Ofast -march=armv8-a -mtune=cortex-a55 -mfpu=neon-fp-armv8 -mfloat-abi=hard -fomit-frame-pointer -DNDEBUG -DUDEV_TOUCH_SUPPORT" \
