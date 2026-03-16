@@ -1,0 +1,26 @@
+diff --git a/Source/Core/Common/TraversalServer.cpp b/Source/Core/Common/TraversalServer.cpp
+index 0a9b6c0..d1a9379 100644
+--- a/Source/Core/Common/TraversalServer.cpp
++++ b/Source/Core/Common/TraversalServer.cpp
+@@ -14,7 +14,7 @@
+ #include <unordered_map>
+ #include <vector>
+ 
+-#include <fmt/base.h>
++#include <fmt/format.h>
+ 
+ #ifdef HAVE_LIBSYSTEMD
+ #include <systemd/sd-daemon.h>
+diff --git a/Source/Core/Core/DSP/LabelMap.cpp b/Source/Core/Core/DSP/LabelMap.cpp
+index 1dfdfda..3bacd6c 100644
+--- a/Source/Core/Core/DSP/LabelMap.cpp
++++ b/Source/Core/Core/DSP/LabelMap.cpp
+@@ -7,7 +7,7 @@
+ #include <string>
+ #include <vector>
+ 
+-#include <fmt/base.h>
++#include <fmt/format.h>
+ 
+ #include "Core/DSP/DSPTables.h"
+ 
