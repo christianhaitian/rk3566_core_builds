@@ -11,7 +11,8 @@
 
 cur_wd="$PWD"
 bitness="$(getconf LONG_BIT)"
-TAG="2603"
+TAG="e6583f8bec814d8f3748f1d7738457600ce0de5"
+#TAG="9323074ada4b1d372809dc71ed092efe8d0e4c8e"
 	# dolphin Standalone build
 	if [[ "$var" == "dolphinsa" ]] && [[ "$bitness" == "64" ]]; then
 	 cd $cur_wd
@@ -37,7 +38,9 @@ TAG="2603"
 	 git checkout ${TAG}
 	 git submodule update --init --recursive
 	 dolphin_patches=$(find *.patch)
-	 
+	 sed -i 's~#include <cstdlib>~#include <cstdlib>\n#include <cstdint>~g' Externals/VulkanMemoryAllocator/include/vk_mem_alloc.h
+	 sed -i 's~#include <cstdint>~#include <cstdint>\n#include <string>~g' Externals/VulkanMemoryAllocator/include/vk_mem_alloc.h
+
 	 if [[ ! -z "$dolphin_patches" ]]; then
 	  for patching in dolphinsa-patch*
 	  do
@@ -74,7 +77,9 @@ TAG="2603"
              -DENABLE_AUTOUPDATE=OFF \
              -DUSE_RETRO_ACHIEVEMENTS=OFF \
              -DUSE_DISCORD_PRESENCE=OFF \
+             -DENABLE_DRM=ON \
              -DUSE_MGBA=OFF \
+             -DENABLE_SDL=ON \
              -DENABLE_WAYLAND=OFF \
              -DENCODE_FRAMEDUMPS=OFF ..
 
