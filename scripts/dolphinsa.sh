@@ -12,7 +12,6 @@
 cur_wd="$PWD"
 bitness="$(getconf LONG_BIT)"
 TAG="e6583f8bec814d8f3748f1d7738457600ce0de5"
-#TAG="9323074ada4b1d372809dc71ed092efe8d0e4c8e"
 	# dolphin Standalone build
 	if [[ "$var" == "dolphinsa" ]] && [[ "$bitness" == "64" ]]; then
 	 cd $cur_wd
