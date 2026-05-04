@@ -54,7 +54,7 @@ index dd495ddd28..50b8de2a7d 100644
    {
 +    static int hotkey = 0;
 +    static int slot = 0;
-+    static int stereo = 0;
++    static int fps = 0;
 +
      UpdateRunningFlag();
      Core::HostDispatchJobs();
@@ -99,12 +99,12 @@ index dd495ddd28..50b8de2a7d 100644
 +	  hotkey = 0;
 +	}
 +	if( (x.button & PAD_BUTTON_X) == PAD_BUTTON_X) {
-+	  if(stereo == 0) {
-+	    Config::SetCurrent(Config::GFX_STEREO_MODE, StereoMode::SBS);
-+	    stereo = 1;
++	  if(fps == 0) {
++	    Config::SetCurrent(Config::GFX_SHOW_FPS, false);
++	    fps = 1;
 +	  } else {
-+	    Config::SetCurrent(Config::GFX_STEREO_MODE, StereoMode::Off);
-+	    stereo = 0;
++	    Config::SetCurrent(Config::GFX_SHOW_FPS, true);
++	    fps = 0;
 +	  }
 +	  hotkey = 0;
 +	}
