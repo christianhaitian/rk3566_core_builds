@@ -1,0 +1,53 @@
+diff --git a/Source/Core/DolphinNoGUI/PlatformDRM.cpp b/Source/Core/DolphinNoGUI/PlatformDRM.cpp
+index 5f9560bcfe..e0cad8af7d 100644
+--- a/Source/Core/DolphinNoGUI/PlatformDRM.cpp
++++ b/Source/Core/DolphinNoGUI/PlatformDRM.cpp
+@@ -15,7 +15,9 @@
+ #include "InputCommon/GCPadStatus.h"
+ #include <fmt/format.h>
+ #include "Core/Config/GraphicsSettings.h"
++#include "Core/Config/MainSettings.h"
+ #include "VideoCommon/VideoConfig.h"
++#include "VideoCommon/OnScreenDisplay.h"
+ 
+ #include <climits>
+ #include <cstdio>
+@@ -42,6 +44,12 @@ void PlatformDRM::SetTitle(const std::string& string)
+ 
+ void PlatformDRM::MainLoop()
+ {
++      auto ShowEmulationSpeed = []() {
++        const float emulation_speed = Config::Get(Config::MAIN_EMULATION_SPEED);
++        OSD::AddMessage(emulation_speed <= 0 ?
++                            "Speed Limit: Unlimited" :
++                            fmt::format("Speed Limit: {}%", std::lround(emulation_speed * 100.f)));
++      };
+   while (IsRunning())
+   {
+     static int hotkey = 0;
+@@ -86,10 +94,23 @@ void PlatformDRM::MainLoop()
+ 	  Core::DisplayMessage(fmt::format("Slot {} selected", slot), 4000);
+ 	  hotkey = 0;
+ 	}
+-	if( (x.button & PAD_BUTTON_Y) == PAD_BUTTON_Y) {
+-	  Core::SaveScreenShot();
++	if( (x.button & PAD_BUTTON_RIGHT) == PAD_BUTTON_RIGHT) {
++          auto speed = Config::Get(Config::MAIN_EMULATION_SPEED) + 0.1;
++          speed = (speed >= 0.95 && speed <= 1.05) ? 1.0 : speed;
++          Config::SetCurrent(Config::MAIN_EMULATION_SPEED, speed);
++          ShowEmulationSpeed();
+ 	  hotkey = 0;
+ 	}
++        if( (x.button & PAD_BUTTON_LEFT) == PAD_BUTTON_LEFT) {
++          auto speed = Config::Get(Config::MAIN_EMULATION_SPEED) - 0.1;
++          if (speed > 0)
++          {
++            speed = (speed >= 0.95 && speed <= 1.05) ? 1.0 : speed;
++            Config::SetCurrent(Config::MAIN_EMULATION_SPEED, speed);
++          }
++          ShowEmulationSpeed();
++          hotkey = 0;
++	}
+ 	if( (x.button & PAD_BUTTON_X) == PAD_BUTTON_X) {
+ 	  if(fps == 0) {
+ 	    Config::SetCurrent(Config::GFX_SHOW_FPS, false);
