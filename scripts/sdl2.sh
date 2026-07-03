@@ -62,12 +62,6 @@ fi
 	 if [[ ! -z "$sdl2_patches" ]]; then
 	  for patching in sdl2-patch*
 	  do
-		 if [[ $patching == *"odroidgoa"* ]]; then
-		   echo " "
-		   echo "Skipping the $patching for now and making a note to apply that later"
-		   sleep 3
-		   sdl2_rotationpatch="yes"
-		 else
 		   patch -Np1 < "$patching"
 		   if [[ $? != "0" ]]; then
 			echo " "
@@ -75,7 +69,6 @@ fi
 			exit 1
 		   fi
 		   rm "$patching"
-		 fi
 	  done
 	 fi
 
