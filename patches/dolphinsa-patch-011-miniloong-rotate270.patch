@@ -1,0 +1,195 @@
+diff --git a/Source/Core/VideoCommon/PostProcessing.cpp b/Source/Core/VideoCommon/PostProcessing.cpp
+index 0a1e995c15..b8f4fb1bc2 100644
+--- a/Source/Core/VideoCommon/PostProcessing.cpp
++++ b/Source/Core/VideoCommon/PostProcessing.cpp
+@@ -3,6 +3,8 @@
+ 
+ #include "VideoCommon/PostProcessing.h"
+ 
++#include <cstdio>
++#include <cstring>
+ #include <sstream>
+ #include <string>
+ #include <string_view>
+@@ -32,6 +34,48 @@
+ 
+ namespace VideoCommon
+ {
++static bool IsMiniloongInternalPanel()
++{
++  FILE* f = std::fopen("/home/ark/.config/.DEVICE", "r");
++  if (!f)
++    return false;
++
++  char device[128] = {};
++  const bool read_device = std::fgets(device, sizeof(device), f) != nullptr;
++  std::fclose(f);
++
++  if (!read_device || (std::strstr(device, "miniloong") == nullptr &&
++                       std::strstr(device, "MINILOONG") == nullptr &&
++                       std::strstr(device, "Miniloong") == nullptr))
++  {
++    return false;
++  }
++
++  // Do not apply the internal LCD rotation when HDMI is connected.
++  // Important: do not use strstr(status, "connected"), because "disconnected"
++  // also contains the substring "connected".
++  const char* hdmi_paths[] = {
++      "/sys/class/drm/card0-HDMI-A-1/status",
++      "/sys/class/drm/card1-HDMI-A-1/status",
++  };
++
++  for (const char* path : hdmi_paths)
++  {
++    FILE* h = std::fopen(path, "r");
++    if (!h)
++      continue;
++
++    char status[32] = {};
++    const bool read_status = std::fgets(status, sizeof(status), h) != nullptr;
++    std::fclose(h);
++
++    if (read_status && std::strncmp(status, "connected", 9) == 0)
++      return false;
++  }
++
++  return true;
++}
++
+ static const char s_default_shader[] = "void main() { SetOutput(Sample()); }\n";
+ 
+ PostProcessingConfiguration::PostProcessingConfiguration() = default;
+@@ -416,6 +460,16 @@ void PostProcessing::BlitFromTexture(const MathUtil::Rectangle<int>& dst,
+                                      const MathUtil::Rectangle<int>& src,
+                                      const AbstractTexture* src_tex, int src_layer)
+ {
++  if (IsMiniloongInternalPanel())
++  {
++    ERROR_LOG_FMT(VIDEO,
++                  "MINILOONG POSTPROCESS HIT: BlitFromTexture dst={}x{} src={}x{} tex={}x{} fb={}x{}",
++                  dst.GetWidth(), dst.GetHeight(), src.GetWidth(), src.GetHeight(),
++                  src_tex->GetWidth(), src_tex->GetHeight(),
++                  g_renderer->GetCurrentFramebuffer()->GetWidth(),
++                  g_renderer->GetCurrentFramebuffer()->GetHeight());
++  }
++
+   if (g_renderer->GetCurrentFramebuffer()->GetColorFormat() != m_framebuffer_format)
+   {
+     m_framebuffer_format = g_renderer->GetCurrentFramebuffer()->GetColorFormat();
+@@ -429,8 +483,19 @@ void PostProcessing::BlitFromTexture(const MathUtil::Rectangle<int>& dst,
+   g_vertex_manager->UploadUtilityUniforms(m_uniform_staging_buffer.data(),
+                                           static_cast<u32>(m_uniform_staging_buffer.size()));
+ 
++  MathUtil::Rectangle<int> draw_dst = dst;
++  if (IsMiniloongInternalPanel())
++  {
++    // The internal panel is physically 720x960 portrait.  After rotating the
++    // sampled image in the shader, using the full physical framebuffer preserves
++    // the intended 4:3 landscape aspect as 720x960 portrait scanout.
++    draw_dst = MathUtil::Rectangle<int>(
++        0, 0, static_cast<int>(g_renderer->GetCurrentFramebuffer()->GetWidth()),
++        static_cast<int>(g_renderer->GetCurrentFramebuffer()->GetHeight()));
++  }
++
+   g_renderer->SetViewportAndScissor(
+-      g_renderer->ConvertFramebufferRectangle(dst, g_renderer->GetCurrentFramebuffer()));
++      g_renderer->ConvertFramebufferRectangle(draw_dst, g_renderer->GetCurrentFramebuffer()));
+   g_renderer->SetPipeline(m_pipeline.get());
+   g_renderer->SetTexture(0, src_tex);
+   g_renderer->SetSamplerState(0, RenderState::GetLinearSamplerState());
+@@ -587,10 +652,17 @@ bool PostProcessing::CompileVertexShader()
+ 
+   ss << "#define id gl_VertexID\n";
+   ss << "#define opos gl_Position\n";
++  ss << "#define MINILOONG_ROTATE_270 " << (IsMiniloongInternalPanel() ? "1" : "0") << "\n";
+   ss << "void main() {\n";
+-  ss << "  v_tex0 = float3(float((id << 1) & 2), float(id & 2), 0.0f);\n";
+-  ss << "  opos = float4(v_tex0.xy * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);\n";
+-  ss << "  v_tex0 = float3(src_rect.xy + (src_rect.zw * v_tex0.xy), float(src_layer));\n";
++  ss << "  float2 uv = float2(float((id << 1) & 2), float(id & 2));\n";
++  ss << "  opos = float4(uv * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);\n";
++  ss << "  if (MINILOONG_ROTATE_270 != 0)\n";
++  ss << "  {\n";
++  ss << "    // Rotate the sampled source image 270 degrees for the miniloong internal LCD.\n";
++  ss << "    // Keep the fullscreen triangle itself unchanged.\n";
++  ss << "    uv = float2(1.0f - uv.y, uv.x);\n";
++  ss << "  }\n";
++  ss << "  v_tex0 = float3(src_rect.xy + (src_rect.zw * uv), float(src_layer));\n";
+ 
+   if (g_ActiveConfig.backend_info.api_type == APIType::Vulkan)
+     ss << "  opos.y = -opos.y;\n";
+diff --git a/Source/Core/VideoCommon/RenderBase.cpp b/Source/Core/VideoCommon/RenderBase.cpp
+index 87d44621ba..19acdea03a 100644
+--- a/Source/Core/VideoCommon/RenderBase.cpp
++++ b/Source/Core/VideoCommon/RenderBase.cpp
+@@ -16,6 +16,8 @@
+ #include <algorithm>
+ #include <cinttypes>
+ #include <cmath>
++#include <cstdio>
++#include <cstring>
+ #include <memory>
+ #include <mutex>
+ #include <string>
+@@ -96,6 +98,43 @@ static float AspectToWidescreen(float aspect)
+   return aspect * ((16.0f / 9.0f) / (4.0f / 3.0f));
+ }
+ 
++static bool IsMiniloongInternalPanel()
++{
++  FILE* f = std::fopen("/home/ark/.config/.DEVICE", "r");
++  if (!f)
++    return false;
++
++  char device[128] = {};
++  const bool read_device = std::fgets(device, sizeof(device), f) != nullptr;
++  std::fclose(f);
++
++  if (!read_device || std::strstr(device, "miniloong") == nullptr)
++    return false;
++
++  // Do not apply the internal LCD rotation when HDMI is connected.
++  const char* hdmi_paths[] = {
++      "/sys/class/drm/card0-HDMI-A-1/status",
++      "/sys/class/drm/card1-HDMI-A-1/status",
++  };
++
++  for (const char* path : hdmi_paths)
++  {
++    FILE* h = std::fopen(path, "r");
++    if (!h)
++      continue;
++
++    char status[32] = {};
++    const bool connected = std::fgets(status, sizeof(status), h) &&
++                           std::strstr(status, "connected") != nullptr;
++    std::fclose(h);
++
++    if (connected)
++      return false;
++  }
++
++  return true;
++}
++
+ static bool DumpFrameToPNG(const FrameDump::FrameData& frame, const std::string& file_name)
+ {
+   return Common::ConvertRGBAToRGBAndSavePNG(file_name, frame.data, frame.width, frame.height,
+@@ -858,9 +897,14 @@ void Renderer::UpdateDrawRectangle()
+     g_Config.fAspectRatioHackH = 1;
+   }
+ 
++  // The miniloong internal LCD is physically exposed as 720x960 portrait, but should be
++  // treated as a 960x720 landscape target. The final presentation pass rotates it back onto
++  // the portrait framebuffer.
++  const bool miniloong_rotate = IsMiniloongInternalPanel();
++
+   // The rendering window size
+-  const float win_width = static_cast<float>(m_backbuffer_width);
+-  const float win_height = static_cast<float>(m_backbuffer_height);
++  const float win_width = miniloong_rotate ? 960.0f : static_cast<float>(m_backbuffer_width);
++  const float win_height = miniloong_rotate ? 720.0f : static_cast<float>(m_backbuffer_height);
+ 
+   // FIXME: this breaks at very low widget sizes
+   // Make ControllerInterface aware of the render window region actually being used
