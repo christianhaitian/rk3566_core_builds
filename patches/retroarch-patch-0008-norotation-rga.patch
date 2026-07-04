@@ -1,10 +1,8 @@
-Thanks to sydarn2 for this patch to fix rga scaling for non-rotated screened rk devices
-
 diff --git a/gfx/drivers_context/drm_go2_ctx.c b/gfx/drivers_context/drm_go2_ctx.c
-index b6e50073f4..f2d3917126 100644
+index dcc1877c19..4dde405c5a 100644
 --- a/gfx/drivers_context/drm_go2_ctx.c
 +++ b/gfx/drivers_context/drm_go2_ctx.c
-@@ -118,20 +118,11 @@ static void *gfx_ctx_go2_drm_init(void *video_driver)
+@@ -118,17 +118,8 @@ static void *gfx_ctx_go2_drm_init(void *video_driver)
  
     drm->display       = go2_display_create();
  
@@ -23,12 +21,8 @@ index b6e50073f4..f2d3917126 100644
 +   drm->native_height = go2_display_height_get(drm->display);
  
     drm->presenter     = go2_presenter_create(drm->display,
--         DRM_FORMAT_RGB565, 0xff000000, true);
-+         DRM_FORMAT_XRGB8888, 0xff000000, true);
- 
-    return drm;
- }
-@@ -347,8 +338,8 @@ static void gfx_ctx_go2_drm_swap_buffers(void *data)
+          DRM_FORMAT_RGB565, 0xff000000, true);
+@@ -345,8 +336,8 @@ static void gfx_ctx_go2_drm_swap_buffers(void *data)
     go2_presenter_post(drm->presenter,
           surf,
           src_x, src_y, src_w, src_h,
