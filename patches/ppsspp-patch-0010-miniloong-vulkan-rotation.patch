@@ -1,0 +1,89 @@
+diff --git a/Common/GPU/Vulkan/VulkanContext.cpp b/Common/GPU/Vulkan/VulkanContext.cpp
+index c044d2b..7772c14 100644
+--- a/Common/GPU/Vulkan/VulkanContext.cpp
++++ b/Common/GPU/Vulkan/VulkanContext.cpp
+@@ -1056,6 +1056,8 @@ VkResult VulkanContext::ReinitSurface() {
+ 		VkResult result;
+ 		bool ret = false;
+ 		bool mode_found = false;
++		bool needs_rotation = false;
++		VkSurfaceTransformFlagsKHR display_supported_transforms = 0;
+ 
+ 		int i, j;
+ 
+@@ -1083,8 +1085,14 @@ VkResult VulkanContext::ReinitSurface() {
+ 		plane_props = new VkDisplayPlanePropertiesKHR[plane_count];
+ 		vkGetPhysicalDeviceDisplayPlanePropertiesKHR(phys_device, &plane_count, plane_props);
+ 
+-		// Get the Vulkan display we are going to use.	
++		// Get the Vulkan display we are going to use.
+ 		VkDisplayKHR myDisplay = display_props[display_index].display;
++		display_supported_transforms = display_props[display_index].supportedTransforms;
++		INFO_LOG(Log::G3D, "DISPLAY: supportedTransforms=0x%x physRes=%dx%d requested=%dx%d",
++			(unsigned)display_supported_transforms,
++			display_props[display_index].physicalResolution.width,
++			display_props[display_index].physicalResolution.height,
++			g_display.pixel_xres, g_display.pixel_yres);
+ 
+ 		// Get the list of display modes of the display
+ 		uint32_t mode_count = 0;
+@@ -1111,6 +1119,25 @@ VkResult VulkanContext::ReinitSurface() {
+ 			}
+ 		}
+ 
++		// Rotated display: if no exact match, try swapped dimensions.
++		// SDL2 with RGA rotation reports landscape (e.g. 1280x720) but the native
++		// Vulkan display mode is portrait (e.g. 720x1280).
++		if (display_mode == VK_NULL_HANDLE) {
++			for (i = 0; i < (int)mode_count; ++i) {
++				const VkDisplayModePropertiesKHR* mode = &mode_props[i];
++				if (mode->parameters.visibleRegion.width == g_display.pixel_yres &&
++				    mode->parameters.visibleRegion.height == g_display.pixel_xres) {
++					display_mode = mode->displayMode;
++					needs_rotation = true;
++					INFO_LOG(Log::G3D, "DISPLAY: Matched rotated mode %dx%d (native) for requested %dx%d",
++						mode->parameters.visibleRegion.width,
++						mode->parameters.visibleRegion.height,
++						g_display.pixel_xres, g_display.pixel_yres);
++					break;
++				}
++			}
++		}
++
+ 		// Free the mode list now.
+ 		delete [] mode_props;
+ 
+@@ -1182,8 +1209,16 @@ VkResult VulkanContext::ReinitSurface() {
+ 		}
+ 	
+ 		// Finally, create the vulkan surface.
+-		image_size.width = g_display.pixel_xres;
+-		image_size.height = g_display.pixel_yres;
++		if (needs_rotation) {
++			// Use native (portrait) dimensions for the surface
++			image_size.width = g_display.pixel_yres;
++			image_size.height = g_display.pixel_xres;
++			INFO_LOG(Log::G3D, "DISPLAY: Creating surface at native %dx%d for rotated panel",
++				image_size.width, image_size.height);
++		} else {
++			image_size.width = g_display.pixel_xres;
++			image_size.height = g_display.pixel_yres;
++		}
+ 
+ 		display.displayMode = display_mode;
+ 		display.imageExtent = image_size;
+@@ -1460,6 +1495,14 @@ bool VulkanContext::InitSwapchain() {
+ 		preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+ 	}
+ 
++	// Software rotation for portrait panels without hardware preTransform support.
++	// The swapchain uses physical dimensions (e.g. 720x1280) with IDENTITY, and
++	// PPSSPP's rendering pipeline rotates all content via the rotation matrix.
++	if (preTransform == VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR && swapChainExtent_.width < swapChainExtent_.height) {
++		g_display.rotation = DisplayRotation::ROTATE_270;
++		g_display.rot_matrix.setRotationZ270();
++	}
++
+ 	// Only log transforms if relevant.
+ 	if (surfCapabilities_.supportedTransforms != VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) {
+ 		std::string preTransformStr = surface_transforms_to_string(preTransform);
