@@ -98,11 +98,10 @@ TAG="v1.20.4"
 		-DCMAKE_C_COMPILER=/usr/bin/clang \
 		-DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
 		-DCMAKE_C_FLAGS="-Ofast -fno-tree-slp-vectorize -D_NDEBUG -march=armv8-a+crc -mtune=cortex-a55 -ftree-vectorize -funsafe-math-optimizations" \
-		-DCMAKE_CXX_FLAGS="-Ofast -fno-tree-slp-vectorize -D_NDEBUG -march=armv8-a+crc -mtune=cortex-a55 -ftree-vectorize -funsafe-math-optimizations" \
+		-DCMAKE_CXX_FLAGS="-Ofast -fno-tree-slp-vectorize -D_NDEBUG -march=armv8-a+crc -mtune=cortex-a55 -ftree-vectorize -funsafe-math-optimizations -fpermissive" \
 		-DUSE_MINIUPNPC=OFF \
 		-DUSING_QT_UI=OFF \
-		-DUSE_DISCORD=OFF \
-		-DCMAKE_CXX_FLAGS=-fpermissive ../.
+		-DUSE_DISCORD=OFF ../.
 	  make -j$(nproc)
 
 	  if [[ $? != "0" ]]; then
