@@ -33,6 +33,12 @@ bitness="$(getconf LONG_BIT)"
 	 if [[ ! -z "$retrorun_patches" ]]; then
 	  for patching in retrorun-patch*
 	  do
+	        if [[ $patching == *"miniloong"* ]]; then
+	          echo " "
+	          echo "Skipping the $patching for now and making a note to apply that later"
+	          sleep 3
+	          retrorun_miniloongpatch="yes"
+	        else
 		   patch -Np1 < "$patching"
 		   if [[ $? != "0" ]]; then
 			echo " "
@@ -40,6 +46,7 @@ bitness="$(getconf LONG_BIT)"
 			exit 1
 		   fi
 		   rm "$patching" 
+		fi
 	  done
 	 fi
 
@@ -69,3 +76,43 @@ bitness="$(getconf LONG_BIT)"
 	 else
 		echo "retrorun has been created and has been placed in the rk3566_core_builds/retrorun-$bitness subfolder"
 	 fi
+
+          if [[ $retrorun_miniloongpatch == "yes" ]]; then
+    	      for patching in retrorun-patch*
+      	      do
+       	        patch -Np1 < "$patching"
+       		    if [[ $? != "0" ]]; then
+       		      echo " "
+       		      echo "There was an error while applying $patching.  Stopping here."
+       		      exit 1
+       		    fi
+       		    rm "$patching"
+       	      done
+
+	      make -j$(nproc)
+
+	      if [[ $? != "0" ]]; then
+		    echo " "
+		    echo "There was an error while building the newest retrorun with the miniloong  patch.  Stopping here."
+		    exit 1
+	      fi
+
+	      strip retrorun
+
+             if [ ! -d "../retrorun-$bitness/" ]; then
+                    mkdir -v ../retrorun-$bitness
+             fi
+
+             cp retrorun ../retrorun-$bitness/retrorun-miniloong
+
+             if [[ "$bitness" == "32" ]]; then
+                    mv ../retrorun-$bitness/retrorun ../retrorun-$bitness/retrorun32-miniloong
+             fi
+
+             echo " "
+             if [[ "$bitness" == "32" ]]; then
+                    echo "retrorun32-miniloong has been created and has been placed in the rk3566_core_builds/retrorun-$bitness subfolder"
+             else
+                    echo "retrorun-miniloong has been created and has been placed in the rk3566_core_builds/retrorun-$bitness subfolder"
+             fi
+          fi
