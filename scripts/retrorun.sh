@@ -106,7 +106,7 @@ bitness="$(getconf LONG_BIT)"
              cp retrorun ../retrorun-$bitness/retrorun-miniloong
 
              if [[ "$bitness" == "32" ]]; then
-                    mv ../retrorun-$bitness/retrorun ../retrorun-$bitness/retrorun32-miniloong
+                    mv ../retrorun-$bitness/retrorun-miniloong ../retrorun-$bitness/retrorun32-miniloong
              fi
 
              echo " "
