@@ -1,9 +1,3 @@
-diff --git a/Externals/VulkanMemoryAllocator b/Externals/VulkanMemoryAllocator
---- a/Externals/VulkanMemoryAllocator
-+++ b/Externals/VulkanMemoryAllocator
-@@ -1 +1 @@
--Subproject commit c351692490513cdb0e5a2c925aaf7ea4a9b672f4
-+Subproject commit c351692490513cdb0e5a2c925aaf7ea4a9b672f4-dirty
 diff --git a/Source/Core/Core/HW/GCPadEmu.cpp b/Source/Core/Core/HW/GCPadEmu.cpp
 index 58d48f62d3..663a9046b7 100644
 --- a/Source/Core/Core/HW/GCPadEmu.cpp
