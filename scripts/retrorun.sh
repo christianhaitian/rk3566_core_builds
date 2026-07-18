@@ -11,7 +11,7 @@
 
 cur_wd="$PWD"
 bitness="$(getconf LONG_BIT)"
-commit="bcdb7afa316fae735b40f06d61072e2f9590ea8c" # Release 3.0.0
+commit="59ea63f30b4784562fe04e5c849f955edcee38c8" # Release 2.7.6
 
 	# Retrorun build
 	if [[ "$var" == "retrorun" ]]; then
@@ -28,7 +28,6 @@ commit="bcdb7afa316fae735b40f06d61072e2f9590ea8c" # Release 3.0.0
 	fi
 
 	 cd retrorun/
-	 git checkout $commit
 
 	 retrorun_patches=$(find *.patch)
 	 
@@ -80,6 +79,8 @@ commit="bcdb7afa316fae735b40f06d61072e2f9590ea8c" # Release 3.0.0
 	 fi
 
           if [[ $retrorun_miniloongpatch == "yes" ]]; then
+	      make clean
+	      git checkout $commit
     	      for patching in retrorun-patch*
       	      do
        	        patch -Np1 < "$patching"

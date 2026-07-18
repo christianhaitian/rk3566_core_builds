@@ -1,8 +1,8 @@
 diff --git a/src/go2/display.cpp b/src/go2/display.cpp
-index 32b65a0..f69833c 100755
+index 9edf1cc..31ccfa4 100755
 --- a/src/go2/display.cpp
 +++ b/src/go2/display.cpp
-@@ -839,7 +839,8 @@ void go2_surface_blit(go2_surface_t *srcSurface, int srcX, int srcY, int srcWidt
+@@ -579,7 +579,8 @@ void go2_surface_blit(go2_surface_t *srcSurface, int srcX, int srcY, int srcWidt
      switch (rotation)
      {
      case GO2_ROTATION_DEGREES_0:
@@ -12,18 +12,27 @@ index 32b65a0..f69833c 100755
          break;
  
      case GO2_ROTATION_DEGREES_90:
+@@ -1614,4 +1615,4 @@ void go2_context_surface_unlock(go2_context_t *context, go2_surface_t *surface)
+     }
+ 
+     gbm_surface_release_buffer(context->gbmSurface, bo);
+-}
+\ No newline at end of file
++}
 diff --git a/src/video.cpp b/src/video.cpp
-index 8eab739..df3aaf4 100755
+index ac03de7..41a804f 100755
 --- a/src/video.cpp
 +++ b/src/video.cpp
-@@ -137,8 +137,8 @@ void video_configure(struct retro_game_geometry *geom)
+@@ -143,8 +143,10 @@ void video_configure(struct retro_game_geometry *geom)
          geom->max_height = 544;
          geom->max_width = 960;*/
-         display = rr_display_create();
--        display_width = rr_display_width_get(display);
--        display_height = rr_display_height_get(display);
-+        display_width = rr_display_height_get(display);
-+        display_height = rr_display_width_get(display);
+         display = go2_display_create();
+-        display_width = go2_display_width_get(display);
+-        display_height = go2_display_height_get(display);
++        display_width = go2_display_height_get(display);
++        display_height = go2_display_width_get(display);
++        //display_width = go2_display_width_get(display);
++        //display_height = go2_display_height_get(display);
      }else {
-         display = rr_display_create();
-         display_width = rr_display_height_get(display);
+         display = go2_display_create();
+         display_width = go2_display_height_get(display);
