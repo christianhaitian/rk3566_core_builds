@@ -80,10 +80,10 @@ commit="59ea63f30b4784562fe04e5c849f955edcee38c8" # Release 2.7.6
 
           if [[ $retrorun_miniloongpatch == "yes" ]]; then
 	      make clean
-	      git checkout $commit
+	      git checkout miniloong
     	      for patching in retrorun-patch*
       	      do
-       	        patch -Np1 < "$patching"
+       	        #patch -Np1 < "$patching"
        		    if [[ $? != "0" ]]; then
        		      echo " "
        		      echo "There was an error while applying $patching.  Stopping here."
