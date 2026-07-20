@@ -11,6 +11,7 @@
 
 cur_wd="$PWD"
 bitness="$(getconf LONG_BIT)"
+commit="59ea63f30b4784562fe04e5c849f955edcee38c8" # Release 2.7.6
 
 	# Retrorun build
 	if [[ "$var" == "retrorun" ]]; then
@@ -78,9 +79,11 @@ bitness="$(getconf LONG_BIT)"
 	 fi
 
           if [[ $retrorun_miniloongpatch == "yes" ]]; then
+	      make clean
+	      git checkout miniloong
     	      for patching in retrorun-patch*
       	      do
-       	        patch -Np1 < "$patching"
+       	        #patch -Np1 < "$patching"
        		    if [[ $? != "0" ]]; then
        		      echo " "
        		      echo "There was an error while applying $patching.  Stopping here."
@@ -106,7 +109,7 @@ bitness="$(getconf LONG_BIT)"
              cp retrorun ../retrorun-$bitness/retrorun-miniloong
 
              if [[ "$bitness" == "32" ]]; then
-                    mv ../retrorun-$bitness/retrorun ../retrorun-$bitness/retrorun32-miniloong
+                    mv ../retrorun-$bitness/retrorun-miniloong ../retrorun-$bitness/retrorun32-miniloong
              fi
 
              echo " "
