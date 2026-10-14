@@ -24,7 +24,7 @@ index 7752e8278..cf770e215 100644
 +
 +    FLAGS += -pthread -fomit-frame-pointer
 +    FLAGS += -ffast-math
-+    FLAGS += -marm -march=armv8-a
++    FLAGS += -marm -mcpu=cortex-a55
 +    FLAGS += -mfpu=neon-fp-armv8
 +    FLAGS += -mfloat-abi=hard
 +
