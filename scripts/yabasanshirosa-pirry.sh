@@ -107,7 +107,7 @@ bitness="$(getconf LONG_BIT)"
   	       mkdir -v ../../yabasanshirosa-pirry$bitness
              fi
 
-	     cp yabasanshiro-pirry ../../yabasanshirosa$bitness/yabasanshiro-pirry
+	     cp yabasanshiro-pirry ../../yabasanshirosa-pirry$bitness/yabasanshiro-pirry
 
 	     echo " "
 	     echo "The yabasanshiro-pirry executable has been created and has been placed in the rk3566_core_builds/yabasanshirosa$bitness subfolder"
