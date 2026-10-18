@@ -47,9 +47,8 @@ TAG="v2.6"
 	 fi
 
       if [[ "$0" != *"builds-alt"* ]]; then
-        update-alternatives --set gcc "/usr/local/bin/aarch64-linux-gnu-gcc-13"
-        update-alternatives --set g++ "/usr/local/bin/aarch64-linux-gnu-g++-13"
-        export CPLUS_INCLUDE_PATH=/usr/include/c++/13:/usr/include/c++/13/backward:/usr/local/include/c++/13/aarch64-linux-gnu
+        update-alternatives --set gcc "/usr/bin/gcc-14"
+        update-alternatives --set g++ "/usr/bin/g++-14"
       fi
 
 	  cd ..
@@ -66,27 +65,27 @@ TAG="v2.6"
 	    -DWITH_SYSTEM_ZLIB=ON \
 	    -DUSE_PULSEAUDIO=OFF \
 	    -DUSE_OPENMP=ON \
-	    -DUSE_VULKAN=ON \
+	    -DUSE_VULKAN=OFF \
 	    -DUSE_GLES=ON -B .
 	  
 	  make -j$(nproc)
 
 	  if [[ $? != "0" ]]; then
-        if [[ "$0" != *"builds-alt"* ]]; then
-		  update-alternatives --set gcc "/usr/bin/gcc-8"
-		  update-alternatives --set g++ "/usr/bin/g++-8"
+	    if [[ "$0" != *"builds-alt"* ]]; then
+		  update-alternatives --set gcc "/usr/bin/gcc-12"
+		  update-alternatives --set g++ "/usr/bin/g++-12"
 		  unset CPLUS_INCLUDE_PATH
-	    fi
+		fi
 		echo " "
 		echo "There was an error while building the newest flycast standalone emulator.  Stopping here."
 		exit 1
 	  fi
 
       if [[ "$0" != *"builds-alt"* ]]; then
-	    update-alternatives --set gcc "/usr/bin/gcc-8"
-	    update-alternatives --set g++ "/usr/bin/g++-8"
+	    update-alternatives --set gcc "/usr/bin/gcc-12"
+	    update-alternatives --set g++ "/usr/bin/g++-12"
 	    unset CPLUS_INCLUDE_PATH
-      fi
+	  fi
 
 	  strip flycast
 
@@ -94,7 +93,7 @@ TAG="v2.6"
 		mkdir -v ../flycastsa-$(getconf LONG_BIT)
 	  fi
 
-	  cp flycast ../flycastsa-$(getconf LONG_BIT)/flycast
+	  cp flycast ../flycastsa-$(getconf LONG_BIT)/flycast-rk3566
 
 	  echo " "
 	  echo "Flycast standalone has been created and has been placed in the rk3566_core_builds/flycastsa-$(getconf LONG_BIT) subfolder"
