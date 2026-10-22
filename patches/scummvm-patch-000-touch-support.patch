@@ -1,5 +1,5 @@
 diff --git a/backends/events/sdl/sdl-events.h b/backends/events/sdl/sdl-events.h
-index 695ec1a9..2ef6957a 100644
+index 7e96e472..fc70deb8 100644
 --- a/backends/events/sdl/sdl-events.h
 +++ b/backends/events/sdl/sdl-events.h
 @@ -112,7 +112,7 @@ protected:
@@ -11,7 +11,7 @@ index 695ec1a9..2ef6957a 100644
  
  	/**
  	 * Dispatchs SDL events for each handler.
-@@ -271,6 +271,104 @@ private:
+@@ -297,6 +297,104 @@ private:
  	void preprocessFingerMotion(SDL_Event *event);
  	void finishSimulatedMouseClicks(void);
  #endif
@@ -117,7 +117,7 @@ index 695ec1a9..2ef6957a 100644
  
  #endif
 diff --git a/backends/events/sdl/sdl2-events.cpp b/backends/events/sdl/sdl2-events.cpp
-index af2a0acb..12aef826 100644
+index 6cddd032..40c3f00e 100644
 --- a/backends/events/sdl/sdl2-events.cpp
 +++ b/backends/events/sdl/sdl2-events.cpp
 @@ -70,6 +70,9 @@ void SdlEventSource::loadGameControllerMappingFile() {
@@ -130,7 +130,7 @@ index af2a0acb..12aef826 100644
  }
  
  SdlEventSource::SdlEventSource()
-@@ -640,6 +643,10 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
+@@ -647,6 +650,10 @@ bool SdlEventSource::pollEvent(Common::Event &event) {
  		return true;
  	}
  
@@ -141,7 +141,7 @@ index af2a0acb..12aef826 100644
  	// If the screen changed, send an Common::EVENT_SCREEN_CHANGED
  	int screenID = g_system->getScreenChangeID();
  	if (screenID != _lastScreenID) {
-@@ -954,6 +961,13 @@ void SdlEventSource::closeJoystick() {
+@@ -982,6 +989,13 @@ void SdlEventSource::closeJoystick() {
  	}
  }
  
@@ -155,7 +155,7 @@ index af2a0acb..12aef826 100644
  bool SdlEventSource::handleJoystickAdded(const SDL_JoyDeviceEvent &device, Common::Event &event) {
  	debug(5, "SdlEventSource: Received joystick added event for index '%d'", device.which);
  
-@@ -1094,3 +1108,434 @@ uint32 SdlEventSource::obtainUnicode(const SDL_KeyboardEvent &key) {
+@@ -1131,3 +1145,434 @@ uint32 SdlEventSource::obtainUnicode(const SDL_KeyboardEvent &key) {
  }
  
  #endif
@@ -591,7 +591,7 @@ index af2a0acb..12aef826 100644
 +
 +#endif // defined(USE_SDL_TS_VMOUSE)
 diff --git a/backends/platform/sdl/sdl.cpp b/backends/platform/sdl/sdl.cpp
-index a6f0d170..aadae90c 100644
+index f2c4e514..0f16e54d 100644
 --- a/backends/platform/sdl/sdl.cpp
 +++ b/backends/platform/sdl/sdl.cpp
 @@ -219,6 +219,9 @@ bool OSystem_SDL::hasFeature(Feature f) {
@@ -599,16 +599,16 @@ index a6f0d170..aadae90c 100644
  		return _eventSource->isJoystickConnected();
  	}
 +#if defined(USE_SDL_TS_VMOUSE)
-+    if (f == kFeatureTouchpadMode) return true;
++        if (f == kFeatureTouchpadMode) return true;
 +#endif
- #if defined(USE_OPENGL_GAME) || defined(USE_OPENGL_SHADERS)
- 	/* Even if we are using the SDL graphics manager,
- 	 * we are at one initGraphics3d call of supporting OpenGL */
+ #if defined(MACOSX) && SDL_VERSION_ATLEAST(2, 0, 4)
+ 	// WORKAROUND: see SdlEventSource::handleMouseMotion()
+ 	if (f == kFeatureStaleMousePositionWorkaround) return true;
 diff --git a/configure b/configure
-index 41342e0d..32121347 100755
+index ff45575d..e9d01819 100755
 --- a/configure
 +++ b/configure
-@@ -244,6 +244,7 @@ _nuked_opl=yes
+@@ -249,6 +249,7 @@ _nuked_opl=yes
  _builtin_resources=yes
  _windows_console=yes
  _windows_unicode=yes
@@ -616,7 +616,7 @@ index 41342e0d..32121347 100755
  _cygwin_build=no
  _ext_sse2=auto
  _ext_avx2=auto
-@@ -1053,6 +1054,8 @@ Optional Features:
+@@ -1088,6 +1089,8 @@ Optional Features:
    --disable-windows-console do not show console output on Windows
    --enable-windows-unicode  use Windows Unicode APIs (default)
    --disable-windows-unicode use Windows ANSI APIs
@@ -625,8 +625,8 @@ index 41342e0d..32121347 100755
    --enable-ext-sse2        allow code to use sse2 extensions on x86/amd64
    --enable-ext-avx2        allow code to use avx2 extensions on x86/amd64
    --enable-ext-neon        allow code to use neon extensions on ARM
-@@ -1398,6 +1401,8 @@ for ac_option in $@; do
- 	--disable-eventrecorder)     _eventrec=no            ;;
+@@ -1442,6 +1445,8 @@ for ac_option in $@; do
+ 	--disable-system-printing)   _printing=no            ;;
  	--enable-text-console)       _text_console=yes       ;;
  	--disable-text-console)      _text_console=no        ;;
 +	--enable-sdl-ts-vmouse)      _sdl_ts_vmouse=yes      ;;
@@ -634,7 +634,7 @@ index 41342e0d..32121347 100755
  	--enable-ext-sse2)           _ext_sse2=yes           ;;
  	--disable-ext-sse2)          _ext_sse2=no            ;;
  	--enable-ext-avx2)           _ext_avx2=yes           ;;
-@@ -6450,6 +6455,9 @@ define_in_config_h_if_yes "$_readline" 'USE_READLINE'
+@@ -6639,6 +6644,9 @@ define_in_config_h_if_yes "$_readline" 'USE_READLINE'
  
  define_in_config_h_if_yes "$_text_console" 'USE_TEXT_CONSOLE_FOR_DEBUGGER'
  
