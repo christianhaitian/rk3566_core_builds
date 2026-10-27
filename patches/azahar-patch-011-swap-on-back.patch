@@ -1,0 +1,158 @@
+From: dArkOS RG52 Mini port
+Subject: The screens swap on the Back key, not on L3
+
+The core swapped the top and bottom screens when L3 was pressed (Toggle, by
+default: each press). On the RG52 Mini L3 is the switch under the left stick
+(BTN_THUMBL, a GPIO key), which a hard push of the stick closes by accident
+(seen on the device: L3 down for 0.7 and 3 s in a row while playing): the
+screens changed places in the middle of a game, and the small bottom screen
+filled the panel.
+
+They now swap on each press of the Back key (KEY_FN in the device tree,
+BTN_TRIGGER_HAPPY1 from the pad; nothing else uses it, and the RetroPad has
+no button for it, so the core reads its state from the pad's event device with
+EVIOCGKEY, which takes no events from RetroArch). The "Screen Swap Mode"
+option (toggle or hold the button) is gone. Which screen is the prominent one
+is still chosen in the core options (Prominent 3DS Screen). L3 is still the
+3DS's HOME button.
+
+--- a/src/citra_libretro/citra_libretro.cpp
++++ b/src/citra_libretro/citra_libretro.cpp
+@@ -29,6 +29,14 @@
+ #include "video_core/video_core.h"
+ 
+ #include "citra_libretro/citra_libretro.h"
++
++#ifdef __linux__
++#include <cstring>
++#include <fcntl.h>
++#include <linux/input.h>
++#include <sys/ioctl.h>
++#include <unistd.h>
++#endif
+ #include "citra_libretro/core_settings.h"
+ #include "citra_libretro/environment.h"
+ #include "citra_libretro/input/input_factory.h"
+@@ -127,7 +135,7 @@
+         {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "ZR"},
+         {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start"},
+         {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select"},
+-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3, "Home/Swap screens"},
++        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3, "Home"},
+         {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "Touch Screen Touch"},
+         {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X,
+          "Circle Pad X"},
+@@ -214,6 +222,42 @@
+ /**
+  * libretro callback; Called every game tick.
+  */
++#ifdef __linux__
++/// dArkOS: whether the RG52 Mini's Back key is down. It is BTN_TRIGGER_HAPPY1 of the built-in
++/// pad, which the RetroPad has no button for, so it is read from the pad's event device
++/// (EVIOCGKEY only reads the state: RetroArch still gets every event).
++static bool BackKeyDown() {
++    static int fd = -2;
++    if (fd == -2) {
++        fd = -1;
++        for (int n = 0; n < 32 && fd < 0; n++) {
++            char path[64], name[64] = {};
++            snprintf(path, sizeof(path), "/sys/class/input/event%d/device/name", n);
++            FILE* f = fopen(path, "r");
++            if (!f)
++                continue;
++            const bool pad = fgets(name, sizeof(name), f) &&
++                             strncmp(name, "retrogame_joypad", strlen("retrogame_joypad")) == 0;
++            fclose(f);
++            if (pad) {
++                snprintf(path, sizeof(path), "/dev/input/event%d", n);
++                fd = open(path, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
++            }
++        }
++    }
++    if (fd < 0)
++        return false;
++    unsigned char keys[KEY_MAX / 8 + 1] = {};
++    if (ioctl(fd, EVIOCGKEY(sizeof(keys)), keys) < 0)
++        return false;
++    return (keys[BTN_MODE / 8] >> (BTN_MODE % 8)) & 1;
++}
++#else
++static bool BackKeyDown() {
++    return false;
++}
++#endif
++
+ void retro_run() {
+     if (!emu_instance->game_loaded) {
+         // Game failed to load (e.g. encrypted ROM, bad path).
+@@ -236,38 +280,23 @@
+         mic_input->PollMicrophone();
+     }
+ 
+-    // Check if the screen swap button is pressed
++    // dArkOS: the Back key swaps the screens, once per press. The core swapped them on L3,
++    // which on the RG52 Mini is the switch under the left stick: a hard push of the stick
++    // closed it and the screens changed places in the middle of a game.
+     static bool screen_swap_button_state = false;
+     static bool screens_swapped = false;
+-    bool screen_swap_btn =
+-        !!LibRetro::CheckInput(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3);
+-    if (screen_swap_btn != screen_swap_button_state) {
+-        if (LibRetro::settings.swap_screen_mode == "Toggle") {
+-            if (!screen_swap_button_state)
+-                screens_swapped = !screens_swapped;
+-
+-            if (screens_swapped)
+-                Settings::values.swap_screen =
+-                    LibRetro::FetchVariable("citra_swap_screen", "Top") != "Bottom";
+-            else
+-                Settings::values.swap_screen =
+-                    LibRetro::FetchVariable("citra_swap_screen", "Top") == "Bottom";
+-        } else {
+-            if (screen_swap_btn)
+-                Settings::values.swap_screen =
+-                    LibRetro::FetchVariable("citra_swap_screen", "Top") != "Bottom";
+-            else
+-                Settings::values.swap_screen =
+-                    LibRetro::FetchVariable("citra_swap_screen", "Top") == "Bottom";
+-        }
++    const bool screen_swap_btn = BackKeyDown();
++    if (screen_swap_btn && !screen_swap_button_state) {
++        screens_swapped = !screens_swapped;
++        const bool bottom = LibRetro::FetchVariable("citra_swap_screen", "Top") == "Bottom";
++        Settings::values.swap_screen = screens_swapped ? !bottom : bottom;
+ 
+         Core::System::GetInstance().ApplySettings();
+ 
+         // Update the framebuffer sizing.
+         emu_instance->emu_window->UpdateLayout();
+-
+-        screen_swap_button_state = screen_swap_btn;
+     }
++    screen_swap_button_state = screen_swap_btn;
+ 
+ #ifdef ENABLE_OPENGL
+     if (Settings::values.graphics_api.GetValue() == Settings::GraphicsAPI::OpenGL) {
+--- a/src/citra_libretro/core_settings.cpp
++++ b/src/citra_libretro/core_settings.cpp
+@@ -518,20 +518,6 @@
+         "Top"
+     },
+     {
+-        config::layout::swap_screen_mode,
+-        "Screen Swap Mode",
+-        "Swap Mode",
+-        "How screen swapping behaves when using the screen swap hotkey.",
+-        nullptr,
+-        config::category::layout,
+-        {
+-            { "Toggle", "Toggle" },
+-            { "Hold", "Hold" },
+-            { nullptr, nullptr }
+-        },
+-        "Toggle"
+-    },
+-    {
+         config::layout::large_screen_proportion,
+         "Large Screen Proportion",
+         "Large Screen Proportion",
