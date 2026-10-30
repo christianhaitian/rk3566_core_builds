@@ -18,13 +18,14 @@ is still chosen in the core options (Prominent 3DS Screen). L3 is still the
 
 --- a/src/citra_libretro/citra_libretro.cpp
 +++ b/src/citra_libretro/citra_libretro.cpp
-@@ -29,6 +29,14 @@
+@@ -29,6 +29,15 @@
  #include "video_core/video_core.h"
  
  #include "citra_libretro/citra_libretro.h"
 +
 +#ifdef __linux__
 +#include <cstring>
++#include <stdio.h>
 +#include <fcntl.h>
 +#include <linux/input.h>
 +#include <sys/ioctl.h>
@@ -33,7 +34,7 @@ is still chosen in the core options (Prominent 3DS Screen). L3 is still the
  #include "citra_libretro/core_settings.h"
  #include "citra_libretro/environment.h"
  #include "citra_libretro/input/input_factory.h"
-@@ -127,7 +135,7 @@
+@@ -127,7 +136,7 @@
          {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "ZR"},
          {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start"},
          {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select"},
@@ -42,7 +43,7 @@ is still chosen in the core options (Prominent 3DS Screen). L3 is still the
          {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "Touch Screen Touch"},
          {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X,
           "Circle Pad X"},
-@@ -214,6 +222,42 @@
+@@ -214,6 +223,52 @@
  /**
   * libretro callback; Called every game tick.
   */
@@ -74,7 +75,17 @@ is still chosen in the core options (Prominent 3DS Screen). L3 is still the
 +    unsigned char keys[KEY_MAX / 8 + 1] = {};
 +    if (ioctl(fd, EVIOCGKEY(sizeof(keys)), keys) < 0)
 +        return false;
-+    return (keys[BTN_MODE / 8] >> (BTN_MODE % 8)) & 1;
++    static const bool miniloong = []() {
++        FILE* f = fopen("/home/ark/.config/.DEVICE", "r");
++        if (!f)
++            return false;
++        char device[256] = {};
++        const size_t n = fread(device, 1, sizeof(device) - 1, f);
++        fclose(f);
++        return n > 0 && strstr(device, "MINILOONG") != nullptr;
++    }();
++    const unsigned int button = miniloong ? BTN_MODE : BTN_THUMBL;
++    return (keys[button / 8] >> (button % 8)) & 1;
 +}
 +#else
 +static bool BackKeyDown() {
@@ -85,7 +96,7 @@ is still chosen in the core options (Prominent 3DS Screen). L3 is still the
  void retro_run() {
      if (!emu_instance->game_loaded) {
          // Game failed to load (e.g. encrypted ROM, bad path).
-@@ -236,38 +280,23 @@
+@@ -236,38 +291,23 @@
          mic_input->PollMicrophone();
      }
  
