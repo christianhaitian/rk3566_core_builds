@@ -26,7 +26,7 @@ bitness="$(getconf LONG_BIT)"
 		cp patches/armgba-patch* armgba/.
 	  fi
 
-	 cd armgba/
+	 cd armGBA/
 	 
 	 armgba_patches=$(find *.patch)
 	 
@@ -42,7 +42,7 @@ bitness="$(getconf LONG_BIT)"
 		   rm "$patching" 
 	  done
 	 fi
-	  cmake -S . -B build-armv7 -G Ninja -DCMAKE_TOOLCHAIN_FILE=<toolchain file> \
+	  cmake -S . -B build-aarch64 -G Ninja \
                  -DCMAKE_C_FLAGS="-march=armv8-a+crc -mtune=cortex-a55" \
                  -DCMAKE_CXX_FLAGS="-march=armv8-a+crc -mtune=cortex-a55"
 	  ninja -C build-aarch64
@@ -53,13 +53,13 @@ bitness="$(getconf LONG_BIT)"
 		exit 1
 	  fi
 
-	  strip armgba_libretro.so
+	  strip build-aarch64/armgba_libretro.so
 
 	  if [ ! -d "../cores64/" ]; then
 		mkdir -v ../cores64
 	  fi
 
-	  cp armgba_libretro.so ../cores64/.
+	  cp build-aarch64/armgba_libretro.so ../cores64/.
 
 	  gitcommit=$(git log | grep -m 1 commit | cut -c -14 | cut -c 8-)
 	  echo $gitcommit > ../cores$(getconf LONG_BIT)/$(basename $PWD)_libretro.so.commit
