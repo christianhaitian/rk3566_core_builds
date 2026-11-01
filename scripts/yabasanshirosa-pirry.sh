@@ -11,7 +11,7 @@
 
 cur_wd="$PWD"
 bitness="$(getconf LONG_BIT)"
-TAG="1.6.1"
+TAG="1.6.2"
 
 	# yabasanshiro Standalone build
 	if [[ "$var" == "yabasanshirosa-pirry" ]]; then
