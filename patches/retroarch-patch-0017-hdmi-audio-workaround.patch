@@ -1,0 +1,51 @@
+diff --git a/audio/drivers/alsathread.c b/audio/drivers/alsathread.c
+index 87b63061f3..cfe1ce2388 100644
+--- a/audio/drivers/alsathread.c
++++ b/audio/drivers/alsathread.c
+@@ -470,6 +470,9 @@ static void alsa_worker_thread(void *data)
+       memset(buf + fifo_size, 0, alsa->info.stream_info.period_size - fifo_size);
+ 
+       frames = snd_pcm_writei(alsa->info.pcm, buf, alsa->info.stream_info.period_frames);
++      unsigned int setup_retries = 0;
++      if (frames >= 0)
++         setup_retries = 0;
+ 
+       if (     frames == -EPIPE
+             || frames == -EINTR
+@@ -487,9 +490,34 @@ static void alsa_worker_thread(void *data)
+       }
+       else if (frames < 0)
+       {
+-         RARCH_ERR("[ALSA] [playback thread %u] Error writing audio to device: %s.\n",
++         snd_pcm_state_t pcm_state = snd_pcm_state(alsa->info.pcm);
++
++         if (pcm_state == SND_PCM_STATE_SETUP && setup_retries < 3)
++         {
++            int err;
++
++            setup_retries++;
++
++            RARCH_WARN("[ALSA] PCM entered SETUP state, recovery attempt %u/3.\n",
++               setup_retries);
++
++            err = snd_pcm_prepare(alsa->info.pcm);
++
++            if (err >= 0)
++            {
++               RARCH_WARN("[ALSA] PCM successfully prepared for playback.\n");
++               continue;
++            }
++
++            RARCH_ERR("[ALSA] Failed to prepare PCM: %s.\n",
++               snd_strerror(err));
++         }
++
++         RARCH_ERR("[ALSA] [playback thread %u] Error writing audio to device: %s (PCM state: %s).\n",
+             thread_id,
+-            snd_strerror(frames));
++            snd_strerror((int)frames),
++            snd_pcm_state_name(pcm_state));
++
+          break;
+       }
+    }
