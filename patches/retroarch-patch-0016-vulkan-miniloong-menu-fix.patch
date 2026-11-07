@@ -1,5 +1,5 @@
 diff --git a/gfx/drivers/vulkan.c b/gfx/drivers/vulkan.c
-index ca45cfc050..0e592093ed 100644
+index ca45cfc..5a49ca7 100644
 --- a/gfx/drivers/vulkan.c
 +++ b/gfx/drivers/vulkan.c
 @@ -17,6 +17,8 @@
@@ -127,7 +127,7 @@ index ca45cfc050..0e592093ed 100644
        pv->color.r = *color++;
        pv->color.g = *color++;
        pv->color.b = *color++;
-@@ -3978,16 +4059,91 @@ static bool vulkan_set_shader(void *data,
+@@ -3978,16 +4059,90 @@ static bool vulkan_set_shader(void *data,
     return true;
  }
  
@@ -203,7 +203,6 @@ index ca45cfc050..0e592093ed 100644
     float radians, cosine, sine;
 +   float menu_radians, menu_cosine, menu_sine;
 +   unsigned display_rotation = vulkan_miniloong_internal_panel() ? 270 : 0;
-+   unsigned content_rotation = (vk->rotation + display_rotation) % 360;
     static math_matrix_4x4 rot     = {
        {  0.0f,     0.0f,    0.0f,    0.0f ,
           0.0f,     0.0f,    0.0f,    0.0f ,
@@ -219,7 +218,7 @@ index ca45cfc050..0e592093ed 100644
     math_matrix_4x4 trn     = {
        {  1.0f,     0.0f,    0.0f,    0.0f ,
           0.0f,     1.0f,    0.0f,    0.0f ,
-@@ -4003,18 +4159,45 @@ static void vulkan_set_projection(vk_t *vk,
+@@ -4003,18 +4158,46 @@ static void vulkan_set_projection(vk_t *vk,
           0.0f,     0.0f,    1.0f,    0.0f ,
           0.0f,     0.0f,    0.0f,    1.0f }
     };
@@ -252,19 +251,19 @@ index ca45cfc050..0e592093ed 100644
     matrix_4x4_ortho(vk->mvp_no_rot, ortho->left, ortho->right,
           ortho->bottom, ortho->top, ortho->znear, ortho->zfar);
  
--   if (!allow_rotate)
-+   /* Content keeps RetroArch/core rotation, with the MINILOONG physical
-+    * display correction added independently. */
-+   if (!allow_rotate && !display_rotation)
++   /* Rotate game content on the internal MINILOONG LCD as well as the
++    * menu. The matching 90-degree viewport transform is handled in
++    * vulkan_set_viewport(), so aspect ratios are not distorted. */
+    if (!allow_rotate)
        tmp = vk->mvp_no_rot;
     else
     {
 -      radians                 = M_PI * vk->rotation / 180.0f;
 -      cosine                  = cosf(radians);
 -      sine                    = sinf(radians);
-+      unsigned rotation = allow_rotate ? content_rotation : display_rotation;
-+
-+      radians                  = M_PI * rotation / 180.0f;
++      unsigned content_rotation =
++            (vk->rotation + (allow_rotate ? display_rotation : 0)) % 360;
++      radians                  = M_PI * content_rotation / 180.0f;
 +      cosine                   = cosf(radians);
 +      sine                     = sinf(radians);
        MAT_ELEM_4X4(rot, 0, 0) = cosine;
@@ -304,7 +303,51 @@ index ca45cfc050..0e592093ed 100644
  }
  
  static void vulkan_set_rotation(void *data, unsigned rotation)
-@@ -4980,8 +5186,14 @@ static bool vulkan_frame(void *data, const void *frame,
+@@ -4056,6 +4262,19 @@ static void vulkan_set_viewport(void *data, unsigned vp_width,
+    struct video_ortho ortho  = {0, 1, 0, 1, -1, 1};
+    bool video_scale_integer  = config_get_ptr()->bools.video_scale_integer;
+    vk_t *vk                  = (vk_t*)data;
++   /* Fit the game in logical landscape coordinates before rotating the
++    * resulting rectangle into the physical portrait swapchain. */
++   bool rotate_panel         = allow_rotate &&
++                               vulkan_miniloong_internal_panel();
++   unsigned physical_width   = vp_width;
++   unsigned physical_height  = vp_height;
++
++   if (rotate_panel)
++   {
++      vp_width     = physical_height;
++      vp_height    = physical_width;
++      device_aspect = (float)vp_width / (float)vp_height;
++   }
+ 
+    if (vk->ctx_driver->translate_aspect)
+       device_aspect         = vk->ctx_driver->translate_aspect(
+@@ -4086,6 +4305,23 @@ static void vulkan_set_viewport(void *data, unsigned vp_width,
+       vk->vp.height   = vp_height;
+    }
+ 
++   if (rotate_panel)
++   {
++      /* Clockwise 270-degree mapping of a landscape viewport into the
++       * portrait framebuffer. Preserve its aspect ratio and centering. */
++      int logical_x          = vk->vp.x;
++      int logical_y          = vk->vp.y;
++      unsigned logical_w    = vk->vp.width;
++      unsigned logical_h    = vk->vp.height;
++
++      vk->vp.x               = logical_y;
++      vk->vp.y               = (int)physical_height - logical_x - (int)logical_w;
++      vk->vp.width           = logical_h;
++      vk->vp.height          = logical_w;
++      vp_width               = vk->vp.width;
++      vp_height              = vk->vp.height;
++   }
++
+    if (vk->vp.x < 0)
+    {
+       vk->translate_x = (float)vk->vp.x * 2;
+@@ -4980,8 +5216,14 @@ static bool vulkan_frame(void *data, const void *frame,
              settings_t *settings       = config_get_ptr();
              bool menu_linear_filter    = settings->bools.menu_linear_filter;
  
@@ -321,7 +364,7 @@ index ca45cfc050..0e592093ed 100644
  
              quad.pipeline              = vk->pipelines.alpha_blend;
              quad.texture               = &vk->menu.textures[vk->menu.last_index];
-@@ -5023,7 +5235,13 @@ static bool vulkan_frame(void *data, const void *frame,
+@@ -5023,7 +5265,13 @@ static bool vulkan_frame(void *data, const void *frame,
  
  #ifdef HAVE_GFX_WIDGETS
        if (widgets_active)
