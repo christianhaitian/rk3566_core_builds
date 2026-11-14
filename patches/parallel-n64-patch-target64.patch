@@ -2,15 +2,6 @@ diff --git a/Makefile b/Makefile
 index 932eccb4..bf181692 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -121,7 +121,7 @@ ifneq (,$(findstring unix,$(platform)))
-    endif
-    fpic = -fPIC
- 
--   HAVE_THR_AL=1
-+   HAVE_THR_AL=0
-    LDFLAGS += -lpthread
-    # clock_gettime (libretro-common features_cpu.c) lives in librt on
-    # pre-2.17 glibc and some cross toolchains; harmless on modern glibc
 @@ -136,6 +136,24 @@ ifneq (,$(findstring unix,$(platform)))
        GLES = 1
     endif

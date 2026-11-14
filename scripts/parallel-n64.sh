@@ -50,7 +50,7 @@ bitness="$(getconf LONG_BIT)"
 	  if [[ "$bitness" == "32" ]]; then
 		make platform=Odroidgoa -lto -j$(nproc)
 	  else
-		make platform=unix_RK3326 -lto -j$(nproc)
+		make platform=unix_RK3326 HAVE_LTCG=1 HAVE_PARALLEL=1 -j$(nproc)
 	  fi
 
 	  if [[ $? != "0" ]]; then
