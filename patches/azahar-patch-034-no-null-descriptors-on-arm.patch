@@ -1,0 +1,29 @@
+renderer_vulkan: no null descriptors on Arm's driver
+
+With VK_EXT_robustness2's nullDescriptor (patch 024) a disabled texture unit
+gets a null image view. Arm's driver for the Mali-G52 (r29p1) offers the
+feature, and puts an all-zero texture descriptor into the draw's texture
+table for it. Nothing happens until a shader samples that unit: then the
+fragment job fails with DATA_INVALID_FAULT, its fault pointer on the empty
+descriptor, vkWaitForFences returns VK_ERROR_DEVICE_LOST and the frontend
+aborts. Super Mario 3D Land does it at the start of world 6-3.
+
+The extension is not taken on that driver; unused units get the black
+texture, as before patch 024.
+---
+--- a/src/video_core/renderer_vulkan/vk_instance.cpp
++++ b/src/video_core/renderer_vulkan/vk_instance.cpp
+@@ -510,7 +510,12 @@
+     const bool has_index_type_uint8 =
+         add_extension(VK_EXT_INDEX_TYPE_UINT8_EXTENSION_NAME, is_moltenvk,
+                       "uint8 index conversion causes memory leaks in MoltenVK");
+-    const bool has_robustness2 = add_extension(VK_EXT_ROBUSTNESS_2_EXTENSION_NAME);
++    // Arm's driver (seen on r29p1 for Bifrost) offers nullDescriptor and writes a null image view into
++    // the GPU's texture table as an empty descriptor; a shader that samples it gets no zeroes: the
++    // fragment job ends in DATA_INVALID_FAULT and the device is lost. Black textures there instead.
++    const bool has_robustness2 =
++        add_extension(VK_EXT_ROBUSTNESS_2_EXTENSION_NAME, is_arm,
++                      "a sampled null descriptor faults the GPU on Arm's driver");
+     const bool has_fragment_shader_interlock =
+         add_extension(VK_EXT_FRAGMENT_SHADER_INTERLOCK_EXTENSION_NAME, is_nvidia,
+                       "it is broken on Nvidia drivers");
